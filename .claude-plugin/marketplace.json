@@ -1,0 +1,16 @@
+{
+  "name": "nextbillion",
+  "owner": {
+    "name": "NextBillion.ai",
+    "url": "https://nextbillion.ai"
+  },
+  "plugins": [
+    {
+      "name": "nextbillion-mcp",
+      "source": "./distributions/claude-code",
+      "description": "NextBillion.ai location APIs as MCP tools: geocoding, place search, routing, distance matrix, isochrones, and static maps",
+      "version": "0.1.0",
+      "author": { "name": "NextBillion.ai" }
+    }
+  ]
+}

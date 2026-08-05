@@ -9,8 +9,17 @@ SDK's built-in legacy negotiation.
 
 ## Quick start
 
-Get an API key at [console.nextbillion.ai](https://console.nextbillion.ai), then configure your
-MCP client — snippets for Claude Code, Cursor, and Codex are in
+Get an API key at [console.nextbillion.ai](https://console.nextbillion.ai) and export it as
+`NBAI_API_KEY` in your shell profile.
+
+**Claude Code plugin** (this repository doubles as a plugin marketplace):
+
+```bash
+claude plugin marketplace add nextbillion-ai/nextbillion-mcp
+claude plugin install nextbillion-mcp@nextbillion
+```
+
+**Any MCP client** — snippets for Claude Code, Cursor, and Codex are in
 [`distributions/manual/README.md`](distributions/manual/README.md). The short version:
 
 ```bash
