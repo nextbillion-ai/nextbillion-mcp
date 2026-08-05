@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Nightly at 02:00 UTC: includes live-API e2e to catch upstream API changes.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: node scripts/check-dist-versions.mjs
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+
+  e2e:
+    # Live-API smoke tests; needs the NBAI_API_KEY secret (sandbox key).
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:e2e
+        env:
+          NBAI_API_KEY: ${{ secrets.NBAI_API_KEY }}
