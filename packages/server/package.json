@@ -28,6 +28,7 @@
     "maps"
   ],
   "scripts": {
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build",
     "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/index.js', 0o755)\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run tests/unit tests/conformance",
