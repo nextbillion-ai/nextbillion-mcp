@@ -1,8 +1,8 @@
 {
   "name": "nextbillion-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server exposing NextBillion.ai location APIs (geocoding, places, routing, maps) as tools for AI agents",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "type": "module",
   "bin": {
     "nextbillion-mcp": "dist/index.js"

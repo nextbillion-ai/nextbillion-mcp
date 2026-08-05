@@ -7,6 +7,13 @@ const manifests = [
   'distributions/claude-code/.claude-plugin/plugin.json',
   'distributions/codex/.codex-plugin/plugin.json',
 ];
+const marketplace = JSON.parse(readFileSync('.claude-plugin/marketplace.json', 'utf8'));
+if (marketplace.plugins[0].version !== serverVersion) {
+  console.error(
+    `.claude-plugin/marketplace.json: version ${marketplace.plugins[0].version} != package version ${serverVersion}`,
+  );
+  process.exit(1);
+}
 const mcpConfigs = ['distributions/claude-code/.mcp.json', 'distributions/codex/.mcp.json'];
 
 let failed = false;
