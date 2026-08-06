@@ -26,6 +26,29 @@ Add to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in your project):
 }
 ```
 
+## Claude Desktop
+
+Claude Desktop → Settings → Developer → Edit Config opens `claude_desktop_config.json`
+(macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`,
+Windows: `%APPDATA%\Claude\claude_desktop_config.json`). Add:
+
+```json
+{
+  "mcpServers": {
+    "nextbillion": {
+      "command": "npx",
+      "args": ["-y", "nextbillion-mcp"],
+      "env": { "NBAI_API_KEY": "YOUR_KEY" }
+    }
+  }
+}
+```
+
+Restart Claude Desktop afterwards; the nextbillion tools appear under the tools icon.
+Requires Node.js on the machine. Note: the "Add custom connector" dialog is only for
+remote (URL-based) MCP servers — this package currently ships as a local stdio server,
+so use the config file instead.
+
 ## Codex CLI
 
 Add to `~/.codex/config.toml`:
