@@ -282,9 +282,34 @@ describe('static map parameter mapping', () => {
     );
     const url = requests[0]!.url;
     expect(url.pathname).toBe('/maps/streets/static/33.93,-118.12,9/512x512.png');
-    // markers are the one longitude-first parameter in the NextBillion API
+    // the center-based endpoint parses markers longitude-first (verified live 2026-08-31)
     expect(url.searchParams.get('markers')).toBe('-118.12,33.93,red');
     expect(result.content[0]).toMatchObject({ type: 'image', mimeType: 'image/png' });
+  });
+
+  it('static_route_map sends markers latitude-first (auto endpoint quirk)', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [PNG] });
+    await staticRouteMap.run(
+      {
+        route_points: [
+          { latitude: 37.7749, longitude: -122.4194 },
+          { latitude: 34.0522, longitude: -118.2437 },
+        ],
+        markers: [
+          { latitude: 37.7749, longitude: -122.4194 },
+          { latitude: 34.0522, longitude: -118.2437, color: 'red' },
+        ],
+      },
+      nb,
+    );
+    const url = requests[0]!.url;
+    // Regression for the auto-fit variant parsing markers lat-first — the opposite of
+    // the documented order honored by the center-based endpoint (live-verified 2026-08-31;
+    // lng-first markers here rendered in the wrong hemisphere at world zoom).
+    expect(url.searchParams.get('markers')).toBe('37.7749,-122.4194|34.0522,-118.2437,red');
+    expect(url.searchParams.get('path')).toBe(
+      'stroke:blue|width:4|fill:none|37.7749,-122.4194|34.0522,-118.2437',
+    );
   });
 
   it('static_route_map uses auto-fit with an encoded polyline path', async () => {

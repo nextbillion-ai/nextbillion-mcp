@@ -35,7 +35,7 @@ export const staticMapImage: NbTool<typeof Schema> = {
     return fetchImageResult(
       nb,
       staticImagePath(position, args),
-      { markers: args.markers?.length ? markerParam(args.markers) : undefined },
+      { markers: args.markers?.length ? markerParam(args.markers, 'lng-first') : undefined },
       `Map centered at (${args.center.latitude}, ${args.center.longitude}), zoom ${args.zoom}` +
         (args.markers?.length ? `, ${args.markers.length} marker(s).` : '.'),
       args,

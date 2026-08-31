@@ -3,6 +3,7 @@ import { NbClient } from '../../src/nbclient/client.js';
 import { geocodeForward } from '../../src/tools/places/text-search.js';
 import { directions } from '../../src/tools/routing/directions.js';
 import { staticMapImage } from '../../src/tools/maps/static-map-image.js';
+import { staticRouteMap } from '../../src/tools/maps/static-route-map.js';
 
 /**
  * Smoke tests against the live NextBillion API. Only run when NBAI_API_KEY is set
@@ -14,16 +15,19 @@ const apiKey = process.env.NBAI_API_KEY;
 describe.skipIf(!apiKey)('live API smoke tests', () => {
   const nb = new NbClient({ apiKey: apiKey ?? '' });
 
-  it('geocodes a landmark', async () => {
+  it('geocodes a street address', async () => {
+    // A full street address is deterministic; landmark-name queries are not — the
+    // live ranker can put e.g. "Empire, MO" above the Empire State Building even
+    // with a proximity bias (upstream ranking quirk, reported to the API team).
     const result = await geocodeForward.run(
-      { query: 'Empire State Building', country_codes: ['USA'], limit: 1 },
+      { query: '1600 Pennsylvania Avenue NW, Washington DC', country_codes: ['USA'], limit: 1 },
       nb,
     );
     expect(result.isError).toBeFalsy();
     const items = (result.structuredContent as { items: Array<{ position: { lat: number } }> })
       .items;
     expect(items.length).toBeGreaterThan(0);
-    expect(items[0]!.position.lat).toBeCloseTo(40.748, 1);
+    expect(items[0]!.position.lat).toBeCloseTo(38.8977, 1);
   });
 
   it('routes between two Los Angeles points', async () => {
@@ -38,6 +42,30 @@ describe.skipIf(!apiKey)('live API smoke tests', () => {
     const routes = (result.structuredContent as { routes: Array<{ distance: number }> }).routes;
     expect(routes.length).toBeGreaterThan(0);
     expect(routes[0]!.distance).toBeGreaterThan(1000);
+  });
+
+  it('renders a route map with markers (auto endpoint marker-order regression)', async () => {
+    // Regression for the auto-fit variant parsing markers lat-first: with the wrong
+    // order this renders a world-zoom map (~37 kB); a correct SF→LA regional render
+    // is substantially larger. Guarding on size keeps the check robust without
+    // pixel-level assertions.
+    const result = await staticRouteMap.run(
+      {
+        route_points: [
+          { latitude: 37.7749, longitude: -122.4194 },
+          { latitude: 34.0522, longitude: -118.2437 },
+        ],
+        markers: [
+          { latitude: 37.7749, longitude: -122.4194 },
+          { latitude: 34.0522, longitude: -118.2437, color: 'red' },
+        ],
+      },
+      nb,
+    );
+    const image = result.content.find((c) => c.type === 'image') as
+      { type: 'image'; data: string } | undefined;
+    expect(image).toBeTruthy();
+    expect(Buffer.from(image!.data, 'base64').length).toBeGreaterThan(45_000);
   });
 
   it('renders a static map image', async () => {

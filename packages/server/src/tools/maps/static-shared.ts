@@ -49,12 +49,22 @@ export function staticImagePath(positionSegment: string, args: StaticImageArgs):
 }
 
 /**
- * The `markers` query parameter uses `longitude,latitude` order — the one NextBillion
- * parameter with flipped coordinates (paths and centers are `lat,lng`).
+ * Marker coordinate order differs per endpoint variant (verified against the live API,
+ * 2026-08-31): the center-based endpoint parses `markers` as `longitude,latitude` (as
+ * documented), but the auto-fit endpoint parses them as `latitude,longitude` — sending
+ * the documented order there places markers in the wrong hemisphere and forces a
+ * world-level auto-zoom. Paths and center segments are `lat,lng` everywhere.
  */
-export function markerParam(markers: Array<Coordinate & { color?: string }>): string {
+export function markerParam(
+  markers: Array<Coordinate & { color?: string }>,
+  order: 'lng-first' | 'lat-first',
+): string {
   return markers
-    .map((m) => `${m.longitude},${m.latitude}${m.color ? `,${m.color}` : ''}`)
+    .map((m) => {
+      const pair =
+        order === 'lng-first' ? `${m.longitude},${m.latitude}` : `${m.latitude},${m.longitude}`;
+      return `${pair}${m.color ? `,${m.color}` : ''}`;
+    })
     .join('|');
 }
 

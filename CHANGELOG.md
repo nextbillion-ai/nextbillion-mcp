@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2 — 2026-08-31
+
+- Fix: `static_route_map` markers rendered in the wrong hemisphere with a world-level
+  auto-zoom. Root cause (verified against the live API): the Static Images auto-fit
+  endpoint parses `markers` latitude-first, the opposite of the documented order that
+  the center-based endpoint honors. Markers are now serialized per endpoint variant.
+- Add unit + live-API regression tests for the per-endpoint marker order.
+
 ## 0.1.1 — 2026-08-05
 
 - License the project under Apache-2.0 (was an UNLICENSED placeholder).

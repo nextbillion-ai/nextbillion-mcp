@@ -76,7 +76,9 @@ export const staticRouteMap: NbTool<typeof Schema> = {
       staticImagePath('auto', args),
       {
         path,
-        markers: args.markers?.length ? markerParam(args.markers) : undefined,
+        // The auto-fit endpoint parses markers lat-first, unlike the center-based
+        // endpoint (see markerParam) — verified live 2026-08-31.
+        markers: args.markers?.length ? markerParam(args.markers, 'lat-first') : undefined,
         padding: args.padding !== undefined ? String(args.padding) : undefined,
       },
       `Route map rendered${args.markers?.length ? ` with ${args.markers.length} marker(s)` : ''}.`,
