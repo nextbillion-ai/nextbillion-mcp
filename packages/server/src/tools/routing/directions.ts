@@ -52,6 +52,14 @@ const Schema = z.object({
     .describe(
       'Road features to avoid when alternatives exist. Fast service supports only toll/ferry/highway',
     ),
+  honor_restrictions: z
+    .boolean()
+    .optional()
+    .describe(
+      'When true, enforce restricted-area rules: no route is generated if origin, destination, ' +
+        'or a waypoint is inside a restricted area. Default false: route anyway with a warning ' +
+        '(flexible service only)',
+    ),
   alternatives: z
     .boolean()
     .optional()
@@ -101,6 +109,7 @@ export const directions: NbTool<typeof Schema> = {
         route_type: args.route_type,
         departure_time: args.departure_time,
         avoid: args.avoid?.length ? args.avoid.join('|') : undefined,
+        honor_restrictions: args.honor_restrictions,
         alternatives: args.alternatives,
         altcount: args.alternatives ? 3 : undefined,
         steps: service === 'fast' ? args.steps : undefined,

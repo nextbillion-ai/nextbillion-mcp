@@ -60,6 +60,15 @@ describe('places parameter mapping', () => {
     expect(url.searchParams.get('in')).toBe('countryCode:USA');
   });
 
+  it('geocode_forward joins the types filter as a comma list', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { items: [] } }] });
+    await geocodeForward.run(
+      { query: '600 Golden Gate Ave', types: ['addressBlock', 'street'] },
+      nb,
+    );
+    expect(requests[0]!.url.searchParams.get('types')).toBe('addressBlock,street');
+  });
+
   it('place_search uses the /discover endpoint', async () => {
     const { nb, requests } = fakeNbClient({ responses: [{ body: { items: [] } }] });
     await placeSearch.run({ query: 'gas' }, nb);
@@ -119,6 +128,12 @@ describe('places parameter mapping', () => {
     expect(requests[0]!.body).toEqual([{ q: 'a', limit: 1 }, { q: 'b' }]);
     expect(result.content[0]).toMatchObject({ type: 'text' });
     expect((result.content[0] as { text: string }).text).toContain('no match');
+  });
+
+  it('geocode_batch maps per-query types', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: [{ items: [] }] }] });
+    await geocodeBatch.run({ queries: [{ query: 'a', types: ['houseNumber'] }] }, nb);
+    expect(requests[0]!.body).toEqual([{ q: 'a', types: 'houseNumber' }]);
   });
 
   it('postcode_lookup validates its exclusive inputs', async () => {
@@ -182,6 +197,31 @@ describe('routing parameter mapping', () => {
         nb,
       ),
     ).rejects.toBeInstanceOf(ToolInputError);
+  });
+
+  it('directions and distance_matrix pass honor_restrictions through', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { routes: [] } }] });
+    await directions.run(
+      {
+        origin: { latitude: 1, longitude: 2 },
+        destination: { latitude: 3, longitude: 4 },
+        honor_restrictions: true,
+      },
+      nb,
+    );
+    expect(requests[0]!.body).toMatchObject({ honor_restrictions: true });
+
+    const matrix = fakeNbClient({ responses: [{ body: { rows: [] } }] });
+    await distanceMatrix.run(
+      {
+        origins: [{ latitude: 1, longitude: 2 }],
+        destinations: [{ latitude: 3, longitude: 4 }],
+        service: 'flexible',
+        honor_restrictions: true,
+      },
+      matrix.nb,
+    );
+    expect(matrix.requests[0]!.body).toMatchObject({ honor_restrictions: true });
   });
 
   it('directions summarizes distance and duration', async () => {

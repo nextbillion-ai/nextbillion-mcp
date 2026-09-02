@@ -32,6 +32,13 @@ const Schema = z.object({
     .array(z.enum(['toll', 'highway', 'ferry', 'none']))
     .optional()
     .describe('Road features to avoid'),
+  honor_restrictions: z
+    .boolean()
+    .optional()
+    .describe(
+      'When true, enforce restricted-area rules for origin/destination points instead of ' +
+        'routing through with a warning (flexible service only)',
+    ),
   truck_size_cm: z
     .object({ height: z.number(), width: z.number(), length: z.number() })
     .optional()
@@ -74,6 +81,7 @@ export const distanceMatrix: NbTool<typeof Schema> = {
         route_type: args.route_type,
         departure_time: args.departure_time,
         avoid: args.avoid?.length ? args.avoid.join('|') : undefined,
+        honor_restrictions: args.honor_restrictions,
         truck_size: args.truck_size_cm
           ? `${args.truck_size_cm.height},${args.truck_size_cm.width},${args.truck_size_cm.length}`
           : undefined,

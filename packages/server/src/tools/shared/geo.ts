@@ -35,6 +35,15 @@ export const CountryCodesSchema = z
   .min(1)
   .describe('Restrict results to these countries (ISO 3166-1 alpha-3 codes, e.g. ["USA","MEX"])');
 
+export const PlaceTypesSchema = z
+  .array(z.enum(['houseNumber', 'addressBlock', 'street', 'intersection', 'place', 'area']))
+  .min(1)
+  .describe(
+    'Restrict results to these types: houseNumber (exact door point), addressBlock ' +
+      '(address-range/segment match incl. interpolated numbers), street, intersection ' +
+      '(only returned when requested), place (POI), area (city/district/postal/admin area)',
+  );
+
 export const ViewSchema = z
   .enum(['Unified', 'AR', 'IL', 'IN', 'MA', 'PK', 'RU', 'TR', 'CN', 'TW'])
   .describe(

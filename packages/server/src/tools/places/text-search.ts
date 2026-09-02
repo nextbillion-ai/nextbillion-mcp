@@ -1,5 +1,10 @@
 import * as z from 'zod/v4';
-import { placesFilterQuery, PlacesFilterShape, summarizePlaces } from '../shared/geo.js';
+import {
+  placesFilterQuery,
+  PlacesFilterShape,
+  PlaceTypesSchema,
+  summarizePlaces,
+} from '../shared/geo.js';
 import { READ_ONLY, textResult, type NbTool } from '../types.js';
 
 const TextSearchSchema = z.object({
@@ -8,9 +13,10 @@ const TextSearchSchema = z.object({
 });
 
 /**
- * geocode_forward, place_search, autosuggest and autocomplete share the exact same
- * request surface (`q` + geographic filters) against different endpoints; only the
- * ranking/matching behavior differs.
+ * place_search, autosuggest and autocomplete share the exact same request surface
+ * (`q` + geographic filters) against different endpoints; only the ranking/matching
+ * behavior differs. geocode_forward is defined separately below because it
+ * additionally supports the `types` filter (which these endpoints do not).
  */
 function textSearchTool(options: {
   name: string;
@@ -35,7 +41,13 @@ function textSearchTool(options: {
   };
 }
 
-export const geocodeForward = textSearchTool({
+const ForwardGeocodeSchema = z.object({
+  query: z.string().min(1).describe('Free-text search query'),
+  ...PlacesFilterShape,
+  types: PlaceTypesSchema.optional(),
+});
+
+export const geocodeForward: NbTool<typeof ForwardGeocodeSchema> = {
   name: 'geocode_forward',
   title: 'Forward Geocode',
   description:
@@ -43,9 +55,17 @@ export const geocodeForward = textSearchTool({
     'coordinates and a complete postal address. Tolerates incomplete or partly incorrect queries. ' +
     'Provide `near`, `country_codes`, or `bounding_box` for more relevant results. ' +
     'For many addresses at once use geocode_batch; for POI/business search use place_search.',
-  path: '/geocode',
-  noun: 'match',
-});
+  inputSchema: ForwardGeocodeSchema,
+  annotations: READ_ONLY,
+  async run(args, nb) {
+    const response = await nb.getJson<Record<string, unknown>>('/geocode', {
+      q: args.query,
+      ...placesFilterQuery(args),
+      types: args.types?.join(','),
+    });
+    return textResult(summarizePlaces(response, 'match'), response);
+  },
+};
 
 export const placeSearch = textSearchTool({
   name: 'place_search',

@@ -1,10 +1,11 @@
 import * as z from 'zod/v4';
-import { placesFilterQuery, PlacesFilterShape } from '../shared/geo.js';
+import { placesFilterQuery, PlacesFilterShape, PlaceTypesSchema } from '../shared/geo.js';
 import { READ_ONLY, textResult, type NbTool } from '../types.js';
 
 const BatchQuerySchema = z.object({
   query: z.string().min(1).describe('Free-text search query for this entry'),
   ...PlacesFilterShape,
+  types: PlaceTypesSchema.optional(),
 });
 
 const Schema = z.object({
@@ -34,6 +35,7 @@ export const geocodeBatch: NbTool<typeof Schema> = {
         in: filters.in,
         limit: filters.limit,
         lang: filters.lang,
+        types: entry.types?.join(','),
       };
     });
     const response = await nb.postJson<unknown>('/geocode/batch', {}, body);
