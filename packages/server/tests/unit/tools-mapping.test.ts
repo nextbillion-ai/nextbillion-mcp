@@ -10,7 +10,7 @@ import { isochrone } from '../../src/tools/routing/isochrone.js';
 import { searchAlongRoute } from '../../src/tools/routing/search-along-route.js';
 import { staticMapImage } from '../../src/tools/maps/static-map-image.js';
 import { staticRouteMap } from '../../src/tools/maps/static-route-map.js';
-import { ToolInputError } from '../../src/tools/types.js';
+import { textResult, ToolInputError } from '../../src/tools/types.js';
 import { fakeNbClient } from '../helpers/fake-fetch.js';
 
 const PNG = { body: new Uint8Array([137, 80, 78, 71]), contentType: 'image/png' };
@@ -43,6 +43,23 @@ describe('tool registry', () => {
       expect(tool.annotations?.readOnlyHint, tool.name).toBe(true);
       expect(tool.annotations?.destructiveHint, tool.name).toBe(false);
     }
+  });
+});
+
+describe('result formatting', () => {
+  it('mirrors the full structured response into the text block', () => {
+    const response = { items: [{ id: 'x', access: [{ lat: 1, lng: 2 }] }] };
+    const result = textResult('1 match found', response);
+    const text = (result.content[0] as { text: string }).text;
+    expect(text.startsWith('1 match found')).toBe(true);
+    expect(text).toContain(JSON.stringify(response));
+    expect(result.structuredContent).toBe(response);
+  });
+
+  it('leaves summary-only results untouched when there is no structured content', () => {
+    const result = textResult('nothing to report');
+    expect((result.content[0] as { text: string }).text).toBe('nothing to report');
+    expect(result.structuredContent).toBeUndefined();
   });
 });
 

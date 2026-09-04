@@ -41,6 +41,20 @@ export const READ_ONLY: ToolAnnotations = {
 
 export class ToolInputError extends Error {}
 
-export function textResult(text: string, structuredContent?: Record<string, unknown>): ToolResult {
+/**
+ * Build a tool result whose text block carries BOTH a human-readable summary and the
+ * complete response as JSON. The MCP spec recommends mirroring structured content
+ * into the text block: some hosts (e.g. Claude Desktop) surface only the text to the
+ * model, so a summary-only text block made fields such as `access` invisible even
+ * though they were present in `structuredContent`.
+ */
+export function textResult(
+  summary: string,
+  structuredContent?: Record<string, unknown>,
+): ToolResult {
+  const text =
+    structuredContent === undefined
+      ? summary
+      : `${summary}\n\nFull response (JSON):\n${JSON.stringify(structuredContent)}`;
   return { content: [{ type: 'text', text }], structuredContent };
 }

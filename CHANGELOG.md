@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.4 — 2026-09-04
+
+- Tool results now mirror the complete API response as JSON inside the text block,
+  after the human-readable summary. Hosts that surface only text content to the model
+  (e.g. Claude Desktop) previously could not see fields beyond the summary — such as
+  `access` points in geocoding results — even though they were present in
+  `structuredContent`. Applies uniformly to all tools.
+
 ## 0.1.3 — 2026-09-02
 
 - Add the `types` result filter (houseNumber/addressBlock/street/intersection/place/area)

@@ -65,6 +65,9 @@ describe('MCP conformance', () => {
       (c) => c.type === 'text',
     );
     expect(text?.text).toContain('Empire State Building');
+    // The text block mirrors the full response so text-only hosts see every field.
+    expect(text?.text).toContain('"id":"abc"');
+    expect(text?.text).toContain('"position":{"lat":40.748,"lng":-73.985}');
     expect(result.structuredContent).toMatchObject({ items: [{ id: 'abc' }] });
     expect(requests[0]!.url.pathname).toBe('/geocode');
   });
