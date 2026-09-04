@@ -21,7 +21,8 @@ function main(): void {
         'Environment variables:\n' +
         '  NBAI_API_KEY      (required) NextBillion.ai API key\n' +
         '  NBAI_BASE_URL     (optional) API base URL, default https://api.nextbillion.io\n' +
-        '  NBAI_TIMEOUT_MS   (optional) per-request timeout, default 30000\n',
+        '  NBAI_TIMEOUT_MS   (optional) per-request timeout, default 30000\n' +
+        '  NBAI_IMAGE_DIR    (optional) directory for saved map images, default <tmp>/nextbillion-mcp\n',
     );
     return;
   }

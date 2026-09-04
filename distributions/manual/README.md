@@ -62,8 +62,9 @@ env = { "NBAI_API_KEY" = "YOUR_KEY" }
 
 ## Environment variables
 
-| Variable          | Required | Description                                         |
-| ----------------- | -------- | --------------------------------------------------- |
-| `NBAI_API_KEY`    | yes      | NextBillion.ai API key                              |
-| `NBAI_BASE_URL`   | no       | API base URL (default `https://api.nextbillion.io`) |
-| `NBAI_TIMEOUT_MS` | no       | Per-request timeout in milliseconds (default 30000) |
+| Variable          | Required | Description                                                                                            |
+| ----------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `NBAI_API_KEY`    | yes      | NextBillion.ai API key                                                                                 |
+| `NBAI_BASE_URL`   | no       | API base URL (default `https://api.nextbillion.io`)                                                    |
+| `NBAI_TIMEOUT_MS` | no       | Per-request timeout in milliseconds (default 30000)                                                    |
+| `NBAI_IMAGE_DIR`  | no       | Where rendered map images are saved for terminal clients (default: system temp dir `nextbillion-mcp/`) |

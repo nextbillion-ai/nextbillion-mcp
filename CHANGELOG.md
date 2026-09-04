@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.6 — 2026-09-04
+
+- Rendered maps (static_map_image, static_route_map) are now also saved to a local file
+  and the path is reported in the result text. Terminal-based MCP clients such as the
+  Codex CLI cannot display inline image content, leaving users no way to see the map;
+  the saved file closes that gap while inline images keep working in desktop clients.
+  Location: `NBAI_IMAGE_DIR`, default `<system temp>/nextbillion-mcp/`.
+
 ## 0.1.5 — 2026-09-04
 
 - Fix: `static_route_map` failed for long routes because the full-resolution polyline

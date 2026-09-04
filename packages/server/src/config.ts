@@ -1,7 +1,19 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 export interface ServerConfig {
   apiKey: string;
   baseUrl: string;
   timeoutMs: number;
+}
+
+/**
+ * Directory where rendered map images are saved (in addition to being returned inline).
+ * Terminal-based MCP clients such as the Codex CLI cannot display image content, so a
+ * local file path in the result text is the only way for those users to see the map.
+ */
+export function imageOutputDir(env: NodeJS.ProcessEnv = process.env): string {
+  return env.NBAI_IMAGE_DIR?.trim() || join(tmpdir(), 'nextbillion-mcp');
 }
 
 export const DEFAULT_BASE_URL = 'https://api.nextbillion.io';

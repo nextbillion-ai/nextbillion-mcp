@@ -1,4 +1,9 @@
+import { createHash } from 'node:crypto';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import * as z from 'zod/v4';
+import { imageOutputDir } from '../../config.js';
+import { logError } from '../../log.js';
 import type { NbClient } from '../../nbclient/client.js';
 import type { Coordinate } from '../shared/geo.js';
 import type { ToolResult } from '../types.js';
@@ -74,15 +79,43 @@ export async function fetchImageResult(
   query: Record<string, string | undefined>,
   caption: string,
   args: StaticImageArgs,
+  filePrefix = 'map',
 ): Promise<ToolResult> {
   const image = await nb.getBinary(path, query);
   const mimeType = image.contentType.startsWith('image/')
     ? image.contentType
     : MIME_TYPES[args.format ?? 'png']!;
+  const savedPath = await saveImage(image.data, filePrefix, args.format ?? 'png');
+  const location = savedPath
+    ? ` Saved to ${savedPath} (for clients that cannot display images inline).`
+    : '';
   return {
     content: [
       { type: 'image', data: Buffer.from(image.data).toString('base64'), mimeType },
-      { type: 'text', text: caption },
+      { type: 'text', text: caption + location },
     ],
   };
+}
+
+/**
+ * Persist the rendered image locally so terminal clients (which drop inline image
+ * content) can open it. Failures are logged and never fail the tool call.
+ */
+async function saveImage(
+  data: Uint8Array,
+  prefix: string,
+  ext: string,
+): Promise<string | undefined> {
+  try {
+    const dir = imageOutputDir();
+    await mkdir(dir, { recursive: true });
+    const hash = createHash('sha1').update(data).digest('hex').slice(0, 8);
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '');
+    const filePath = join(dir, `${prefix}-${stamp}-${hash}.${ext === 'jpg' ? 'jpg' : ext}`);
+    await writeFile(filePath, data);
+    return filePath;
+  } catch (error) {
+    logError('Could not save rendered image to disk', error);
+    return undefined;
+  }
 }

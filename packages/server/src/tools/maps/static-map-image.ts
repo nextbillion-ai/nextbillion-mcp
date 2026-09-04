@@ -39,6 +39,7 @@ export const staticMapImage: NbTool<typeof Schema> = {
       `Map centered at (${args.center.latitude}, ${args.center.longitude}), zoom ${args.zoom}` +
         (args.markers?.length ? `, ${args.markers.length} marker(s).` : '.'),
       args,
+      'map',
     );
   },
 };

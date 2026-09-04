@@ -115,6 +115,7 @@ export const staticRouteMap: NbTool<typeof Schema> = {
       `Route map rendered${args.markers?.length ? ` with ${args.markers.length} marker(s)` : ''}.` +
         simplificationNote,
       args,
+      'route-map',
     );
   },
 };
