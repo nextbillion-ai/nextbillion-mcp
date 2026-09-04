@@ -6,12 +6,14 @@ import { copyFileSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 const built = 'packages/server/dist/index.js';
-const shipped = 'distributions/claude-code/dist/index.js';
+const shipped = 'distributions/claude-code/dist/index.mjs';
 const sha = (p) => createHash('sha256').update(readFileSync(p)).digest('hex');
 
 if (process.argv.includes('--check')) {
   if (sha(built) !== sha(shipped)) {
-    console.error(`${shipped} is out of date — run: npm run build && node scripts/sync-plugin-bundle.mjs`);
+    console.error(
+      `${shipped} is out of date — run: npm run build && node scripts/sync-plugin-bundle.mjs`,
+    );
     process.exit(1);
   }
   console.log('Plugin bundle matches the build output.');
