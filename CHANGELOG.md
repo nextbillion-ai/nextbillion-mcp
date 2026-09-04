@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.9 — 2026-09-04
+
+- Fix: the Claude Code plugin's bundled server file was excluded from git by the
+  repository-wide `dist/` ignore rule, so plugins installed from GitHub had no server to
+  run (0.1.8 only). The file is now committed and CI fails if it is missing or untracked.
+
 ## 0.1.8 — 2026-09-04
 
 - Root-caused slow/failed first starts: after downloading the package, npx runs npm's

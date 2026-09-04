@@ -1,5 +1,7 @@
 node_modules/
 dist/
+# The Claude Code plugin ships its bundled server; that copy must be committed.
+!distributions/claude-code/dist/
 *.tsbuildinfo
 .env
 .env.*
