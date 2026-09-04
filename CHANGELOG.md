@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.5 — 2026-09-04
+
+- Fix: `static_route_map` failed for long routes because the full-resolution polyline
+  exceeded the Static Images API's 8192-byte GET URL limit (a 600 km route encodes to
+  ~30k characters). The tool now simplifies the display geometry automatically until the
+  URL fits, and says so in the caption; distances/durations come from the directions tool
+  and are unaffected.
+
 ## 0.1.4 — 2026-09-04
 
 - Tool results now mirror the complete API response as JSON inside the text block,

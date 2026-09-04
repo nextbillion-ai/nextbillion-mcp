@@ -68,6 +68,37 @@ describe.skipIf(!apiKey)('live API smoke tests', () => {
     expect(Buffer.from(image!.data, 'base64').length).toBeGreaterThan(45_000);
   });
 
+  it('renders a full-length SF→LA route from the live directions polyline (URL-limit regression)', async () => {
+    const route = await directions.run(
+      {
+        origin: { latitude: 37.7749, longitude: -122.4194 },
+        destination: { latitude: 34.0522, longitude: -118.2437 },
+      },
+      nb,
+    );
+    const polyline = (route.structuredContent as { routes: Array<{ geometry: string }> }).routes[0]!
+      .geometry;
+    expect(polyline.length).toBeGreaterThan(8192); // the raw geometry alone exceeds the URL limit
+
+    const result = await staticRouteMap.run(
+      {
+        encoded_polyline: polyline,
+        markers: [
+          { latitude: 37.7749, longitude: -122.4194 },
+          { latitude: 34.0522, longitude: -118.2437, color: 'red' },
+        ],
+      },
+      nb,
+    );
+    expect(result.isError).toBeFalsy();
+    const image = result.content.find((c) => c.type === 'image') as
+      { type: 'image'; data: string } | undefined;
+    expect(image).toBeTruthy();
+    expect(Buffer.from(image!.data, 'base64').length).toBeGreaterThan(45_000);
+    const caption = (result.content.find((c) => c.type === 'text') as { text: string }).text;
+    expect(caption).toContain('simplified from');
+  });
+
   it('renders a static map image', async () => {
     const result = await staticMapImage.run(
       { center: { latitude: 1.2839, longitude: 103.8607 }, zoom: 12 },

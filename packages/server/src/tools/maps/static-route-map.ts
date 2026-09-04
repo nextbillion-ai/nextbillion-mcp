@@ -7,6 +7,7 @@ import {
   StaticImageShape,
   staticImagePath,
 } from './static-shared.js';
+import { decodePolyline, fitPolylineToBudget } from './polyline.js';
 
 const Schema = z.object({
   encoded_polyline: z
@@ -45,6 +46,11 @@ const Schema = z.object({
   ...StaticImageShape,
 });
 
+/** Stay comfortably under the API's documented 8192-byte URL limit. */
+const URL_BYTE_BUDGET = 8000;
+/** Progressively tighter encoded-polyline budgets tried when the URL is too long. */
+const ENCODED_CHAR_BUDGETS = [4000, 3000, 2000, 1200, 600, 200];
+
 export const staticRouteMap: NbTool<typeof Schema> = {
   name: 'static_route_map',
   title: 'Static Route Map',
@@ -66,22 +72,48 @@ export const staticRouteMap: NbTool<typeof Schema> = {
       `width:${args.stroke_width ?? 4}`,
       'fill:none',
     ];
-    // Path coordinates are `lat,lng`; `enc:` consumes the rest of the parameter value.
-    const geometry = args.encoded_polyline
+    const markers = args.markers?.length ? markerParam(args.markers, 'lat-first') : undefined;
+    const padding = args.padding !== undefined ? String(args.padding) : undefined;
+    const path = staticImagePath('auto', args);
+    const buildQuery = (geometry: string) => ({
+      path: `${styleSegments.join('|')}|${geometry}`,
+      markers,
+      padding,
+    });
+
+    // First try the geometry exactly as given. Path coordinates are `lat,lng`;
+    // `enc:` consumes the rest of the parameter value.
+    let geometry = args.encoded_polyline
       ? `enc:${args.encoded_polyline}`
       : args.route_points!.map((p) => `${p.latitude},${p.longitude}`).join('|');
-    const path = `${styleSegments.join('|')}|${geometry}`;
+    let simplificationNote = '';
+
+    // The Static Images API is GET-only with an 8192-byte URL limit; a long route's
+    // full-resolution polyline blows past it (~50 kB for 600 km). When that happens,
+    // simplify the *display* geometry progressively until the URL fits — the route's
+    // distance/duration come from the directions tool and are unaffected.
+    if (nb.buildUrl(path, buildQuery(geometry)).length > URL_BYTE_BUDGET) {
+      const points = args.encoded_polyline
+        ? decodePolyline(args.encoded_polyline)
+        : args.route_points!;
+      for (const budget of ENCODED_CHAR_BUDGETS) {
+        const fitted = fitPolylineToBudget(points, budget);
+        geometry = `enc:${fitted.encoded}`;
+        if (nb.buildUrl(path, buildQuery(geometry)).length <= URL_BYTE_BUDGET) {
+          simplificationNote =
+            ` Display geometry simplified from ${fitted.originalPointCount} to ` +
+            `${fitted.pointCount} points to fit the map URL limit; distances are unaffected.`;
+          break;
+        }
+      }
+    }
+
     return fetchImageResult(
       nb,
-      staticImagePath('auto', args),
-      {
-        path,
-        // The auto-fit endpoint parses markers lat-first, unlike the center-based
-        // endpoint (see markerParam) — verified live 2026-08-31.
-        markers: args.markers?.length ? markerParam(args.markers, 'lat-first') : undefined,
-        padding: args.padding !== undefined ? String(args.padding) : undefined,
-      },
-      `Route map rendered${args.markers?.length ? ` with ${args.markers.length} marker(s)` : ''}.`,
+      path,
+      buildQuery(geometry),
+      `Route map rendered${args.markers?.length ? ` with ${args.markers.length} marker(s)` : ''}.` +
+        simplificationNote,
       args,
     );
   },
