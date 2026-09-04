@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "nextbillion": {
-      "command": "npx",
-      "args": ["-y", "nextbillion-mcp@0.1.7"],
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/index.js"],
       "env": {
         "NBAI_API_KEY": "${NBAI_API_KEY}"
       }
