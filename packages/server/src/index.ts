@@ -6,7 +6,17 @@ import { buildServer, SERVER_NAME } from './core/server.js';
 import { logError, logInfo } from './log.js';
 import { NbClient } from './nbclient/client.js';
 
-const pkg = createRequire(import.meta.url)('../package.json') as { version: string };
+declare const __NBMCP_VERSION__: string | undefined;
+
+/**
+ * The version is injected by esbuild at build time so the bundled file is fully
+ * standalone (it is also shipped inside the Claude Code plugin, where no package.json
+ * sits next to it). Under tsx/vitest the define is absent and package.json is read.
+ */
+const pkg: { version: string } =
+  typeof __NBMCP_VERSION__ === 'string'
+    ? { version: __NBMCP_VERSION__ }
+    : (createRequire(import.meta.url)('../package.json') as { version: string });
 
 function main(): void {
   const args = process.argv.slice(2);

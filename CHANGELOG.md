@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.8 — 2026-09-04
+
+- Root-caused slow/failed first starts: after downloading the package, npx runs npm's
+  security-audit request (`POST /-/npm/v1/security/advisories/bulk`), which on some
+  networks hangs for minutes while every package download completes in under a second.
+  MCP hosts give up after their ~30 s startup timeout.
+- Claude Code plugin now launches its bundled copy of the server directly
+  (`node ${CLAUDE_PLUGIN_ROOT}/dist/index.mjs`): no npx, no network, no install at startup.
+- All npx-based configuration snippets and the Codex plugin now set
+  `npm_config_audit=false`, `npm_config_fund=false`, `npm_config_update_notifier=false`
+  in the server's environment. Measured cold start: 301 s → 1 s on an affected network.
+- Version is injected at build time so the bundle is fully standalone.
+
 ## 0.1.7 — 2026-09-04
 
 - Ship the server as a single self-contained file with zero runtime dependencies (bundled

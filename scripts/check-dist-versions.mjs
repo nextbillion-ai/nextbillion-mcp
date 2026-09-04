@@ -14,7 +14,8 @@ if (marketplace.plugins[0].version !== serverVersion) {
   );
   process.exit(1);
 }
-const mcpConfigs = ['distributions/claude-code/.mcp.json', 'distributions/codex/.mcp.json'];
+// The Claude Code plugin runs its bundled dist/index.js (no npm pin); only Codex pins npx.
+const mcpConfigs = ['distributions/codex/.mcp.json'];
 
 let failed = false;
 for (const path of manifests) {
