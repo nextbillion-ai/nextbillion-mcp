@@ -66,7 +66,7 @@ underlying API's coordinate-order conventions internally.
 npm install
 npm run typecheck
 npm test          # unit + protocol conformance (no network, no key needed)
-npm run build
+npm run build     # bundles the server into a single zero-dependency dist/index.js
 NBAI_API_KEY=<key> npm run test:e2e   # live-API smoke tests
 ```
 

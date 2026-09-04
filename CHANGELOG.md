@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.7 — 2026-09-04
+
+- Ship the server as a single self-contained file with zero runtime dependencies (bundled
+  with esbuild). Previously `npx nextbillion-mcp` had to resolve and install the MCP SDK
+  and zod on first run, which took minutes on some machines and exceeded MCP hosts'
+  startup timeouts (Codex CLI: 30 s "connection closed"/"timed out"; Claude Code:
+  30000 ms). First start is now a single small tarball download.
+
 ## 0.1.6 — 2026-09-04
 
 - Rendered maps (static_map_image, static_route_map) are now also saved to a local file
