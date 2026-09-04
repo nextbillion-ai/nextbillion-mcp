@@ -7,7 +7,10 @@ it with the snippets below. You need a NextBillion.ai API key from
 ## Claude Code
 
 ```bash
-claude mcp add nextbillion --env NBAI_API_KEY=YOUR_KEY -- npx -y nextbillion-mcp
+claude mcp add nextbillion \
+  --env NBAI_API_KEY=YOUR_KEY \
+  --env npm_config_audit=false --env npm_config_fund=false --env npm_config_update_notifier=false \
+  -- npx -y nextbillion-mcp
 ```
 
 ## Cursor
@@ -20,7 +23,12 @@ Add to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in your project):
     "nextbillion": {
       "command": "npx",
       "args": ["-y", "nextbillion-mcp"],
-      "env": { "NBAI_API_KEY": "YOUR_KEY" }
+      "env": {
+        "NBAI_API_KEY": "YOUR_KEY",
+        "npm_config_audit": "false",
+        "npm_config_fund": "false",
+        "npm_config_update_notifier": "false"
+      }
     }
   }
 }
@@ -38,7 +46,12 @@ Windows: `%APPDATA%\Claude\claude_desktop_config.json`). Add:
     "nextbillion": {
       "command": "npx",
       "args": ["-y", "nextbillion-mcp"],
-      "env": { "NBAI_API_KEY": "YOUR_KEY" }
+      "env": {
+        "NBAI_API_KEY": "YOUR_KEY",
+        "npm_config_audit": "false",
+        "npm_config_fund": "false",
+        "npm_config_update_notifier": "false"
+      }
     }
   }
 }
@@ -57,8 +70,13 @@ Add to `~/.codex/config.toml`:
 [mcp_servers.nextbillion]
 command = "npx"
 args = ["-y", "nextbillion-mcp"]
-env = { "NBAI_API_KEY" = "YOUR_KEY" }
+env = { "NBAI_API_KEY" = "YOUR_KEY", "npm_config_audit" = "false", "npm_config_fund" = "false", "npm_config_update_notifier" = "false" }
 ```
+
+The three `npm_config_*` variables switch off npm's post-install security audit, funding
+notice, and self-update check when npx launches the server. None of them affect the server;
+on some corporate networks the audit request hangs for minutes and MCP clients give up
+after their 30 s startup timeout.
 
 ## Environment variables
 

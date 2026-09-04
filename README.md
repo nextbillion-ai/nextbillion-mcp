@@ -23,8 +23,12 @@ claude plugin install nextbillion-mcp@nextbillion
 [`distributions/manual/README.md`](distributions/manual/README.md). The short version:
 
 ```bash
-NBAI_API_KEY=<your key> npx -y nextbillion-mcp
+NBAI_API_KEY=<your key> npm_config_audit=false npx -y nextbillion-mcp
 ```
+
+(The Claude Code plugin runs a bundled copy of the server directly — no npx, no network at
+startup. For npx-based setups, `npm_config_audit=false` skips npm's post-install audit call,
+which hangs on some networks; see `distributions/manual/README.md`.)
 
 ## Tools
 

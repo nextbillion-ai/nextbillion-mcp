@@ -14,7 +14,12 @@ cursor://anysphere.cursor-deeplink/mcp/install?name=nextbillion&config=<base64 o
 {
   "command": "npx",
   "args": ["-y", "nextbillion-mcp"],
-  "env": { "NBAI_API_KEY": "YOUR_KEY" }
+  "env": {
+    "NBAI_API_KEY": "YOUR_KEY",
+    "npm_config_audit": "false",
+    "npm_config_fund": "false",
+    "npm_config_update_notifier": "false"
+  }
 }
 ```
 
