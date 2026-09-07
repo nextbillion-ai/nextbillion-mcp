@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 import { CoordinateSchema, toLatLngList } from '../shared/geo.js';
 import { READ_ONLY, textResult, type NbTool } from '../types.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   route_points: z
     .array(CoordinateSchema)
     .min(2)

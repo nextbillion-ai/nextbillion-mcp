@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 import { CoordinateSchema, toLatLngList } from '../shared/geo.js';
 import { READ_ONLY, textResult, ToolInputError, type NbTool } from '../types.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   origins: z.array(CoordinateSchema).min(1).max(1000).describe('Start points (matrix rows)'),
   destinations: z.array(CoordinateSchema).min(1).max(1000).describe('End points (matrix columns)'),
   mode: z
@@ -40,7 +40,7 @@ const Schema = z.object({
         'routing through with a warning (flexible service only)',
     ),
   truck_size_cm: z
-    .object({ height: z.number(), width: z.number(), length: z.number() })
+    .strictObject({ height: z.number(), width: z.number(), length: z.number() })
     .optional()
     .describe('Truck dimensions in cm (flexible + mode=truck only)'),
   truck_weight_kg: z

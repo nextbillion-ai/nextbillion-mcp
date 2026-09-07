@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.10 — 2026-09-07
+
+- All tool input schemas are now strict: an unknown or misplaced argument returns a clear
+  validation error naming the key instead of being silently ignored. Previously a model that
+  put `types` at the top level of geocode_batch (it belongs inside each query) got results
+  that quietly ignored the filter.
+- geocode_batch accepts a top-level `types` as the default for all queries (per-query `types`
+  still overrides), and its description points out the per-query field.
+
 ## 0.1.9 — 2026-09-04
 
 - Fix: the Claude Code plugin's bundled server file was excluded from git by the

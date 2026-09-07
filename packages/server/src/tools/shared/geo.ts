@@ -7,7 +7,7 @@ import { ToolInputError } from '../types.js';
  * `[lng,lat]`; keeping one input shape and serializing internally protects the
  * model from the ordering traps.
  */
-export const CoordinateSchema = z.object({
+export const CoordinateSchema = z.strictObject({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
 });
@@ -22,7 +22,7 @@ export function toLatLngList(coordinates: Coordinate[]): string {
   return coordinates.map(toLatLng).join('|');
 }
 
-export const BoundingBoxSchema = z.object({
+export const BoundingBoxSchema = z.strictObject({
   west: z.number().min(-180).max(180).describe('Western longitude'),
   south: z.number().min(-90).max(90).describe('Southern latitude'),
   east: z.number().min(-180).max(180).describe('Eastern longitude'),

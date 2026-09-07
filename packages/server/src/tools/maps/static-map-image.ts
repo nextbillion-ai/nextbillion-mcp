@@ -8,7 +8,7 @@ import {
   staticImagePath,
 } from './static-shared.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   center: CoordinateSchema.describe('Center of the map view'),
   zoom: z
     .number()

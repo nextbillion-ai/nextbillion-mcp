@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 import { CoordinateSchema } from '../shared/geo.js';
 import { READ_ONLY, textResult, ToolInputError, type NbTool } from '../types.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   postal_code: z
     .string()
     .optional()

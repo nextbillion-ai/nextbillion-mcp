@@ -72,6 +72,19 @@ describe('MCP conformance', () => {
     expect(requests[0]!.url.pathname).toBe('/geocode');
   });
 
+  it('rejects unknown arguments loudly instead of silently dropping them', async () => {
+    // A model that puts `types` at the top level of geocode_forward (it belongs per query in
+    // geocode_batch) must get an error naming the key, not a result that ignored the filter.
+    const result = await client.callTool({
+      name: 'geocode_reverse',
+      arguments: { coordinate: { latitude: 1, longitude: 2 }, types: ['addressBlock'] },
+    });
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ type: string; text?: string }>)[0]?.text ?? '';
+    expect(text).toMatch(/types/);
+    expect(requests).toHaveLength(0);
+  });
+
   it('rejects schema-invalid arguments as an in-band tool error', async () => {
     const result = await client.callTool({
       name: 'geocode_forward',

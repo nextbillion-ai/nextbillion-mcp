@@ -9,7 +9,7 @@ import {
 } from './static-shared.js';
 import { decodePolyline, fitPolylineToBudget } from './polyline.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   encoded_polyline: z
     .string()
     .optional()

@@ -153,6 +153,23 @@ describe('places parameter mapping', () => {
     expect(requests[0]!.body).toEqual([{ q: 'a', types: 'houseNumber' }]);
   });
 
+  it('geocode_batch applies a top-level types default unless a query overrides it', async () => {
+    const { nb, requests } = fakeNbClient({
+      responses: [{ body: [{ items: [] }, { items: [] }] }],
+    });
+    await geocodeBatch.run(
+      {
+        queries: [{ query: 'a' }, { query: 'b', types: ['houseNumber'] }],
+        types: ['addressBlock'],
+      },
+      nb,
+    );
+    expect(requests[0]!.body).toEqual([
+      { q: 'a', types: 'addressBlock' },
+      { q: 'b', types: 'houseNumber' },
+    ]);
+  });
+
   it('postcode_lookup validates its exclusive inputs', async () => {
     const { nb } = fakeNbClient();
     await expect(postcodeLookup.run({ postal_code: '90011' }, nb)).rejects.toBeInstanceOf(
