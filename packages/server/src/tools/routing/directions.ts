@@ -87,9 +87,17 @@ export const directions: NbTool<typeof Schema> = {
   name: 'directions',
   title: 'Directions',
   description:
-    'Calculate a route between two points with optional intermediate waypoints. Returns distance ' +
-    '(meters), duration (seconds), and encoded polyline geometry per route; pass the geometry to ' +
-    'static_route_map to render it. Traffic-aware.',
+    'Calculate a route between an origin and a destination with optional waypoints; returns ' +
+    'distance (meters), duration (seconds) and an encoded polyline per route - pass the ' +
+    'polyline to static_route_map to draw it. Use distance_matrix for many origin/destination ' +
+    'pairs. Parameters: origin, destination {latitude, longitude} (required); optional ' +
+    'waypoints (array of {latitude, longitude}, max 200), mode (car | truck | motorcycle | ' +
+    'bike | walk), service ("flexible" default: all modes, route_type, departure_time, full ' +
+    'avoid list and truck options; "fast": car/truck only, lower latency), route_type, ' +
+    'departure_time (UNIX seconds), avoid (array), honor_restrictions, alternatives, steps ' +
+    '(fast only), geometry (polyline default | polyline6), truck_size_cm {height, width, ' +
+    'length}, truck_weight_kg. Example: {"origin": {"latitude": 37.7749, "longitude": ' +
+    '-122.4194}, "destination": {"latitude": 34.0522, "longitude": -118.2437}, "mode": "car"}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {

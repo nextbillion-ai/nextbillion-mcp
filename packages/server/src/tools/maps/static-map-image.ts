@@ -26,8 +26,14 @@ export const staticMapImage: NbTool<typeof Schema> = {
   name: 'static_map_image',
   title: 'Static Map Image',
   description:
-    'Render a static map image centered on a location, with optional markers. Returns the image ' +
-    'directly. To draw a route on a map use static_route_map instead.',
+    'Render a static map image centered on a location, optionally with markers; returns the ' +
+    'image inline and also saves it to a local file (path in the result text) for clients ' +
+    'that cannot display images. To draw a route, use static_route_map. Parameters: center ' +
+    '{latitude, longitude} and zoom (0-22) (required); optional markers (array of {latitude, ' +
+    'longitude, color}), width, height (default 512), style (streets | light | dark | ' +
+    'hybrid), format (png | jpg | webp), retina. Example: {"center": {"latitude": 48.8566, ' +
+    '"longitude": 2.3522}, "zoom": 14, "style": "dark", "markers": [{"latitude": 48.8584, ' +
+    '"longitude": 2.2945, "color": "red"}]}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {

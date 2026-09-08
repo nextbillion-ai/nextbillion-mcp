@@ -32,10 +32,14 @@ export const searchAlongRoute: NbTool<typeof Schema> = {
   name: 'search_along_route',
   title: 'Search Along Route',
   description:
-    'Find places (POIs) matching a text query along a driving route, with the detour time and ' +
-    'distance each stop adds. Pass the route as an ordered list of waypoints — e.g. the ' +
-    'origin/waypoints/destination used with the directions tool. Ideal for "find X on the way" ' +
-    'questions.',
+    'Find places matching a text query along a driving route, with the detour time and ' +
+    'distance each stop adds - for "find X on the way" questions. Pass the route as an ' +
+    'ordered list of waypoints, e.g. the origin, waypoints and destination used with ' +
+    'directions. Parameters: route_points (array of {latitude, longitude}, at least 2, ' +
+    'required), query (required); optional max_detour_seconds (default 900, max 3600), ' +
+    'sort_by (detour_time | detour_offset), limit (max 20). Example: {"route_points": ' +
+    '[{"latitude": 34.0493, "longitude": -118.2557}, {"latitude": 34.0415, "longitude": ' +
+    '-118.231}], "query": "gas station", "max_detour_seconds": 600}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {

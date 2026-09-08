@@ -31,10 +31,13 @@ export const geocodeStructured: NbTool<typeof Schema> = {
   name: 'geocode_structured',
   title: 'Structured Geocode',
   description:
-    'Geocode an address given as separate structured fields (country, state, city, street, ' +
-    'house number, postal code) instead of one free-text string. Searches addresses and ' +
-    'administrative areas only — no POIs. Use when the address components are already known ' +
-    'and precision matters; otherwise use geocode_forward.',
+    'Geocode an address given as separate fields instead of one string; searches addresses ' +
+    'and administrative areas only, never POIs. Use when the components are already known and ' +
+    'precision matters; otherwise use geocode_forward. Parameters: country_code (required, ' +
+    'ISO 3166-1 alpha-3) plus at least one of state, county, city, suburb, neighborhood, ' +
+    'street, house_number, postal_code; optional near {latitude, longitude}, limit, types, ' +
+    'view. Example: {"country_code": "GBR", "city": "London", "street": "Baker Street", ' +
+    '"house_number": "221B"}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {

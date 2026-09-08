@@ -11,9 +11,10 @@ export const placeLookup: NbTool<typeof Schema> = {
   name: 'place_lookup',
   title: 'Place Lookup',
   description:
-    'Fetch the full details (address, position, access points, categories, contacts) of a place ' +
-    'by its unique id. Ids come from the results of place_search, geocode_forward, autosuggest, ' +
-    'autocomplete, or search_along_route.',
+    'Fetch the full details of a place (address, position, access points, categories, ' +
+    'contacts) by its unique id, as returned by place_search, geocode_forward, autosuggest, ' +
+    'autocomplete or search_along_route. Parameters: id (required); optional view. Example: ' +
+    '{"id": "2EmBgAmFpR9dg0D89EBzNA"}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {
