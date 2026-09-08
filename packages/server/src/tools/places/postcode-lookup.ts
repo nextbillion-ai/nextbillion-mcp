@@ -32,8 +32,13 @@ export const postcodeLookup: NbTool<typeof Schema> = {
   name: 'postcode_lookup',
   title: 'Postcode Lookup',
   description:
-    'Get the centroid and boundary polygon of a postal/ZIP code, or find which postal code a ' +
-    `coordinate belongs to. One lookup per call. Supported countries: ${SUPPORTED_COUNTRIES}.`,
+    'Get the centroid and boundary polygon of a postal/ZIP code, or find the postal code that ' +
+    'contains a coordinate; one lookup per call. Supported countries: USA, India, UK, ' +
+    'Netherlands, Austria, Germany, Indonesia, France, Singapore, Philippines, Canada, ' +
+    'Australia, New Zealand, Italy, Brazil, Mexico, Spain. Parameters: either postal_code ' +
+    'plus country (name, alpha-2 or alpha-3 code), or coordinate {latitude, longitude}; ' +
+    'optional geojson_boundary (true for a GeoJSON boundary). Example: {"postal_code": ' +
+    '"90011", "country": "USA"}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {

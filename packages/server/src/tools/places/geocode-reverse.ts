@@ -21,8 +21,10 @@ export const geocodeReverse: NbTool<typeof Schema> = {
   name: 'geocode_reverse',
   title: 'Reverse Geocode',
   description:
-    'Find the nearest address for a geographic coordinate. Returns the full postal address, ' +
-    'the matched position, and a bounding box.',
+    'Find the nearest address for a coordinate; returns the full postal address, the matched ' +
+    'position and a bounding box. Parameters: coordinate {latitude, longitude} (required); ' +
+    'optional country_codes, bounding_box {west, south, east, north}, language, view. ' +
+    'Example: {"coordinate": {"latitude": 48.8566, "longitude": 2.3522}}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {

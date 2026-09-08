@@ -20462,7 +20462,7 @@ var ForwardGeocodeSchema = strictObject({
 var geocodeForward = {
   name: "geocode_forward",
   title: "Forward Geocode",
-  description: "Convert a free-text address, place name, locality, or administrative area into geographic coordinates and a complete postal address. Tolerates incomplete or partly incorrect queries. Provide `near`, `country_codes`, or `bounding_box` for more relevant results. For many addresses at once use geocode_batch; for POI/business search use place_search.",
+  description: 'Convert a free-text address, place name, locality or administrative area into coordinates and a full postal address; tolerates incomplete or partly wrong input. Use geocode_batch for many addresses, place_search for POIs/businesses, geocode_structured when the address components are already separated. Parameters: query (required); optional near {latitude, longitude} or country_codes (strongly recommended - landmark names rank poorly without a location bias), radius_m (with near), bounding_box {west, south, east, north}, limit, language, view, types (houseNumber | addressBlock | street | intersection | place | area). Example: {"query": "1600 Pennsylvania Avenue NW, Washington DC", "country_codes": ["USA"], "limit": 1}',
   inputSchema: ForwardGeocodeSchema,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20477,21 +20477,21 @@ var geocodeForward = {
 var placeSearch = textSearchTool({
   name: "place_search",
   title: "Search Places",
-  description: 'Search for places, points of interest, and businesses with a free-text query (e.g. "gas station", "coffee near the station"), ranked by relevance. Provide `near`, `country_codes`, or `bounding_box` to anchor the search. For plain address-to-coordinates conversion use geocode_forward instead.',
+  description: 'Search for places, points of interest and businesses with a free-text query (e.g. "gas station", "coffee"), ranked by relevance around a location. Use geocode_forward for plain address-to-coordinates conversion. Parameters: query (required); optional near {latitude, longitude} (recommended), radius_m (with near), country_codes, bounding_box {west, south, east, north}, limit, language, view. Example: {"query": "coffee", "near": {"latitude": 37.7749, "longitude": -122.4194}, "radius_m": 1000, "limit": 5}',
   path: "/discover",
   noun: "place"
 });
 var autosuggest = textSearchTool({
   name: "autosuggest",
   title: "Autosuggest",
-  description: 'Suggest address and place candidates from an incomplete or misspelled query (typo-tolerant, e.g. "aqaurium" still matches aquariums). Intended for search-as-you-type experiences. For prefix completion of valid addresses use autocomplete.',
+  description: 'Suggest address and place candidates from an incomplete or misspelled query (typo-tolerant, e.g. "aqaurium" still matches aquariums). Use for search-as-you-type; use autocomplete for strict prefix completion of valid addresses. Parameters: query (required); optional near {latitude, longitude}, radius_m (with near), country_codes, bounding_box {west, south, east, north}, limit, language, view. Example: {"query": "aqauriums", "near": {"latitude": 42.3501, "longitude": -71.0689}, "limit": 5}',
   path: "/autosuggest",
   noun: "suggestion"
 });
 var autocomplete = textSearchTool({
   name: "autocomplete",
   title: "Autocomplete",
-  description: 'Complete valid street addresses and administrative areas from a partial query prefix (e.g. "stat" \u2192 "State Capitol\u2026"). For typo-tolerant fuzzy suggestions use autosuggest.',
+  description: 'Complete a partial address or administrative-area prefix into full valid addresses (e.g. "stat" -> "State Capitol, ..."). Use for prefix completion as the user types; use autosuggest for typo-tolerant fuzzy suggestions and geocode_forward for a full address. Parameters: query (required); optional near {latitude, longitude}, radius_m (with near), country_codes, bounding_box {west, south, east, north}, limit, language, view. Example: {"query": "stat", "near": {"latitude": 35.4769, "longitude": -97.4872}, "limit": 5}',
   path: "/autocomplete",
   noun: "completion"
 });
@@ -20511,7 +20511,7 @@ var Schema = strictObject({
 var geocodeBatch = {
   name: "geocode_batch",
   title: "Batch Geocode",
-  description: 'Forward-geocode up to 100 free-text queries in one request; returns one ranked result set per query, in input order. Strongly prefer this over repeated geocode_forward calls when resolving several addresses \u2014 this endpoint has a dedicated (low) rate limit of 60 requests per minute, so batch as much as possible into each call. Each query object accepts the same filters as geocode_forward \u2014 near, radius_m, country_codes, bounding_box, limit, language, view, and types \u2014 for example: {"queries": [{"query": "600-699 Golden Gate Ave, San Francisco, CA", "types": ["addressBlock"]}]}. A top-level `types` sets the default for all queries.',
+  description: 'Forward-geocode up to 100 free-text queries in one request; returns one ranked result set per query, in input order. Prefer this over repeated geocode_forward calls - this endpoint has its own low rate limit (60 requests per minute), so batch as much as possible into each call. Parameters: queries (required array; each item: query (required), optional near {latitude, longitude}, radius_m, country_codes, bounding_box, limit, language, view, types); optional top-level types (houseNumber | addressBlock | street | intersection | place | area) as the default for all queries (a per-query types overrides it). Example: {"queries": [{"query": "600-699 Golden Gate Ave, San Francisco, CA", "types": ["addressBlock"]}, {"query": "Empire State Building", "country_codes": ["USA"]}]}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20554,7 +20554,7 @@ var Schema2 = strictObject({
 var geocodeReverse = {
   name: "geocode_reverse",
   title: "Reverse Geocode",
-  description: "Find the nearest address for a geographic coordinate. Returns the full postal address, the matched position, and a bounding box.",
+  description: 'Find the nearest address for a coordinate; returns the full postal address, the matched position and a bounding box. Parameters: coordinate {latitude, longitude} (required); optional country_codes, bounding_box {west, south, east, north}, language, view. Example: {"coordinate": {"latitude": 48.8566, "longitude": 2.3522}}',
   inputSchema: Schema2,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20588,7 +20588,7 @@ var Schema3 = strictObject({
 var geocodeStructured = {
   name: "geocode_structured",
   title: "Structured Geocode",
-  description: "Geocode an address given as separate structured fields (country, state, city, street, house number, postal code) instead of one free-text string. Searches addresses and administrative areas only \u2014 no POIs. Use when the address components are already known and precision matters; otherwise use geocode_forward.",
+  description: 'Geocode an address given as separate fields instead of one string; searches addresses and administrative areas only, never POIs. Use when the components are already known and precision matters; otherwise use geocode_forward. Parameters: country_code (required, ISO 3166-1 alpha-3) plus at least one of state, county, city, suburb, neighborhood, street, house_number, postal_code; optional near {latitude, longitude}, limit, types, view. Example: {"country_code": "GBR", "city": "London", "street": "Baker Street", "house_number": "221B"}',
   inputSchema: Schema3,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20625,7 +20625,7 @@ var Schema4 = strictObject({
 var placeLookup = {
   name: "place_lookup",
   title: "Place Lookup",
-  description: "Fetch the full details (address, position, access points, categories, contacts) of a place by its unique id. Ids come from the results of place_search, geocode_forward, autosuggest, autocomplete, or search_along_route.",
+  description: 'Fetch the full details of a place (address, position, access points, categories, contacts) by its unique id, as returned by place_search, geocode_forward, autosuggest, autocomplete or search_along_route. Parameters: id (required); optional view. Example: {"id": "2EmBgAmFpR9dg0D89EBzNA"}',
   inputSchema: Schema4,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20650,11 +20650,10 @@ var Schema5 = strictObject({
     "Return the boundary polygon in GeoJSON format instead of the default point-list format"
   )
 });
-var SUPPORTED_COUNTRIES = "USA, India, UK, Netherlands, Austria, Germany, Indonesia, France, Singapore, Philippines, Canada, Australia, New Zealand, Italy, Brazil, Mexico, Spain";
 var postcodeLookup = {
   name: "postcode_lookup",
   title: "Postcode Lookup",
-  description: `Get the centroid and boundary polygon of a postal/ZIP code, or find which postal code a coordinate belongs to. One lookup per call. Supported countries: ${SUPPORTED_COUNTRIES}.`,
+  description: 'Get the centroid and boundary polygon of a postal/ZIP code, or find the postal code that contains a coordinate; one lookup per call. Supported countries: USA, India, UK, Netherlands, Austria, Germany, Indonesia, France, Singapore, Philippines, Canada, Australia, New Zealand, Italy, Brazil, Mexico, Spain. Parameters: either postal_code plus country (name, alpha-2 or alpha-3 code), or coordinate {latitude, longitude}; optional geojson_boundary (true for a GeoJSON boundary). Example: {"postal_code": "90011", "country": "USA"}',
   inputSchema: Schema5,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20727,7 +20726,7 @@ var Schema6 = strictObject({
 var directions = {
   name: "directions",
   title: "Directions",
-  description: "Calculate a route between two points with optional intermediate waypoints. Returns distance (meters), duration (seconds), and encoded polyline geometry per route; pass the geometry to static_route_map to render it. Traffic-aware.",
+  description: 'Calculate a route between an origin and a destination with optional waypoints; returns distance (meters), duration (seconds) and an encoded polyline per route - pass the polyline to static_route_map to draw it. Use distance_matrix for many origin/destination pairs. Parameters: origin, destination {latitude, longitude} (required); optional waypoints (array of {latitude, longitude}, max 200), mode (car | truck | motorcycle | bike | walk), service ("flexible" default: all modes, route_type, departure_time, full avoid list and truck options; "fast": car/truck only, lower latency), route_type, departure_time (UNIX seconds), avoid (array), honor_restrictions, alternatives, steps (fast only), geometry (polyline default | polyline6), truck_size_cm {height, width, length}, truck_weight_kg. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "destination": {"latitude": 34.0522, "longitude": -118.2437}, "mode": "car"}',
   inputSchema: Schema6,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20791,7 +20790,7 @@ var Schema7 = strictObject({
 var distanceMatrix = {
   name: "distance_matrix",
   title: "Distance Matrix",
-  description: "Compute travel distances (meters) and durations (seconds) for every origin\u2192destination pair in one call (one-to-many or many-to-many). Far more efficient than repeated directions calls \u2014 always prefer this for multiple pairs. Response has one row per origin with one element per destination, in input order.",
+  description: 'Compute travel distance (meters) and duration (seconds) for every origin-to-destination pair in one call; one row per origin with one element per destination, in input order. Always prefer this over repeated directions calls for multiple pairs. Parameters: origins, destinations (arrays of {latitude, longitude}, required); optional mode, service ("fast" default: up to 1000x1000 points; "flexible": departure_time, route_type, truck options and more modes, max 50x50), route_type, departure_time, avoid, honor_restrictions, truck_size_cm {height, width, length}, truck_weight_kg. Example: {"origins": [{"latitude": 1.29, "longitude": 103.85}], "destinations": [{"latitude": 1.35, "longitude": 103.99}, {"latitude": 1.3, "longitude": 103.77}]}',
   inputSchema: Schema7,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20842,7 +20841,7 @@ var Schema8 = strictObject({
 var isochrone = {
   name: "isochrone",
   title: "Isochrone",
-  description: "Calculate the area reachable from a point within given travel time(s) or distance(s). Returns a GeoJSON FeatureCollection of contours. Note: contour geometry coordinates are GeoJSON [longitude, latitude] order.",
+  description: 'Calculate the area reachable from a point within given travel times or distances; returns a GeoJSON FeatureCollection of contours (geometry coordinates are in GeoJSON [longitude, latitude] order). Parameters: origin {latitude, longitude} (required); exactly one of contours_minutes (array, up to 4 values, max 40) or contours_meters (array, up to 4 values, max 60000); optional mode, polygons (true for Polygon geometry instead of LineString), denoise, departure_time. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "contours_minutes": [5, 10], "polygons": true}',
   inputSchema: Schema8,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20882,7 +20881,7 @@ var Schema9 = strictObject({
 var searchAlongRoute = {
   name: "search_along_route",
   title: "Search Along Route",
-  description: 'Find places (POIs) matching a text query along a driving route, with the detour time and distance each stop adds. Pass the route as an ordered list of waypoints \u2014 e.g. the origin/waypoints/destination used with the directions tool. Ideal for "find X on the way" questions.',
+  description: 'Find places matching a text query along a driving route, with the detour time and distance each stop adds - for "find X on the way" questions. Pass the route as an ordered list of waypoints, e.g. the origin, waypoints and destination used with directions. Parameters: route_points (array of {latitude, longitude}, at least 2, required), query (required); optional max_detour_seconds (default 900, max 3600), sort_by (detour_time | detour_offset), limit (max 20). Example: {"route_points": [{"latitude": 34.0493, "longitude": -118.2557}, {"latitude": 34.0415, "longitude": -118.231}], "query": "gas station", "max_detour_seconds": 600}',
   inputSchema: Schema9,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -20989,7 +20988,7 @@ var Schema10 = strictObject({
 var staticMapImage = {
   name: "static_map_image",
   title: "Static Map Image",
-  description: "Render a static map image centered on a location, with optional markers. Returns the image directly. To draw a route on a map use static_route_map instead.",
+  description: 'Render a static map image centered on a location, optionally with markers; returns the image inline and also saves it to a local file (path in the result text) for clients that cannot display images. To draw a route, use static_route_map. Parameters: center {latitude, longitude} and zoom (0-22) (required); optional markers (array of {latitude, longitude, color}), width, height (default 512), style (streets | light | dark | hybrid), format (png | jpg | webp), retina. Example: {"center": {"latitude": 48.8566, "longitude": 2.3522}, "zoom": 14, "style": "dark", "markers": [{"latitude": 48.8584, "longitude": 2.2945, "color": "red"}]}',
   inputSchema: Schema10,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -21126,7 +21125,7 @@ var ENCODED_CHAR_BUDGETS = [4e3, 3e3, 2e3, 1200, 600, 200];
 var staticRouteMap = {
   name: "static_route_map",
   title: "Static Route Map",
-  description: "Render a static map image with a route drawn on it, auto-fitted to show the whole route. Pass the encoded polyline from the directions tool (preferred), or a list of route points. Returns the image directly.",
+  description: 'Render a static map with a route drawn on it, auto-fitted to show the whole route; very long routes are simplified automatically to fit the map API URL limit (distances are unaffected). Returns the image inline and also saves it to a local file (path in the result text). Parameters: exactly one of encoded_polyline (the geometry string from directions, preferred) or route_points (array of {latitude, longitude}); optional markers (array of {latitude, longitude, color}, e.g. origin and destination), stroke_color, stroke_width, padding, width, height, style, format, retina. Example: {"encoded_polyline": "<geometry from directions>", "markers": [{"latitude": 37.7749, "longitude": -122.4194, "color": "green"}, {"latitude": 34.0522, "longitude": -118.2437, "color": "red"}]}',
   inputSchema: Schema11,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -21354,7 +21353,7 @@ function extractApiMessage(bodyText) {
 }
 
 // src/index.ts
-var pkg = true ? { version: "0.1.10" } : createRequire(import.meta.url)("../package.json");
+var pkg = true ? { version: "0.1.11" } : createRequire(import.meta.url)("../package.json");
 function main() {
   const args = process.argv.slice(2);
   if (args.includes("--version") || args.includes("-v")) {

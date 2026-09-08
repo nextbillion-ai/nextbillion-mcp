@@ -38,6 +38,14 @@ describe('tool registry', () => {
     ]);
   });
 
+  it('every description states its parameters and includes an example call', () => {
+    for (const tool of ALL_TOOLS) {
+      expect(tool.description, tool.name).toMatch(/Parameters:/);
+      expect(tool.description, tool.name).toMatch(/Example: \{/);
+      expect(tool.description.length, tool.name).toBeLessThan(1200);
+    }
+  });
+
   it('marks every tool read-only', () => {
     for (const tool of ALL_TOOLS) {
       expect(tool.annotations?.readOnlyHint, tool.name).toBe(true);

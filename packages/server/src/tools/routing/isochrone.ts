@@ -41,9 +41,13 @@ export const isochrone: NbTool<typeof Schema> = {
   name: 'isochrone',
   title: 'Isochrone',
   description:
-    'Calculate the area reachable from a point within given travel time(s) or distance(s). ' +
-    'Returns a GeoJSON FeatureCollection of contours. Note: contour geometry coordinates are ' +
-    'GeoJSON [longitude, latitude] order.',
+    'Calculate the area reachable from a point within given travel times or distances; ' +
+    'returns a GeoJSON FeatureCollection of contours (geometry coordinates are in GeoJSON ' +
+    '[longitude, latitude] order). Parameters: origin {latitude, longitude} (required); ' +
+    'exactly one of contours_minutes (array, up to 4 values, max 40) or contours_meters ' +
+    '(array, up to 4 values, max 60000); optional mode, polygons (true for Polygon geometry ' +
+    'instead of LineString), denoise, departure_time. Example: {"origin": {"latitude": ' +
+    '37.7749, "longitude": -122.4194}, "contours_minutes": [5, 10], "polygons": true}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {

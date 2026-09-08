@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.11 — 2026-09-08
+
+- All 15 tool descriptions rewritten to one standard: what the tool does, when to use it
+  (and which sibling tool to use instead), its parameters including nested objects, and one
+  example call. A unit test enforces the standard. Motivation: the description is the primary
+  guidance a model reads; a nested per-query field that the description never mentioned was
+  misplaced by a model in production use.
+
 ## 0.1.10 — 2026-09-07
 
 - All tool input schemas are now strict: an unknown or misplaced argument returns a clear

@@ -55,10 +55,15 @@ export const distanceMatrix: NbTool<typeof Schema> = {
   name: 'distance_matrix',
   title: 'Distance Matrix',
   description:
-    'Compute travel distances (meters) and durations (seconds) for every origin→destination ' +
-    'pair in one call (one-to-many or many-to-many). Far more efficient than repeated ' +
-    'directions calls — always prefer this for multiple pairs. Response has one row per origin ' +
-    'with one element per destination, in input order.',
+    'Compute travel distance (meters) and duration (seconds) for every origin-to-destination ' +
+    'pair in one call; one row per origin with one element per destination, in input order. ' +
+    'Always prefer this over repeated directions calls for multiple pairs. Parameters: ' +
+    'origins, destinations (arrays of {latitude, longitude}, required); optional mode, ' +
+    'service ("fast" default: up to 1000x1000 points; "flexible": departure_time, route_type, ' +
+    'truck options and more modes, max 50x50), route_type, departure_time, avoid, ' +
+    'honor_restrictions, truck_size_cm {height, width, length}, truck_weight_kg. Example: ' +
+    '{"origins": [{"latitude": 1.29, "longitude": 103.85}], "destinations": [{"latitude": ' +
+    '1.35, "longitude": 103.99}, {"latitude": 1.3, "longitude": 103.77}]}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {

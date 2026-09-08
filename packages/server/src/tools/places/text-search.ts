@@ -51,10 +51,15 @@ export const geocodeForward: NbTool<typeof ForwardGeocodeSchema> = {
   name: 'geocode_forward',
   title: 'Forward Geocode',
   description:
-    'Convert a free-text address, place name, locality, or administrative area into geographic ' +
-    'coordinates and a complete postal address. Tolerates incomplete or partly incorrect queries. ' +
-    'Provide `near`, `country_codes`, or `bounding_box` for more relevant results. ' +
-    'For many addresses at once use geocode_batch; for POI/business search use place_search.',
+    'Convert a free-text address, place name, locality or administrative area into ' +
+    'coordinates and a full postal address; tolerates incomplete or partly wrong input. Use ' +
+    'geocode_batch for many addresses, place_search for POIs/businesses, geocode_structured ' +
+    'when the address components are already separated. Parameters: query (required); ' +
+    'optional near {latitude, longitude} or country_codes (strongly recommended - landmark ' +
+    'names rank poorly without a location bias), radius_m (with near), bounding_box {west, ' +
+    'south, east, north}, limit, language, view, types (houseNumber | addressBlock | street | ' +
+    'intersection | place | area). Example: {"query": "1600 Pennsylvania Avenue NW, ' +
+    'Washington DC", "country_codes": ["USA"], "limit": 1}',
   inputSchema: ForwardGeocodeSchema,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -71,10 +76,12 @@ export const placeSearch = textSearchTool({
   name: 'place_search',
   title: 'Search Places',
   description:
-    'Search for places, points of interest, and businesses with a free-text query (e.g. ' +
-    '"gas station", "coffee near the station"), ranked by relevance. Provide `near`, ' +
-    '`country_codes`, or `bounding_box` to anchor the search. For plain address-to-coordinates ' +
-    'conversion use geocode_forward instead.',
+    'Search for places, points of interest and businesses with a free-text query (e.g. "gas ' +
+    'station", "coffee"), ranked by relevance around a location. Use geocode_forward for ' +
+    'plain address-to-coordinates conversion. Parameters: query (required); optional near ' +
+    '{latitude, longitude} (recommended), radius_m (with near), country_codes, bounding_box ' +
+    '{west, south, east, north}, limit, language, view. Example: {"query": "coffee", "near": ' +
+    '{"latitude": 37.7749, "longitude": -122.4194}, "radius_m": 1000, "limit": 5}',
   path: '/discover',
   noun: 'place',
 });
@@ -83,9 +90,12 @@ export const autosuggest = textSearchTool({
   name: 'autosuggest',
   title: 'Autosuggest',
   description:
-    'Suggest address and place candidates from an incomplete or misspelled query (typo-tolerant, ' +
-    'e.g. "aqaurium" still matches aquariums). Intended for search-as-you-type experiences. ' +
-    'For prefix completion of valid addresses use autocomplete.',
+    'Suggest address and place candidates from an incomplete or misspelled query ' +
+    '(typo-tolerant, e.g. "aqaurium" still matches aquariums). Use for search-as-you-type; ' +
+    'use autocomplete for strict prefix completion of valid addresses. Parameters: query ' +
+    '(required); optional near {latitude, longitude}, radius_m (with near), country_codes, ' +
+    'bounding_box {west, south, east, north}, limit, language, view. Example: {"query": ' +
+    '"aqauriums", "near": {"latitude": 42.3501, "longitude": -71.0689}, "limit": 5}',
   path: '/autosuggest',
   noun: 'suggestion',
 });
@@ -94,8 +104,12 @@ export const autocomplete = textSearchTool({
   name: 'autocomplete',
   title: 'Autocomplete',
   description:
-    'Complete valid street addresses and administrative areas from a partial query prefix ' +
-    '(e.g. "stat" → "State Capitol…"). For typo-tolerant fuzzy suggestions use autosuggest.',
+    'Complete a partial address or administrative-area prefix into full valid addresses (e.g. ' +
+    '"stat" -> "State Capitol, ..."). Use for prefix completion as the user types; use ' +
+    'autosuggest for typo-tolerant fuzzy suggestions and geocode_forward for a full address. ' +
+    'Parameters: query (required); optional near {latitude, longitude}, radius_m (with near), ' +
+    'country_codes, bounding_box {west, south, east, north}, limit, language, view. Example: ' +
+    '{"query": "stat", "near": {"latitude": 35.4769, "longitude": -97.4872}, "limit": 5}',
   path: '/autocomplete',
   noun: 'completion',
 });

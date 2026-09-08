@@ -55,9 +55,16 @@ export const staticRouteMap: NbTool<typeof Schema> = {
   name: 'static_route_map',
   title: 'Static Route Map',
   description:
-    'Render a static map image with a route drawn on it, auto-fitted to show the whole route. ' +
-    'Pass the encoded polyline from the directions tool (preferred), or a list of route points. ' +
-    'Returns the image directly.',
+    'Render a static map with a route drawn on it, auto-fitted to show the whole route; very ' +
+    'long routes are simplified automatically to fit the map API URL limit (distances are ' +
+    'unaffected). Returns the image inline and also saves it to a local file (path in the ' +
+    'result text). Parameters: exactly one of encoded_polyline (the geometry string from ' +
+    'directions, preferred) or route_points (array of {latitude, longitude}); optional ' +
+    'markers (array of {latitude, longitude, color}, e.g. origin and destination), ' +
+    'stroke_color, stroke_width, padding, width, height, style, format, retina. Example: ' +
+    '{"encoded_polyline": "<geometry from directions>", "markers": [{"latitude": 37.7749, ' +
+    '"longitude": -122.4194, "color": "green"}, {"latitude": 34.0522, "longitude": -118.2437, ' +
+    '"color": "red"}]}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {
