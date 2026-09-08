@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 import { CoordinateSchema, toLatLng } from '../shared/geo.js';
 import { READ_ONLY, textResult, ToolInputError, type NbTool } from '../types.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   origin: CoordinateSchema.describe('Starting point of the reachability analysis'),
   contours_minutes: z
     .array(z.number().int().min(1).max(40))

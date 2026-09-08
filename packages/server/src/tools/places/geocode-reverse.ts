@@ -9,7 +9,7 @@ import {
 } from '../shared/geo.js';
 import { READ_ONLY, textResult, type NbTool } from '../types.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   coordinate: CoordinateSchema.describe('The location to reverse geocode'),
   country_codes: CountryCodesSchema.optional(),
   bounding_box: BoundingBoxSchema.optional().describe('Hard-limit results to this bounding box'),

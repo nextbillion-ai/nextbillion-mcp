@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 import { summarizePlaces, ViewSchema } from '../shared/geo.js';
 import { READ_ONLY, textResult, type NbTool } from '../types.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   id: z.string().min(1).describe('Unique place id, as returned by the other place/geocoding tools'),
   view: ViewSchema.optional(),
 });

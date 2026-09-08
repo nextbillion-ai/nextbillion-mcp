@@ -8,7 +8,7 @@ import {
 } from '../shared/geo.js';
 import { READ_ONLY, textResult, ToolInputError, type NbTool } from '../types.js';
 
-const Schema = z.object({
+const Schema = z.strictObject({
   country_code: z
     .string()
     .regex(/^[A-Za-z]{3}$/, 'ISO 3166-1 alpha-3 code, e.g. USA')

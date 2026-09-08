@@ -7,7 +7,7 @@ import {
 } from '../shared/geo.js';
 import { READ_ONLY, textResult, type NbTool } from '../types.js';
 
-const TextSearchSchema = z.object({
+const TextSearchSchema = z.strictObject({
   query: z.string().min(1).describe('Free-text search query'),
   ...PlacesFilterShape,
 });
@@ -41,7 +41,7 @@ function textSearchTool(options: {
   };
 }
 
-const ForwardGeocodeSchema = z.object({
+const ForwardGeocodeSchema = z.strictObject({
   query: z.string().min(1).describe('Free-text search query'),
   ...PlacesFilterShape,
   types: PlaceTypesSchema.optional(),

@@ -2,18 +2,22 @@ import * as z from 'zod/v4';
 import { placesFilterQuery, PlacesFilterShape, PlaceTypesSchema } from '../shared/geo.js';
 import { READ_ONLY, textResult, type NbTool } from '../types.js';
 
-const BatchQuerySchema = z.object({
+const BatchQuerySchema = z.strictObject({
   query: z.string().min(1).describe('Free-text search query for this entry'),
   ...PlacesFilterShape,
   types: PlaceTypesSchema.optional(),
 });
 
-const Schema = z.object({
+const Schema = z.strictObject({
   queries: z
     .array(BatchQuerySchema)
     .min(1)
     .max(100)
     .describe('Up to 100 forward-geocode queries resolved in a single request'),
+  types: PlaceTypesSchema.optional().describe(
+    'Default result-type filter applied to every query that does not set its own `types` ' +
+      '(houseNumber, addressBlock, street, intersection, place, area)',
+  ),
 });
 
 export const geocodeBatch: NbTool<typeof Schema> = {
@@ -23,7 +27,11 @@ export const geocodeBatch: NbTool<typeof Schema> = {
     'Forward-geocode up to 100 free-text queries in one request; returns one ranked result set ' +
     'per query, in input order. Strongly prefer this over repeated geocode_forward calls when ' +
     'resolving several addresses — this endpoint has a dedicated (low) rate limit of 60 requests ' +
-    'per minute, so batch as much as possible into each call.',
+    'per minute, so batch as much as possible into each call. Each query object accepts the same ' +
+    'filters as geocode_forward — near, radius_m, country_codes, bounding_box, limit, language, ' +
+    'view, and types — for example: {"queries": [{"query": "600-699 Golden Gate Ave, San ' +
+    'Francisco, CA", "types": ["addressBlock"]}]}. A top-level `types` sets the default for all ' +
+    'queries.',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -35,7 +43,7 @@ export const geocodeBatch: NbTool<typeof Schema> = {
         in: filters.in,
         limit: filters.limit,
         lang: filters.lang,
-        types: entry.types?.join(','),
+        types: (entry.types ?? args.types)?.join(','),
       };
     });
     const response = await nb.postJson<unknown>('/geocode/batch', {}, body);
