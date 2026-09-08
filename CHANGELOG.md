@@ -10,6 +10,8 @@ Closes the capability gaps found in the external MCP-server evaluation and Arnav
   and markers with `icon_url`/`anchor`/`scale`. static_route_map no longer requires a route —
   pass isochrone contour rings as `paths` to render reachable areas as filled polygons. All
   geometry is sent as encoded polylines and simplified automatically to fit the URL limit.
+  A filled path whose ring is not explicitly closed is closed automatically (the API strokes
+  only the edges between the given vertices, so an open ring rendered without its last edge).
 - **directions / distance_matrix:** strict `exclude` filter, `road_info` (max_speed,
   toll_distance, toll_cost, toll_info, truck_route, stop_sign, traffic_light — directions),
   truck `hazmat_type`, `truck_axle_load`, `emission_class`, `cross_border`; distance_matrix

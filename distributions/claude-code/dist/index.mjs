@@ -21344,8 +21344,15 @@ async function saveImage(data, prefix, ext) {
 }
 var URL_BYTE_BUDGET = 8e3;
 function pathVertices(path) {
-  if (path.points?.length) return path.points;
-  return (path.geojson_coordinates ?? []).map(([longitude, latitude]) => ({ latitude, longitude }));
+  const vertices = path.points?.length ? path.points : (path.geojson_coordinates ?? []).map(([longitude, latitude]) => ({ latitude, longitude }));
+  if (path.fill_color && vertices.length >= 3) {
+    const first = vertices[0];
+    const last = vertices[vertices.length - 1];
+    if (first.latitude !== last.latitude || first.longitude !== last.longitude) {
+      return [...vertices, first];
+    }
+  }
+  return vertices;
 }
 function pathParams(paths, maxEncodedChars = Number.POSITIVE_INFINITY) {
   let simplified = false;

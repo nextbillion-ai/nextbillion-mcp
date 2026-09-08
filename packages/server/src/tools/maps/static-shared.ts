@@ -198,8 +198,20 @@ async function saveImage(
 export const URL_BYTE_BUDGET = 8000;
 
 function pathVertices(path: PathInput): Coordinate[] {
-  if (path.points?.length) return path.points;
-  return (path.geojson_coordinates ?? []).map(([longitude, latitude]) => ({ latitude, longitude }));
+  const vertices = path.points?.length
+    ? path.points
+    : (path.geojson_coordinates ?? []).map(([longitude, latitude]) => ({ latitude, longitude }));
+  // The API fills a closed shape but strokes only the edges between the given vertices, so
+  // a filled polygon whose ring is not explicitly closed renders without its last edge.
+  // Close it (GeoJSON rings already repeat the first vertex, so this is a no-op for them).
+  if (path.fill_color && vertices.length >= 3) {
+    const first = vertices[0]!;
+    const last = vertices[vertices.length - 1]!;
+    if (first.latitude !== last.latitude || first.longitude !== last.longitude) {
+      return [...vertices, first];
+    }
+  }
+  return vertices;
 }
 
 /**

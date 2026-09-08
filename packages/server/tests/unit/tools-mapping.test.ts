@@ -534,6 +534,31 @@ describe('static map parameter mapping', () => {
     );
   });
 
+  it('closes the ring of a filled polygon so all edges are drawn', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [PNG] });
+    const triangle = [
+      { latitude: 1.28, longitude: 103.855 },
+      { latitude: 1.28, longitude: 103.865 },
+      { latitude: 1.275, longitude: 103.86 },
+    ];
+    await staticMapImage.run(
+      {
+        center: { latitude: 1.28, longitude: 103.86 },
+        zoom: 13,
+        paths: [
+          { points: triangle, fill_color: 'red' }, // filled: ring gets closed
+          { points: triangle }, // plain line: left open
+        ],
+      },
+      nb,
+    );
+    const [filled, line] = requests[0]!.url.searchParams.getAll('path');
+    expect(filled).toBe(
+      `stroke:blue|width:3|fill:red|enc:${encodePolyline([...triangle, triangle[0]!])}`,
+    );
+    expect(line).toBe(`stroke:blue|width:3|fill:none|enc:${encodePolyline(triangle)}`);
+  });
+
   it('static_map_image sends overlays as repeated path params and icon markers with commands', async () => {
     const { nb, requests } = fakeNbClient({ responses: [PNG] });
     await staticMapImage.run(
