@@ -20511,7 +20511,7 @@ var Schema = strictObject({
 var geocodeBatch = {
   name: "geocode_batch",
   title: "Batch Geocode",
-  description: 'Forward-geocode up to 100 free-text queries in one request; returns one ranked result set per query, in input order. Strongly prefer this over repeated geocode_forward calls when resolving several addresses \u2014 this endpoint has a dedicated (low) rate limit of 60 requests per minute, so batch as much as possible into each call. Each query object accepts its own `types` filter (e.g. ["addressBlock"] for address-range matches); a top-level `types` sets the default for all queries.',
+  description: 'Forward-geocode up to 100 free-text queries in one request; returns one ranked result set per query, in input order. Strongly prefer this over repeated geocode_forward calls when resolving several addresses \u2014 this endpoint has a dedicated (low) rate limit of 60 requests per minute, so batch as much as possible into each call. Each query object accepts the same filters as geocode_forward \u2014 near, radius_m, country_codes, bounding_box, limit, language, view, and types \u2014 for example: {"queries": [{"query": "600-699 Golden Gate Ave, San Francisco, CA", "types": ["addressBlock"]}]}. A top-level `types` sets the default for all queries.',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {
