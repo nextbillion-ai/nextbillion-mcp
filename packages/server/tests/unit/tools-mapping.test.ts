@@ -3,6 +3,7 @@ import { ALL_TOOLS } from '../../src/tools/index.js';
 import { geocodeForward, placeSearch } from '../../src/tools/places/text-search.js';
 import { geocodeBatch } from '../../src/tools/places/geocode-batch.js';
 import { geocodeReverse } from '../../src/tools/places/geocode-reverse.js';
+import { placeBrowse } from '../../src/tools/places/place-browse.js';
 import { postcodeLookup } from '../../src/tools/places/postcode-lookup.js';
 import { directions } from '../../src/tools/routing/directions.js';
 import { distanceMatrix } from '../../src/tools/routing/distance-matrix.js';
@@ -10,13 +11,14 @@ import { isochrone } from '../../src/tools/routing/isochrone.js';
 import { searchAlongRoute } from '../../src/tools/routing/search-along-route.js';
 import { staticMapImage } from '../../src/tools/maps/static-map-image.js';
 import { staticRouteMap } from '../../src/tools/maps/static-route-map.js';
+import { encodePolyline } from '../../src/tools/maps/polyline.js';
 import { textResult, ToolInputError } from '../../src/tools/types.js';
 import { fakeNbClient } from '../helpers/fake-fetch.js';
 
 const PNG = { body: new Uint8Array([137, 80, 78, 71]), contentType: 'image/png' };
 
 describe('tool registry', () => {
-  it('exposes exactly the 15 Phase 1 tools, sorted by name', () => {
+  it('exposes exactly the 16 tools, sorted by name', () => {
     const names = ALL_TOOLS.map((t) => t.name);
     expect(names).toEqual([...names].sort());
     expect(names).toEqual([
@@ -29,6 +31,7 @@ describe('tool registry', () => {
       'geocode_reverse',
       'geocode_structured',
       'isochrone',
+      'place_browse',
       'place_lookup',
       'place_search',
       'postcode_lookup',
@@ -351,6 +354,104 @@ describe('routing parameter mapping', () => {
   });
 });
 
+describe('0.2.0 parameter additions', () => {
+  it('directions passes exclude, road_info and truck options through', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { routes: [] } }] });
+    await directions.run(
+      {
+        origin: { latitude: 1, longitude: 2 },
+        destination: { latitude: 3, longitude: 4 },
+        mode: 'truck',
+        exclude: ['toll', 'ferry'],
+        road_info: ['toll_cost', 'stop_sign'],
+        hazmat_type: ['flammable_liquid', 'gas'],
+        truck_axle_load: 9.5,
+        emission_class: 'euro6',
+        cross_border: true,
+      },
+      nb,
+    );
+    expect(requests[0]!.body).toMatchObject({
+      exclude: 'toll|ferry',
+      road_info: 'toll_cost|stop_sign',
+      hazmat_type: 'flammable_liquid|gas',
+      truck_axle_load: 9.5,
+      emission_class: 'euro6',
+      cross_border: true,
+    });
+  });
+
+  it('distance_matrix passes exclude, route_failed_prompt and truck options through', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { rows: [] } }] });
+    await distanceMatrix.run(
+      {
+        origins: [{ latitude: 1, longitude: 2 }],
+        destinations: [{ latitude: 3, longitude: 4 }],
+        service: 'flexible',
+        exclude: ['highway'],
+        route_failed_prompt: true,
+        hazmat_type: ['toxic'],
+        emission_class: 'euro5',
+      },
+      nb,
+    );
+    expect(requests[0]!.body).toMatchObject({
+      exclude: 'highway',
+      route_failed_prompt: true,
+      hazmat_type: 'toxic',
+      emission_class: 'euro5',
+    });
+  });
+
+  it('isochrone maps contours_colors and generalize', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { features: [] } }] });
+    await isochrone.run(
+      {
+        origin: { latitude: 1, longitude: 2 },
+        contours_minutes: [5, 10],
+        contours_colors: ['ff0000', '00ff00'],
+        generalize: 50,
+      },
+      nb,
+    );
+    const url = requests[0]!.url;
+    expect(url.searchParams.get('contours_colors')).toBe('ff0000,00ff00');
+    expect(url.searchParams.get('generalize')).toBe('50');
+  });
+
+  it('search_along_route passes view', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { items: [] } }] });
+    await searchAlongRoute.run(
+      {
+        route_points: [
+          { latitude: 1, longitude: 2 },
+          { latitude: 3, longitude: 4 },
+        ],
+        query: 'fuel',
+        view: 'IN',
+      },
+      nb,
+    );
+    expect(requests[0]!.body).toMatchObject({ view: 'IN' });
+  });
+
+  it('place_browse hits /browse with comma-joined categories and the shared filters', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { items: [] } }] });
+    await placeBrowse.run(
+      {
+        categories: ['restaurant', '7376'],
+        near: { latitude: 1.28, longitude: 103.86 },
+        radius_m: 800,
+      },
+      nb,
+    );
+    const url = requests[0]!.url;
+    expect(url.pathname).toBe('/browse');
+    expect(url.searchParams.get('categories')).toBe('restaurant,7376');
+    expect(url.searchParams.get('in')).toBe('circle:1.28,103.86;r=800');
+  });
+});
+
 describe('static map parameter mapping', () => {
   it('static_map_image builds the center path and lng,lat markers', async () => {
     const { nb, requests } = fakeNbClient({ responses: [PNG] });
@@ -389,20 +490,95 @@ describe('static map parameter mapping', () => {
     // the documented order honored by the center-based endpoint (live-verified 2026-08-31;
     // lng-first markers here rendered in the wrong hemisphere at world zoom).
     expect(url.searchParams.get('markers')).toBe('37.7749,-122.4194|34.0522,-118.2437,red');
+    // routes are always sent as encoded polylines (compact; simplifiable)
     expect(url.searchParams.get('path')).toBe(
-      'stroke:blue|width:4|fill:none|37.7749,-122.4194|34.0522,-118.2437',
+      `stroke:blue|width:4|fill:none|enc:${encodePolyline([
+        { latitude: 37.7749, longitude: -122.4194 },
+        { latitude: 34.0522, longitude: -118.2437 },
+      ])}`,
     );
   });
 
-  it('static_route_map uses auto-fit with an encoded polyline path', async () => {
+  it('static_route_map uses auto-fit and passes a valid encoded polyline through unchanged', async () => {
     const { nb, requests } = fakeNbClient({ responses: [PNG] });
-    await staticRouteMap.run({ encoded_polyline: 'abc}def', retina: true }, nb);
+    const polyline = '_p~iF~ps|U_ulLnnqC_mqNvxq`@'; // Google reference vector
+    await staticRouteMap.run({ encoded_polyline: polyline, retina: true }, nb);
     const url = requests[0]!.url;
     expect(url.pathname).toBe('/maps/streets/static/auto/512x512@2x.png');
-    expect(url.searchParams.get('path')).toBe('stroke:blue|width:4|fill:none|enc:abc}def');
+    expect(url.searchParams.get('path')).toBe(`stroke:blue|width:4|fill:none|enc:${polyline}`);
   });
 
-  it('static_route_map requires exactly one geometry input', async () => {
+  it('static_route_map renders overlays without a route (isochrone use case)', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [PNG] });
+    const ring: Array<[number, number]> = [
+      [-122.42, 37.77],
+      [-122.4, 37.78],
+      [-122.41, 37.79],
+      [-122.42, 37.77],
+    ];
+    const result = await staticRouteMap.run(
+      {
+        paths: [
+          { geojson_coordinates: ring, fill_color: 'rgba(0,0,255,0.3)', stroke_color: 'navy' },
+        ],
+      },
+      nb,
+    );
+    const paths = requests[0]!.url.searchParams.getAll('path');
+    expect(paths).toHaveLength(1);
+    // GeoJSON [lng, lat] pairs are converted before encoding (lat first in the polyline)
+    const expected = encodePolyline(ring.map(([longitude, latitude]) => ({ latitude, longitude })));
+    expect(paths[0]).toBe(`stroke:navy|width:3|fill:rgba(0,0,255,0.3)|enc:${expected}`);
+    expect((result.content.find((c) => c.type === 'text') as { text: string }).text).toContain(
+      '1 overlay path(s)',
+    );
+  });
+
+  it('static_map_image sends overlays as repeated path params and icon markers with commands', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [PNG] });
+    await staticMapImage.run(
+      {
+        center: { latitude: 1.28, longitude: 103.86 },
+        zoom: 13,
+        paths: [
+          {
+            points: [
+              { latitude: 1.28, longitude: 103.86 },
+              { latitude: 1.29, longitude: 103.85 },
+            ],
+          },
+          {
+            points: [
+              { latitude: 1.27, longitude: 103.85 },
+              { latitude: 1.27, longitude: 103.87 },
+              { latitude: 1.26, longitude: 103.86 },
+            ],
+            fill_color: 'red',
+          },
+        ],
+        markers: [
+          {
+            latitude: 1.28,
+            longitude: 103.86,
+            icon_url: 'https://example.com/pin.png',
+            anchor: 'center',
+            scale: 2,
+            color: 'ignored',
+          },
+        ],
+      },
+      nb,
+    );
+    const url = requests[0]!.url;
+    expect(url.searchParams.getAll('path')).toHaveLength(2);
+    expect(url.searchParams.getAll('path')[1]).toMatch(/^stroke:blue\|width:3\|fill:red\|enc:/);
+    // icon commands precede the lng,lat pair; color is dropped when an icon is set
+    expect(url.searchParams.get('markers')).toBe(
+      'icon:https://example.com/pin.png|anchor:center|scale:2|103.86,1.28',
+    );
+  });
+
+  it('static_route_map requires a route or overlays, and not both route forms', async () => {
     const { nb } = fakeNbClient();
     await expect(staticRouteMap.run({}, nb)).rejects.toBeInstanceOf(ToolInputError);
     await expect(

@@ -4,8 +4,12 @@ import { READ_ONLY, ToolInputError, type NbTool } from '../types.js';
 import {
   fetchImageResult,
   markerParam,
+  MarkerSchema,
+  pathParams,
+  PathsShape,
   StaticImageShape,
   staticImagePath,
+  URL_BYTE_BUDGET,
 } from './static-shared.js';
 import { decodePolyline, fitPolylineToBudget } from './polyline.js';
 
@@ -23,9 +27,10 @@ const Schema = z.strictObject({
     .optional()
     .describe('Alternative to encoded_polyline: the route as an ordered list of coordinates'),
   markers: z
-    .array(CoordinateSchema.extend({ color: z.string().optional() }))
+    .array(MarkerSchema)
     .optional()
-    .describe('Extra markers, e.g. origin and destination, with optional color'),
+    .describe('Extra markers, e.g. origin and destination, with optional color or custom icon'),
+  ...PathsShape,
   stroke_color: z
     .string()
     .optional()
@@ -46,8 +51,6 @@ const Schema = z.strictObject({
   ...StaticImageShape,
 });
 
-/** Stay comfortably under the API's documented 8192-byte URL limit. */
-const URL_BYTE_BUDGET = 8000;
 /** Progressively tighter encoded-polyline budgets tried when the URL is too long. */
 const ENCODED_CHAR_BUDGETS = [4000, 3000, 2000, 1200, 600, 200];
 
@@ -55,72 +58,78 @@ export const staticRouteMap: NbTool<typeof Schema> = {
   name: 'static_route_map',
   title: 'Static Route Map',
   description:
-    'Render a static map with a route drawn on it, auto-fitted to show the whole route; very ' +
-    'long routes are simplified automatically to fit the map API URL limit (distances are ' +
-    'unaffected). Returns the image inline and also saves it to a local file (path in the ' +
-    'result text). Parameters: exactly one of encoded_polyline (the geometry string from ' +
-    'directions, preferred) or route_points (array of {latitude, longitude}); optional ' +
-    'markers (array of {latitude, longitude, color}, e.g. origin and destination), ' +
-    'stroke_color, stroke_width, padding, width, height, style, format, retina. Example: ' +
-    '{"encoded_polyline": "<geometry from directions>", "markers": [{"latitude": 37.7749, ' +
-    '"longitude": -122.4194, "color": "green"}, {"latitude": 34.0522, "longitude": -118.2437, ' +
-    '"color": "red"}]}',
+    'Render a static map auto-fitted to a route and/or overlays: a route from directions, ' +
+    'and/or lines and filled polygons such as isochrone contours; very long geometry is ' +
+    'simplified automatically to fit the map API URL limit (distances unaffected). Returns ' +
+    'the image inline and also saves it to a local file (path in the result text). ' +
+    'Parameters: at least one of encoded_polyline (the geometry string from directions, ' +
+    'preferred), route_points (array of {latitude, longitude}) or paths (array of {points OR ' +
+    'geojson_coordinates [[longitude, latitude], ...], stroke_color, stroke_width, ' +
+    'fill_color}); optional markers (array of {latitude, longitude, color, icon_url, anchor, ' +
+    'scale}), stroke_color, stroke_width (route line), padding, width, height, style, format, ' +
+    'retina. Example (isochrone contours) - Example: {"paths": [{"geojson_coordinates": [[-122.42, 37.77], ' +
+    '[-122.40, 37.78], [-122.41, 37.79], [-122.42, 37.77]], "fill_color": ' +
+    '"rgba(29,78,216,0.35)", "stroke_color": "#1d4ed8"}], "markers": [{"latitude": 37.7749, ' +
+    '"longitude": -122.4194, "color": "red"}]}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {
-    if (!args.encoded_polyline && !args.route_points) {
-      throw new ToolInputError('Provide `encoded_polyline` (preferred) or `route_points`.');
-    }
     if (args.encoded_polyline && args.route_points) {
       throw new ToolInputError('Provide either `encoded_polyline` or `route_points`, not both.');
     }
-    const styleSegments = [
-      `stroke:${args.stroke_color ?? 'blue'}`,
-      `width:${args.stroke_width ?? 4}`,
-      'fill:none',
-    ];
+    if (!args.encoded_polyline && !args.route_points && !args.paths?.length) {
+      throw new ToolInputError(
+        'Provide a route (`encoded_polyline` or `route_points`) and/or overlay `paths`.',
+      );
+    }
     const markers = args.markers?.length ? markerParam(args.markers, 'lat-first') : undefined;
     const padding = args.padding !== undefined ? String(args.padding) : undefined;
     const path = staticImagePath('auto', args);
-    const buildQuery = (geometry: string) => ({
-      path: `${styleSegments.join('|')}|${geometry}`,
-      markers,
-      padding,
-    });
+    const routeStyle = [
+      `stroke:${args.stroke_color ?? 'blue'}`,
+      `width:${args.stroke_width ?? 4}`,
+      'fill:none',
+    ].join('|');
+    const routePoints = args.encoded_polyline
+      ? decodePolyline(args.encoded_polyline)
+      : (args.route_points ?? []);
 
-    // First try the geometry exactly as given. Path coordinates are `lat,lng`;
-    // `enc:` consumes the rest of the parameter value.
-    let geometry = args.encoded_polyline
-      ? `enc:${args.encoded_polyline}`
-      : args.route_points!.map((p) => `${p.latitude},${p.longitude}`).join('|');
-    let simplificationNote = '';
-
-    // The Static Images API is GET-only with an 8192-byte URL limit; a long route's
-    // full-resolution polyline blows past it (~50 kB for 600 km). When that happens,
-    // simplify the *display* geometry progressively until the URL fits — the route's
-    // distance/duration come from the directions tool and are unaffected.
-    if (nb.buildUrl(path, buildQuery(geometry)).length > URL_BYTE_BUDGET) {
-      const points = args.encoded_polyline
-        ? decodePolyline(args.encoded_polyline)
-        : args.route_points!;
-      for (const budget of ENCODED_CHAR_BUDGETS) {
-        const fitted = fitPolylineToBudget(points, budget);
-        geometry = `enc:${fitted.encoded}`;
-        if (nb.buildUrl(path, buildQuery(geometry)).length <= URL_BYTE_BUDGET) {
-          simplificationNote =
-            ` Display geometry simplified from ${fitted.originalPointCount} to ` +
-            `${fitted.pointCount} points to fit the map URL limit; distances are unaffected.`;
-          break;
-        }
+    // Build the `path` values: the route (if any) plus overlay paths. Everything is encoded
+    // as polylines; if the URL still exceeds the API limit, simplify progressively.
+    const build = (budget: number) => {
+      const values: string[] = [];
+      let simplified = false;
+      if (routePoints.length) {
+        const fitted = fitPolylineToBudget(routePoints, budget);
+        simplified ||= fitted.simplified;
+        values.push(`${routeStyle}|enc:${fitted.encoded}`);
       }
+      if (args.paths?.length) {
+        const overlay = pathParams(args.paths, budget);
+        simplified ||= overlay.simplified;
+        values.push(...overlay.values);
+      }
+      return { values, simplified };
+    };
+    let built = build(Number.POSITIVE_INFINITY);
+    for (const budget of ENCODED_CHAR_BUDGETS) {
+      if (nb.buildUrl(path, { path: built.values, markers, padding }).length <= URL_BYTE_BUDGET)
+        break;
+      built = build(budget);
     }
 
+    const parts = ['Map rendered'];
+    if (routePoints.length) parts.push('with the route');
+    if (args.paths?.length) parts.push(`${args.paths.length} overlay path(s)`);
+    if (args.markers?.length) parts.push(`${args.markers.length} marker(s)`);
+    const note = built.simplified
+      ? ' Display geometry was simplified to fit the map URL limit; distances are unaffected.'
+      : '';
     return fetchImageResult(
       nb,
       path,
-      buildQuery(geometry),
-      `Route map rendered${args.markers?.length ? ` with ${args.markers.length} marker(s)` : ''}.` +
-        simplificationNote,
+      { path: built.values, markers, padding },
+      `${parts.join(', ')}.${note}`,
       args,
       'route-map',
     );

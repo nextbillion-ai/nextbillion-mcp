@@ -66,7 +66,7 @@ describe('static_route_map URL-length protection', () => {
       /^stroke:blue\|width:4\|fill:none\|enc:/,
     );
     const caption = (result.content.find((c) => c.type === 'text') as { text: string }).text;
-    expect(caption).toContain('simplified from');
+    expect(caption).toMatch(/simplified/);
   });
 
   it('leaves short geometry untouched', async () => {
@@ -80,8 +80,12 @@ describe('static_route_map URL-length protection', () => {
       },
       nb,
     );
+    // short geometry is encoded but not simplified (both points survive)
     expect(requests[0]!.url.searchParams.get('path')).toBe(
-      'stroke:blue|width:4|fill:none|37.7749,-122.4194|37.8044,-122.2712',
+      `stroke:blue|width:4|fill:none|enc:${encodePolyline([
+        { latitude: 37.7749, longitude: -122.4194 },
+        { latitude: 37.8044, longitude: -122.2712 },
+      ])}`,
     );
     const caption = (result.content.find((c) => c.type === 'text') as { text: string }).text;
     expect(caption).not.toContain('simplified');

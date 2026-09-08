@@ -4,8 +4,9 @@ import { join } from 'node:path';
 import * as z from 'zod/v4';
 import { imageOutputDir } from '../../config.js';
 import { logError } from '../../log.js';
-import type { NbClient } from '../../nbclient/client.js';
-import type { Coordinate } from '../shared/geo.js';
+import type { NbClient, Query } from '../../nbclient/client.js';
+import { CoordinateSchema, type Coordinate } from '../shared/geo.js';
+import { fitPolylineToBudget } from './polyline.js';
 import type { ToolResult } from '../types.js';
 
 export const StaticImageShape = {
@@ -29,6 +30,76 @@ export const StaticImageShape = {
     .describe('Map style id: "streets", "light", "dark", or "hybrid" (default streets)'),
   format: z.enum(['png', 'jpg', 'webp']).optional().describe('Image format (default png)'),
   retina: z.boolean().optional().describe('Render at @2x resolution for high-DPI displays'),
+};
+
+export const MarkerSchema = z.strictObject({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  color: z
+    .string()
+    .optional()
+    .describe('Marker color, e.g. "red" or "#0000ff" (ignored when icon_url is set)'),
+  icon_url: z
+    .string()
+    .url()
+    .optional()
+    .describe('URL of a custom marker image (max 64 kB / 4096 px, e.g. 64x64 PNG)'),
+  anchor: z
+    .enum([
+      'top',
+      'left',
+      'bottom',
+      'right',
+      'center',
+      'topleft',
+      'bottomleft',
+      'topright',
+      'bottomright',
+    ])
+    .optional()
+    .describe('Anchor point of a custom icon (default bottom)'),
+  scale: z.number().positive().optional().describe('Custom icon scale factor (default 1)'),
+});
+export type MarkerInput = z.output<typeof MarkerSchema>;
+
+export const PathSchema = z
+  .strictObject({
+    points: z
+      .array(CoordinateSchema)
+      .min(2)
+      .optional()
+      .describe('Vertices as {latitude, longitude} objects'),
+    geojson_coordinates: z
+      .array(z.tuple([z.number(), z.number()]))
+      .min(2)
+      .optional()
+      .describe(
+        'Vertices as GeoJSON [longitude, latitude] pairs - pass an isochrone or GeoJSON ring here unchanged',
+      ),
+    stroke_color: z.string().optional().describe('Line color (default blue)'),
+    stroke_width: z
+      .number()
+      .int()
+      .min(1)
+      .max(20)
+      .optional()
+      .describe('Line width in px (default 3)'),
+    fill_color: z
+      .string()
+      .optional()
+      .describe(
+        'Fill color for a closed shape, e.g. "rgba(255,0,0,0.3)" or "#ff000055"; omit for a line',
+      ),
+  })
+  .describe('A line or filled polygon overlay');
+export type PathInput = z.output<typeof PathSchema>;
+
+export const PathsShape = {
+  paths: z
+    .array(PathSchema)
+    .max(10)
+    .optional()
+    .describe('Extra lines/polygons to draw (e.g. isochrone contours as filled polygons)'),
 };
 
 export interface StaticImageArgs {
@@ -60,15 +131,18 @@ export function staticImagePath(positionSegment: string, args: StaticImageArgs):
  * the documented order there places markers in the wrong hemisphere and forces a
  * world-level auto-zoom. Paths and center segments are `lat,lng` everywhere.
  */
-export function markerParam(
-  markers: Array<Coordinate & { color?: string }>,
-  order: 'lng-first' | 'lat-first',
-): string {
+export function markerParam(markers: MarkerInput[], order: 'lng-first' | 'lat-first'): string {
   return markers
     .map((m) => {
       const pair =
         order === 'lng-first' ? `${m.longitude},${m.latitude}` : `${m.latitude},${m.longitude}`;
-      return `${pair}${m.color ? `,${m.color}` : ''}`;
+      const commands: string[] = [];
+      // The query builder URL-encodes the whole value once; pre-encoding here would double-encode.
+      if (m.icon_url) commands.push(`icon:${m.icon_url}`);
+      if (m.anchor) commands.push(`anchor:${m.anchor}`);
+      if (m.scale !== undefined) commands.push(`scale:${m.scale}`);
+      const color = m.color && !m.icon_url ? `,${m.color}` : '';
+      return `${commands.length ? commands.join('|') + '|' : ''}${pair}${color}`;
     })
     .join('|');
 }
@@ -76,7 +150,7 @@ export function markerParam(
 export async function fetchImageResult(
   nb: NbClient,
   path: string,
-  query: Record<string, string | undefined>,
+  query: Query,
   caption: string,
   args: StaticImageArgs,
   filePrefix = 'map',
@@ -118,4 +192,36 @@ async function saveImage(
     logError('Could not save rendered image to disk', error);
     return undefined;
   }
+}
+
+/** Stay comfortably under the Static Images API's documented 8192-byte URL limit. */
+export const URL_BYTE_BUDGET = 8000;
+
+function pathVertices(path: PathInput): Coordinate[] {
+  if (path.points?.length) return path.points;
+  return (path.geojson_coordinates ?? []).map(([longitude, latitude]) => ({ latitude, longitude }));
+}
+
+/**
+ * Serialize overlay paths as `path=` query values. Geometry is always sent as a Google
+ * encoded polyline (`enc:`), which is far more compact than raw coordinate lists; when
+ * `maxEncodedChars` is given each path is simplified to fit it (used when the request
+ * URL would otherwise exceed the API limit).
+ */
+export function pathParams(
+  paths: PathInput[],
+  maxEncodedChars = Number.POSITIVE_INFINITY,
+): { values: string[]; simplified: boolean } {
+  let simplified = false;
+  const values = paths.map((path) => {
+    const style = [
+      `stroke:${path.stroke_color ?? 'blue'}`,
+      `width:${path.stroke_width ?? 3}`,
+      `fill:${path.fill_color ?? 'none'}`,
+    ];
+    const fitted = fitPolylineToBudget(pathVertices(path), maxEncodedChars);
+    simplified ||= fitted.simplified;
+    return `${style.join('|')}|enc:${fitted.encoded}`;
+  });
+  return { values, simplified };
 }

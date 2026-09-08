@@ -3,6 +3,7 @@ import { autocomplete, autosuggest, geocodeForward, placeSearch } from './places
 import { geocodeBatch } from './places/geocode-batch.js';
 import { geocodeReverse } from './places/geocode-reverse.js';
 import { geocodeStructured } from './places/geocode-structured.js';
+import { placeBrowse } from './places/place-browse.js';
 import { placeLookup } from './places/place-lookup.js';
 import { postcodeLookup } from './places/postcode-lookup.js';
 import { directions } from './routing/directions.js';
@@ -27,6 +28,7 @@ export const ALL_TOOLS: ReadonlyArray<NbTool> = [
   geocodeReverse,
   geocodeStructured,
   isochrone,
+  placeBrowse,
   placeLookup,
   placeSearch,
   postcodeLookup,

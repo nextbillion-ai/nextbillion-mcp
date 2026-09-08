@@ -4,6 +4,7 @@ import { geocodeForward } from '../../src/tools/places/text-search.js';
 import { directions } from '../../src/tools/routing/directions.js';
 import { staticMapImage } from '../../src/tools/maps/static-map-image.js';
 import { staticRouteMap } from '../../src/tools/maps/static-route-map.js';
+import { isochrone } from '../../src/tools/routing/isochrone.js';
 
 /**
  * Smoke tests against the live NextBillion API. Only run when NBAI_API_KEY is set
@@ -96,7 +97,38 @@ describe.skipIf(!apiKey)('live API smoke tests', () => {
     expect(image).toBeTruthy();
     expect(Buffer.from(image!.data, 'base64').length).toBeGreaterThan(45_000);
     const caption = (result.content.find((c) => c.type === 'text') as { text: string }).text;
-    expect(caption).toContain('simplified from');
+    expect(caption).toMatch(/simplified/);
+  });
+
+  it('renders isochrone contours as filled polygons (overlay regression)', async () => {
+    const iso = await isochrone.run(
+      {
+        origin: { latitude: 37.7749, longitude: -122.4194 },
+        contours_minutes: [5, 10],
+        polygons: true,
+      },
+      nb,
+    );
+    const features = (
+      iso.structuredContent as { features: Array<{ geometry: { coordinates: number[][][] } }> }
+    ).features;
+    expect(features.length).toBeGreaterThan(0);
+    const result = await staticRouteMap.run(
+      {
+        paths: features.map((f) => ({
+          geojson_coordinates: f.geometry.coordinates[0] as Array<[number, number]>,
+          fill_color: 'rgba(29,78,216,0.3)',
+          stroke_color: '#1d4ed8',
+        })),
+        markers: [{ latitude: 37.7749, longitude: -122.4194, color: 'red' }],
+      },
+      nb,
+    );
+    expect(result.isError).toBeFalsy();
+    const image = result.content.find((c) => c.type === 'image') as
+      { type: 'image'; data: string } | undefined;
+    expect(image).toBeTruthy();
+    expect(Buffer.from(image!.data, 'base64').length).toBeGreaterThan(20_000);
   });
 
   it('renders a static map image', async () => {
