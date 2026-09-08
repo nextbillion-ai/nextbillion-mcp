@@ -26,6 +26,10 @@ const Schema = z.strictObject({
     .max(20)
     .optional()
     .describe('Maximum results (default 10, max 20)'),
+  view: z
+    .enum(['Unified', 'AR', 'CN', 'IN', 'PK', 'MA', 'RU', 'RS', 'TW', 'TR'])
+    .optional()
+    .describe('Geopolitical view for disputed territories (default: requester region or Unified)'),
 });
 
 export const searchAlongRoute: NbTool<typeof Schema> = {
@@ -37,7 +41,7 @@ export const searchAlongRoute: NbTool<typeof Schema> = {
     'ordered list of waypoints, e.g. the origin, waypoints and destination used with ' +
     'directions. Parameters: route_points (array of {latitude, longitude}, at least 2, ' +
     'required), query (required); optional max_detour_seconds (default 900, max 3600), ' +
-    'sort_by (detour_time | detour_offset), limit (max 20). Example: {"route_points": ' +
+    'sort_by (detour_time | detour_offset), limit (max 20), view. Example: {"route_points": ' +
     '[{"latitude": 34.0493, "longitude": -118.2557}, {"latitude": 34.0415, "longitude": ' +
     '-118.231}], "query": "gas station", "max_detour_seconds": 600}',
   inputSchema: Schema,
@@ -52,6 +56,7 @@ export const searchAlongRoute: NbTool<typeof Schema> = {
         max_detour_time: args.max_detour_seconds,
         sort_by: args.sort_by,
         limit: args.limit,
+        view: args.view,
       },
     );
     const items = (response as { items?: Array<Record<string, unknown>> }).items ?? [];

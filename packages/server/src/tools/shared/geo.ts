@@ -128,3 +128,45 @@ export function summarizePlaces(response: unknown, noun = 'result'): string {
   const more = items.length > 5 ? `\n…and ${items.length - 5} more.` : '';
   return `${items.length} ${noun}${items.length === 1 ? '' : 's'} found:\n${lines.join('\n')}${more}`;
 }
+
+/** Hazardous-material classes accepted by the routing APIs (truck mode). */
+export const HazmatSchema = z
+  .array(
+    z.enum([
+      'explosives',
+      'gas',
+      'flammable_liquid',
+      'flammable_gas',
+      'organic',
+      'toxic',
+      'radioactive',
+      'corrosive',
+      'other',
+    ]),
+  )
+  .min(1)
+  .describe('Hazardous cargo classes carried (truck mode, flexible service only)');
+
+export const EmissionClassSchema = z
+  .enum(['euro0', 'euro1', 'euro2', 'euro3', 'euro4', 'euro5', 'euro6', 'euro7', 'euro8', 'euro9'])
+  .describe('Engine emission class (EU regions, truck mode, flexible service only)');
+
+/** Hard filter shared by directions and distance_matrix (flexible service). */
+export const ExcludeSchema = z
+  .array(
+    z.enum([
+      'toll',
+      'ferry',
+      'highway',
+      'service_road',
+      'uturn',
+      'sharp_turn',
+      'left_turn',
+      'right_turn',
+    ]),
+  )
+  .min(1)
+  .describe(
+    'Strict filter: only routes that completely avoid these features are returned (error if none exists). ' +
+      'Use `avoid` for a soft preference instead. Flexible service only',
+  );

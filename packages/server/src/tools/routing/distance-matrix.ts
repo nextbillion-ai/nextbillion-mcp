@@ -1,5 +1,11 @@
 import * as z from 'zod/v4';
-import { CoordinateSchema, toLatLngList } from '../shared/geo.js';
+import {
+  CoordinateSchema,
+  EmissionClassSchema,
+  ExcludeSchema,
+  HazmatSchema,
+  toLatLngList,
+} from '../shared/geo.js';
 import { READ_ONLY, textResult, ToolInputError, type NbTool } from '../types.js';
 
 const Schema = z.strictObject({
@@ -32,6 +38,27 @@ const Schema = z.strictObject({
     .array(z.enum(['toll', 'highway', 'ferry', 'none']))
     .optional()
     .describe('Road features to avoid'),
+  exclude: ExcludeSchema.optional(),
+  hazmat_type: HazmatSchema.optional(),
+  truck_axle_load: z
+    .number()
+    .positive()
+    .optional()
+    .describe('Load per axle in tonnes (truck mode, flexible service only)'),
+  emission_class: EmissionClassSchema.optional(),
+  cross_border: z
+    .boolean()
+    .optional()
+    .describe(
+      'Allow routes to cross international borders (region-dependent, flexible service only)',
+    ),
+  route_failed_prompt: z
+    .boolean()
+    .optional()
+    .describe(
+      'When true, unroutable origin/destination pairs return -1 instead of 0 so they can be ' +
+        'told apart from zero-distance pairs',
+    ),
   honor_restrictions: z
     .boolean()
     .optional()
@@ -59,11 +86,13 @@ export const distanceMatrix: NbTool<typeof Schema> = {
     'pair in one call; one row per origin with one element per destination, in input order. ' +
     'Always prefer this over repeated directions calls for multiple pairs. Parameters: ' +
     'origins, destinations (arrays of {latitude, longitude}, required); optional mode, ' +
-    'service ("fast" default: up to 1000x1000 points; "flexible": departure_time, route_type, ' +
-    'truck options and more modes, max 50x50), route_type, departure_time, avoid, ' +
-    'honor_restrictions, truck_size_cm {height, width, length}, truck_weight_kg. Example: ' +
-    '{"origins": [{"latitude": 1.29, "longitude": 103.85}], "destinations": [{"latitude": ' +
-    '1.35, "longitude": 103.99}, {"latitude": 1.3, "longitude": 103.77}]}',
+    'service ("fast" default: up to 1000x1000 points; "flexible": the options below, max ' +
+    '50x50), route_type, departure_time, avoid (soft), exclude (strict), honor_restrictions, ' +
+    'route_failed_prompt (unroutable pairs return -1 instead of 0), truck options: ' +
+    'truck_size_cm {height, width, length}, truck_weight_kg, truck_axle_load, hazmat_type, ' +
+    'emission_class, cross_border. Example: {"origins": [{"latitude": 1.29, "longitude": ' +
+    '103.85}], "destinations": [{"latitude": 1.35, "longitude": 103.99}, {"latitude": 1.3, ' +
+    '"longitude": 103.77}], "route_failed_prompt": true}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -86,6 +115,12 @@ export const distanceMatrix: NbTool<typeof Schema> = {
         route_type: args.route_type,
         departure_time: args.departure_time,
         avoid: args.avoid?.length ? args.avoid.join('|') : undefined,
+        exclude: args.exclude?.length ? args.exclude.join('|') : undefined,
+        hazmat_type: args.hazmat_type?.length ? args.hazmat_type.join('|') : undefined,
+        truck_axle_load: args.truck_axle_load,
+        emission_class: args.emission_class,
+        cross_border: args.cross_border,
+        route_failed_prompt: args.route_failed_prompt,
         honor_restrictions: args.honor_restrictions,
         truck_size: args.truck_size_cm
           ? `${args.truck_size_cm.height},${args.truck_size_cm.width},${args.truck_size_cm.length}`

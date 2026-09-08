@@ -1,5 +1,12 @@
 import * as z from 'zod/v4';
-import { CoordinateSchema, toLatLng, toLatLngList } from '../shared/geo.js';
+import {
+  CoordinateSchema,
+  EmissionClassSchema,
+  ExcludeSchema,
+  HazmatSchema,
+  toLatLng,
+  toLatLngList,
+} from '../shared/geo.js';
 import { READ_ONLY, textResult, ToolInputError, type NbTool } from '../types.js';
 
 const AVOID_VALUES = [
@@ -52,6 +59,38 @@ const Schema = z.strictObject({
     .describe(
       'Road features to avoid when alternatives exist. Fast service supports only toll/ferry/highway',
     ),
+  exclude: ExcludeSchema.optional(),
+  road_info: z
+    .array(
+      z.enum([
+        'max_speed',
+        'toll_distance',
+        'toll_cost',
+        'toll_info',
+        'truck_route',
+        'stop_sign',
+        'traffic_light',
+      ]),
+    )
+    .min(1)
+    .optional()
+    .describe(
+      'Extra per-segment information to return: max_speed, toll_distance, toll_cost, toll_info, ' +
+        'truck_route, stop_sign, traffic_light (flexible service only)',
+    ),
+  hazmat_type: HazmatSchema.optional(),
+  truck_axle_load: z
+    .number()
+    .positive()
+    .optional()
+    .describe('Load per axle in tonnes (truck mode, flexible service only)'),
+  emission_class: EmissionClassSchema.optional(),
+  cross_border: z
+    .boolean()
+    .optional()
+    .describe(
+      'Allow the route to cross international borders (region-dependent, flexible service only)',
+    ),
   honor_restrictions: z
     .boolean()
     .optional()
@@ -91,13 +130,16 @@ export const directions: NbTool<typeof Schema> = {
     'distance (meters), duration (seconds) and an encoded polyline per route - pass the ' +
     'polyline to static_route_map to draw it. Use distance_matrix for many origin/destination ' +
     'pairs. Parameters: origin, destination {latitude, longitude} (required); optional ' +
-    'waypoints (array of {latitude, longitude}, max 200), mode (car | truck | motorcycle | ' +
-    'bike | walk), service ("flexible" default: all modes, route_type, departure_time, full ' +
-    'avoid list and truck options; "fast": car/truck only, lower latency), route_type, ' +
-    'departure_time (UNIX seconds), avoid (array), honor_restrictions, alternatives, steps ' +
-    '(fast only), geometry (polyline default | polyline6), truck_size_cm {height, width, ' +
-    'length}, truck_weight_kg. Example: {"origin": {"latitude": 37.7749, "longitude": ' +
-    '-122.4194}, "destination": {"latitude": 34.0522, "longitude": -118.2437}, "mode": "car"}',
+    'waypoints (array, max 200), mode (car | truck | motorcycle | bike | walk), service ' +
+    '("flexible" default: all modes and options; "fast": car/truck only, lower latency), ' +
+    'route_type, departure_time (UNIX seconds), avoid (soft filter), exclude (strict filter), ' +
+    'road_info (max_speed, toll_distance, toll_cost, toll_info, truck_route, stop_sign, ' +
+    'traffic_light), honor_restrictions, alternatives, steps (fast only), geometry (polyline ' +
+    '| polyline6), truck options: truck_size_cm {height, width, length}, truck_weight_kg, ' +
+    'truck_axle_load (tonnes), hazmat_type, emission_class (euro0-euro9), cross_border. ' +
+    'Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "destination": ' +
+    '{"latitude": 34.0522, "longitude": -118.2437}, "mode": "truck", "truck_weight_kg": ' +
+    '18000, "hazmat_type": ["flammable_liquid"]}',
   inputSchema: Schema,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -117,6 +159,12 @@ export const directions: NbTool<typeof Schema> = {
         route_type: args.route_type,
         departure_time: args.departure_time,
         avoid: args.avoid?.length ? args.avoid.join('|') : undefined,
+        exclude: args.exclude?.length ? args.exclude.join('|') : undefined,
+        road_info: args.road_info?.length ? args.road_info.join('|') : undefined,
+        hazmat_type: args.hazmat_type?.length ? args.hazmat_type.join('|') : undefined,
+        truck_axle_load: args.truck_axle_load,
+        emission_class: args.emission_class,
+        cross_border: args.cross_border,
         honor_restrictions: args.honor_restrictions,
         alternatives: args.alternatives,
         altcount: args.alternatives ? 3 : undefined,

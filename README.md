@@ -43,6 +43,7 @@ which hangs on some networks; see `distributions/manual/README.md`.)
 | `geocode_reverse`    | Reverse Geocode                                |
 | `geocode_structured` | Structured Geocode                             |
 | `isochrone`          | Isochrone                                      |
+| `place_browse`       | Browse (places by category near a location)    |
 | `place_lookup`       | Place Lookup                                   |
 | `place_search`       | Discover (POI search)                          |
 | `postcode_lookup`    | Geocode Postcode                               |

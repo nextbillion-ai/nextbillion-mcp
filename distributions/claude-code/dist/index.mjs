@@ -2561,6 +2561,112 @@ function handleIntersectionResults(result, left, right) {
   result.value = merged.data;
   return result;
 }
+var $ZodTuple = /* @__PURE__ */ $constructor("$ZodTuple", (inst, def) => {
+  $ZodType.init(inst, def);
+  const items = def.items;
+  inst._zod.parse = (payload, ctx) => {
+    const input = payload.value;
+    if (!Array.isArray(input)) {
+      payload.issues.push({
+        input,
+        inst,
+        expected: "tuple",
+        code: "invalid_type"
+      });
+      return payload;
+    }
+    payload.value = [];
+    const proms = [];
+    const optinStart = getTupleOptStart(items, "optin");
+    const optoutStart = getTupleOptStart(items, "optout");
+    if (!def.rest) {
+      if (input.length < optinStart) {
+        payload.issues.push({
+          code: "too_small",
+          minimum: optinStart,
+          inclusive: true,
+          input,
+          inst,
+          origin: "array"
+        });
+        return payload;
+      }
+      if (input.length > items.length) {
+        payload.issues.push({
+          code: "too_big",
+          maximum: items.length,
+          inclusive: true,
+          input,
+          inst,
+          origin: "array"
+        });
+      }
+    }
+    const itemResults = new Array(items.length);
+    for (let i = 0; i < items.length; i++) {
+      const r = items[i]._zod.run({ value: input[i], issues: [] }, ctx);
+      if (r instanceof Promise) {
+        proms.push(r.then((rr) => {
+          itemResults[i] = rr;
+        }));
+      } else {
+        itemResults[i] = r;
+      }
+    }
+    if (def.rest) {
+      let i = items.length - 1;
+      const rest = input.slice(items.length);
+      for (const el of rest) {
+        i++;
+        const result = def.rest._zod.run({ value: el, issues: [] }, ctx);
+        if (result instanceof Promise) {
+          proms.push(result.then((r) => handleTupleResult(r, payload, i)));
+        } else {
+          handleTupleResult(result, payload, i);
+        }
+      }
+    }
+    if (proms.length) {
+      return Promise.all(proms).then(() => handleTupleResults(itemResults, payload, items, input, optoutStart));
+    }
+    return handleTupleResults(itemResults, payload, items, input, optoutStart);
+  };
+});
+function getTupleOptStart(items, key) {
+  for (let i = items.length - 1; i >= 0; i--) {
+    if (items[i]._zod[key] !== "optional")
+      return i + 1;
+  }
+  return 0;
+}
+function handleTupleResult(result, final, index) {
+  if (result.issues.length) {
+    final.issues.push(...prefixIssues(index, result.issues));
+  }
+  final.value[index] = result.value;
+}
+function handleTupleResults(itemResults, final, items, input, optoutStart) {
+  for (let i = 0; i < items.length; i++) {
+    const r = itemResults[i];
+    const isPresent = i < input.length;
+    if (r.issues.length) {
+      if (!isPresent && i >= optoutStart) {
+        final.value.length = i;
+        break;
+      }
+      final.issues.push(...prefixIssues(i, r.issues));
+    }
+    final.value[i] = r.value;
+  }
+  for (let i = final.value.length - 1; i >= input.length; i--) {
+    if (items[i]._zod.optout === "optional" && final.value[i] === void 0) {
+      final.value.length = i;
+    } else {
+      break;
+    }
+  }
+  return final;
+}
 var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
   $ZodType.init(inst, def);
   inst._zod.parse = (payload, ctx) => {
@@ -5356,6 +5462,26 @@ function intersection(left, right) {
     type: "intersection",
     left,
     right
+  });
+}
+var ZodTuple = /* @__PURE__ */ $constructor("ZodTuple", (inst, def) => {
+  $ZodTuple.init(inst, def);
+  ZodType.init(inst, def);
+  inst._zod.processJSONSchema = (ctx, json, params) => tupleProcessor(inst, ctx, json, params);
+  inst.rest = (rest) => inst.clone({
+    ...inst._zod.def,
+    rest
+  });
+});
+function tuple(items, _paramsOrRest, _params) {
+  const hasRest = _paramsOrRest instanceof $ZodType;
+  const params = hasRest ? _params : _paramsOrRest;
+  const rest = hasRest ? _paramsOrRest : null;
+  return new ZodTuple({
+    type: "tuple",
+    items,
+    rest,
+    ...util_exports.normalizeParams(params)
   });
 }
 var ZodRecord = /* @__PURE__ */ $constructor("ZodRecord", (inst, def) => {
@@ -20432,6 +20558,34 @@ function summarizePlaces(response, noun = "result") {
   return `${items.length} ${noun}${items.length === 1 ? "" : "s"} found:
 ${lines.join("\n")}${more}`;
 }
+var HazmatSchema = array(
+  _enum([
+    "explosives",
+    "gas",
+    "flammable_liquid",
+    "flammable_gas",
+    "organic",
+    "toxic",
+    "radioactive",
+    "corrosive",
+    "other"
+  ])
+).min(1).describe("Hazardous cargo classes carried (truck mode, flexible service only)");
+var EmissionClassSchema = _enum(["euro0", "euro1", "euro2", "euro3", "euro4", "euro5", "euro6", "euro7", "euro8", "euro9"]).describe("Engine emission class (EU regions, truck mode, flexible service only)");
+var ExcludeSchema = array(
+  _enum([
+    "toll",
+    "ferry",
+    "highway",
+    "service_road",
+    "uturn",
+    "sharp_turn",
+    "left_turn",
+    "right_turn"
+  ])
+).min(1).describe(
+  "Strict filter: only routes that completely avoid these features are returned (error if none exists). Use `avoid` for a soft preference instead. Flexible service only"
+);
 
 // src/tools/places/text-search.ts
 var TextSearchSchema = strictObject({
@@ -20617,8 +20771,30 @@ var geocodeStructured = {
   }
 };
 
-// src/tools/places/place-lookup.ts
+// src/tools/places/place-browse.ts
 var Schema4 = strictObject({
+  categories: array(string2().min(1)).min(1).describe(
+    'Category names or ids to browse; a place matching any of them is returned (e.g. ["restaurant"], ["schools"], ["7376"])'
+  ),
+  ...PlacesFilterShape
+});
+var placeBrowse = {
+  name: "place_browse",
+  title: "Browse Places by Category",
+  description: 'List places of given categories around a location, ranked by distance, without a text query - e.g. all restaurants or schools near a point. Use place_search when the user describes what they want in words; use place_lookup to expand a result by id. Parameters: categories (required array of category names or ids); near {latitude, longitude} (recommended), radius_m (with near), country_codes, bounding_box {west, south, east, north}, limit, language, view. Example: {"categories": ["restaurant"], "near": {"latitude": 1.2839, "longitude": 103.8607}, "radius_m": 800, "limit": 10}',
+  inputSchema: Schema4,
+  annotations: READ_ONLY,
+  async run(args, nb) {
+    const response = await nb.getJson("/browse", {
+      categories: args.categories.join(","),
+      ...placesFilterQuery(args)
+    });
+    return textResult(summarizePlaces(response, "place"), response);
+  }
+};
+
+// src/tools/places/place-lookup.ts
+var Schema5 = strictObject({
   id: string2().min(1).describe("Unique place id, as returned by the other place/geocoding tools"),
   view: ViewSchema.optional()
 });
@@ -20626,7 +20802,7 @@ var placeLookup = {
   name: "place_lookup",
   title: "Place Lookup",
   description: 'Fetch the full details of a place (address, position, access points, categories, contacts) by its unique id, as returned by place_search, geocode_forward, autosuggest, autocomplete or search_along_route. Parameters: id (required); optional view. Example: {"id": "2EmBgAmFpR9dg0D89EBzNA"}',
-  inputSchema: Schema4,
+  inputSchema: Schema5,
   annotations: READ_ONLY,
   async run(args, nb) {
     const response = await nb.getJson("/lookup", {
@@ -20638,7 +20814,7 @@ var placeLookup = {
 };
 
 // src/tools/places/postcode-lookup.ts
-var Schema5 = strictObject({
+var Schema6 = strictObject({
   postal_code: string2().optional().describe("Postal/ZIP code to look up (requires `country`; do not combine with `coordinate`)"),
   country: string2().optional().describe(
     "Country of the postal code \u2014 name, alpha-2, or alpha-3 ISO code. Required with `postal_code`"
@@ -20654,7 +20830,7 @@ var postcodeLookup = {
   name: "postcode_lookup",
   title: "Postcode Lookup",
   description: 'Get the centroid and boundary polygon of a postal/ZIP code, or find the postal code that contains a coordinate; one lookup per call. Supported countries: USA, India, UK, Netherlands, Austria, Germany, Indonesia, France, Singapore, Philippines, Canada, Australia, New Zealand, Italy, Brazil, Mexico, Spain. Parameters: either postal_code plus country (name, alpha-2 or alpha-3 code), or coordinate {latitude, longitude}; optional geojson_boundary (true for a GeoJSON boundary). Example: {"postal_code": "90011", "country": "USA"}',
-  inputSchema: Schema5,
+  inputSchema: Schema6,
   annotations: READ_ONLY,
   async run(args, nb) {
     if (args.postal_code && args.coordinate) {
@@ -20697,7 +20873,7 @@ var AVOID_VALUES = [
   "tunnel",
   "none"
 ];
-var Schema6 = strictObject({
+var Schema7 = strictObject({
   origin: CoordinateSchema.describe("Route start (must be a routable land location)"),
   destination: CoordinateSchema.describe("Route end (must be a routable land location)"),
   waypoints: array(CoordinateSchema).max(200).optional().describe("Intermediate stops visited in order (max 200)"),
@@ -20711,6 +20887,26 @@ var Schema6 = strictObject({
   ),
   avoid: array(_enum(AVOID_VALUES)).optional().describe(
     "Road features to avoid when alternatives exist. Fast service supports only toll/ferry/highway"
+  ),
+  exclude: ExcludeSchema.optional(),
+  road_info: array(
+    _enum([
+      "max_speed",
+      "toll_distance",
+      "toll_cost",
+      "toll_info",
+      "truck_route",
+      "stop_sign",
+      "traffic_light"
+    ])
+  ).min(1).optional().describe(
+    "Extra per-segment information to return: max_speed, toll_distance, toll_cost, toll_info, truck_route, stop_sign, traffic_light (flexible service only)"
+  ),
+  hazmat_type: HazmatSchema.optional(),
+  truck_axle_load: number2().positive().optional().describe("Load per axle in tonnes (truck mode, flexible service only)"),
+  emission_class: EmissionClassSchema.optional(),
+  cross_border: boolean2().optional().describe(
+    "Allow the route to cross international borders (region-dependent, flexible service only)"
   ),
   honor_restrictions: boolean2().optional().describe(
     "When true, enforce restricted-area rules: no route is generated if origin, destination, or a waypoint is inside a restricted area. Default false: route anyway with a warning (flexible service only)"
@@ -20726,8 +20922,8 @@ var Schema6 = strictObject({
 var directions = {
   name: "directions",
   title: "Directions",
-  description: 'Calculate a route between an origin and a destination with optional waypoints; returns distance (meters), duration (seconds) and an encoded polyline per route - pass the polyline to static_route_map to draw it. Use distance_matrix for many origin/destination pairs. Parameters: origin, destination {latitude, longitude} (required); optional waypoints (array of {latitude, longitude}, max 200), mode (car | truck | motorcycle | bike | walk), service ("flexible" default: all modes, route_type, departure_time, full avoid list and truck options; "fast": car/truck only, lower latency), route_type, departure_time (UNIX seconds), avoid (array), honor_restrictions, alternatives, steps (fast only), geometry (polyline default | polyline6), truck_size_cm {height, width, length}, truck_weight_kg. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "destination": {"latitude": 34.0522, "longitude": -118.2437}, "mode": "car"}',
-  inputSchema: Schema6,
+  description: 'Calculate a route between an origin and a destination with optional waypoints; returns distance (meters), duration (seconds) and an encoded polyline per route - pass the polyline to static_route_map to draw it. Use distance_matrix for many origin/destination pairs. Parameters: origin, destination {latitude, longitude} (required); optional waypoints (array, max 200), mode (car | truck | motorcycle | bike | walk), service ("flexible" default: all modes and options; "fast": car/truck only, lower latency), route_type, departure_time (UNIX seconds), avoid (soft filter), exclude (strict filter), road_info (max_speed, toll_distance, toll_cost, toll_info, truck_route, stop_sign, traffic_light), honor_restrictions, alternatives, steps (fast only), geometry (polyline | polyline6), truck options: truck_size_cm {height, width, length}, truck_weight_kg, truck_axle_load (tonnes), hazmat_type, emission_class (euro0-euro9), cross_border. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "destination": {"latitude": 34.0522, "longitude": -118.2437}, "mode": "truck", "truck_weight_kg": 18000, "hazmat_type": ["flammable_liquid"]}',
+  inputSchema: Schema7,
   annotations: READ_ONLY,
   async run(args, nb) {
     const service = args.service ?? "flexible";
@@ -20745,6 +20941,12 @@ var directions = {
         route_type: args.route_type,
         departure_time: args.departure_time,
         avoid: args.avoid?.length ? args.avoid.join("|") : void 0,
+        exclude: args.exclude?.length ? args.exclude.join("|") : void 0,
+        road_info: args.road_info?.length ? args.road_info.join("|") : void 0,
+        hazmat_type: args.hazmat_type?.length ? args.hazmat_type.join("|") : void 0,
+        truck_axle_load: args.truck_axle_load,
+        emission_class: args.emission_class,
+        cross_border: args.cross_border,
         honor_restrictions: args.honor_restrictions,
         alternatives: args.alternatives,
         altcount: args.alternatives ? 3 : void 0,
@@ -20769,7 +20971,7 @@ Geometry (encoded polyline) is in structured content.` : "No route found.",
 };
 
 // src/tools/routing/distance-matrix.ts
-var Schema7 = strictObject({
+var Schema8 = strictObject({
   origins: array(CoordinateSchema).min(1).max(1e3).describe("Start points (matrix rows)"),
   destinations: array(CoordinateSchema).min(1).max(1e3).describe("End points (matrix columns)"),
   mode: _enum(["car", "truck", "motorcycle", "bike", "walk"]).optional().describe("Travel mode (default car). Modes other than car/truck require service=flexible"),
@@ -20781,6 +20983,16 @@ var Schema7 = strictObject({
     "Departure as a UNIX timestamp in seconds, for typical-traffic results (flexible only)"
   ),
   avoid: array(_enum(["toll", "highway", "ferry", "none"])).optional().describe("Road features to avoid"),
+  exclude: ExcludeSchema.optional(),
+  hazmat_type: HazmatSchema.optional(),
+  truck_axle_load: number2().positive().optional().describe("Load per axle in tonnes (truck mode, flexible service only)"),
+  emission_class: EmissionClassSchema.optional(),
+  cross_border: boolean2().optional().describe(
+    "Allow routes to cross international borders (region-dependent, flexible service only)"
+  ),
+  route_failed_prompt: boolean2().optional().describe(
+    "When true, unroutable origin/destination pairs return -1 instead of 0 so they can be told apart from zero-distance pairs"
+  ),
   honor_restrictions: boolean2().optional().describe(
     "When true, enforce restricted-area rules for origin/destination points instead of routing through with a warning (flexible service only)"
   ),
@@ -20790,8 +21002,8 @@ var Schema7 = strictObject({
 var distanceMatrix = {
   name: "distance_matrix",
   title: "Distance Matrix",
-  description: 'Compute travel distance (meters) and duration (seconds) for every origin-to-destination pair in one call; one row per origin with one element per destination, in input order. Always prefer this over repeated directions calls for multiple pairs. Parameters: origins, destinations (arrays of {latitude, longitude}, required); optional mode, service ("fast" default: up to 1000x1000 points; "flexible": departure_time, route_type, truck options and more modes, max 50x50), route_type, departure_time, avoid, honor_restrictions, truck_size_cm {height, width, length}, truck_weight_kg. Example: {"origins": [{"latitude": 1.29, "longitude": 103.85}], "destinations": [{"latitude": 1.35, "longitude": 103.99}, {"latitude": 1.3, "longitude": 103.77}]}',
-  inputSchema: Schema7,
+  description: 'Compute travel distance (meters) and duration (seconds) for every origin-to-destination pair in one call; one row per origin with one element per destination, in input order. Always prefer this over repeated directions calls for multiple pairs. Parameters: origins, destinations (arrays of {latitude, longitude}, required); optional mode, service ("fast" default: up to 1000x1000 points; "flexible": the options below, max 50x50), route_type, departure_time, avoid (soft), exclude (strict), honor_restrictions, route_failed_prompt (unroutable pairs return -1 instead of 0), truck options: truck_size_cm {height, width, length}, truck_weight_kg, truck_axle_load, hazmat_type, emission_class, cross_border. Example: {"origins": [{"latitude": 1.29, "longitude": 103.85}], "destinations": [{"latitude": 1.35, "longitude": 103.99}, {"latitude": 1.3, "longitude": 103.77}], "route_failed_prompt": true}',
+  inputSchema: Schema8,
   annotations: READ_ONLY,
   async run(args, nb) {
     const service = args.service ?? "fast";
@@ -20813,6 +21025,12 @@ var distanceMatrix = {
         route_type: args.route_type,
         departure_time: args.departure_time,
         avoid: args.avoid?.length ? args.avoid.join("|") : void 0,
+        exclude: args.exclude?.length ? args.exclude.join("|") : void 0,
+        hazmat_type: args.hazmat_type?.length ? args.hazmat_type.join("|") : void 0,
+        truck_axle_load: args.truck_axle_load,
+        emission_class: args.emission_class,
+        cross_border: args.cross_border,
+        route_failed_prompt: args.route_failed_prompt,
         honor_restrictions: args.honor_restrictions,
         truck_size: args.truck_size_cm ? `${args.truck_size_cm.height},${args.truck_size_cm.width},${args.truck_size_cm.length}` : void 0,
         truck_weight: args.truck_weight_kg
@@ -20827,7 +21045,7 @@ var distanceMatrix = {
 };
 
 // src/tools/routing/isochrone.ts
-var Schema8 = strictObject({
+var Schema9 = strictObject({
   origin: CoordinateSchema.describe("Starting point of the reachability analysis"),
   contours_minutes: array(number2().int().min(1).max(40)).max(4).optional().describe("Travel times in minutes, one contour each (max 4 values, increasing, max 40)"),
   contours_meters: array(number2().int().min(1).max(6e4)).max(4).optional().describe("Travel distances in meters, one contour each (max 4 values, increasing, max 60000)"),
@@ -20836,13 +21054,15 @@ var Schema8 = strictObject({
   denoise: number2().min(0).max(1).optional().describe(
     "Remove contours smaller than this fraction of the largest (default 1: largest only)"
   ),
-  departure_time: number2().int().optional().describe("Departure as a UNIX timestamp in seconds, for typical-traffic analysis")
+  departure_time: number2().int().optional().describe("Departure as a UNIX timestamp in seconds, for typical-traffic analysis"),
+  contours_colors: array(string2().regex(/^[0-9a-fA-F]{6}$/, "hex color without #, e.g. ff0000")).max(4).optional().describe('One hex color (without #) per contour, e.g. ["ff0000", "00ff00"]'),
+  generalize: number2().positive().optional().describe("Simplification tolerance in meters (Douglas-Peucker); omit for automatic")
 });
 var isochrone = {
   name: "isochrone",
   title: "Isochrone",
-  description: 'Calculate the area reachable from a point within given travel times or distances; returns a GeoJSON FeatureCollection of contours (geometry coordinates are in GeoJSON [longitude, latitude] order). Parameters: origin {latitude, longitude} (required); exactly one of contours_minutes (array, up to 4 values, max 40) or contours_meters (array, up to 4 values, max 60000); optional mode, polygons (true for Polygon geometry instead of LineString), denoise, departure_time. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "contours_minutes": [5, 10], "polygons": true}',
-  inputSchema: Schema8,
+  description: 'Calculate the area reachable from a point within given travel times or distances; returns a GeoJSON FeatureCollection of contours (geometry coordinates are [longitude, latitude]). To draw the result, pass each contour ring to static_route_map as paths[].geojson_coordinates with a fill_color. Parameters: origin {latitude, longitude} (required); exactly one of contours_minutes (array, up to 4 values, max 40) or contours_meters (array, up to 4 values, max 60000); optional mode, polygons (true for Polygon geometry), denoise, generalize (meters), contours_colors (hex without #, one per contour), departure_time. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "contours_minutes": [5, 10], "polygons": true}',
+  inputSchema: Schema9,
   annotations: READ_ONLY,
   async run(args, nb) {
     if (!args.contours_minutes?.length && !args.contours_meters?.length) {
@@ -20858,7 +21078,9 @@ var isochrone = {
       mode: args.mode,
       polygons: args.polygons,
       denoise: args.denoise,
-      departure_time: args.departure_time
+      departure_time: args.departure_time,
+      contours_colors: args.contours_colors?.join(","),
+      generalize: args.generalize
     });
     const features = response.features ?? [];
     const metric = args.contours_minutes?.length ? "minutes" : "meters";
@@ -20871,18 +21093,19 @@ var isochrone = {
 };
 
 // src/tools/routing/search-along-route.ts
-var Schema9 = strictObject({
+var Schema10 = strictObject({
   route_points: array(CoordinateSchema).min(2).describe("Waypoints defining the route to search along, in travel order"),
   query: string2().min(1).describe('What to find along the route, e.g. "gas station", "coffee"'),
   max_detour_seconds: number2().int().min(1).max(3600).optional().describe("Max driving time to reach a result after leaving the route (default 900 = 15 min)"),
   sort_by: _enum(["detour_time", "detour_offset"]).optional().describe("Order by detour driving time, or by distance of the detour point from route start"),
-  limit: number2().int().min(1).max(20).optional().describe("Maximum results (default 10, max 20)")
+  limit: number2().int().min(1).max(20).optional().describe("Maximum results (default 10, max 20)"),
+  view: _enum(["Unified", "AR", "CN", "IN", "PK", "MA", "RU", "RS", "TW", "TR"]).optional().describe("Geopolitical view for disputed territories (default: requester region or Unified)")
 });
 var searchAlongRoute = {
   name: "search_along_route",
   title: "Search Along Route",
-  description: 'Find places matching a text query along a driving route, with the detour time and distance each stop adds - for "find X on the way" questions. Pass the route as an ordered list of waypoints, e.g. the origin, waypoints and destination used with directions. Parameters: route_points (array of {latitude, longitude}, at least 2, required), query (required); optional max_detour_seconds (default 900, max 3600), sort_by (detour_time | detour_offset), limit (max 20). Example: {"route_points": [{"latitude": 34.0493, "longitude": -118.2557}, {"latitude": 34.0415, "longitude": -118.231}], "query": "gas station", "max_detour_seconds": 600}',
-  inputSchema: Schema9,
+  description: 'Find places matching a text query along a driving route, with the detour time and distance each stop adds - for "find X on the way" questions. Pass the route as an ordered list of waypoints, e.g. the origin, waypoints and destination used with directions. Parameters: route_points (array of {latitude, longitude}, at least 2, required), query (required); optional max_detour_seconds (default 900, max 3600), sort_by (detour_time | detour_offset), limit (max 20), view. Example: {"route_points": [{"latitude": 34.0493, "longitude": -118.2557}, {"latitude": 34.0415, "longitude": -118.231}], "query": "gas station", "max_detour_seconds": 600}',
+  inputSchema: Schema10,
   annotations: READ_ONLY,
   async run(args, nb) {
     const response = await nb.postJson(
@@ -20893,7 +21116,8 @@ var searchAlongRoute = {
         q: args.query,
         max_detour_time: args.max_detour_seconds,
         sort_by: args.sort_by,
-        limit: args.limit
+        limit: args.limit,
+        view: args.view
       }
     );
     const items = response.items ?? [];
@@ -20925,84 +21149,6 @@ function logError(message, error2) {
 function logInfo(message) {
   console.error(`[nextbillion-mcp] ${message}`);
 }
-
-// src/tools/maps/static-shared.ts
-var StaticImageShape = {
-  width: number2().int().min(16).max(2048).optional().describe("Image width in pixels (default 512)"),
-  height: number2().int().min(16).max(2048).optional().describe("Image height in pixels (default 512)"),
-  style: string2().optional().describe('Map style id: "streets", "light", "dark", or "hybrid" (default streets)'),
-  format: _enum(["png", "jpg", "webp"]).optional().describe("Image format (default png)"),
-  retina: boolean2().optional().describe("Render at @2x resolution for high-DPI displays")
-};
-var MIME_TYPES = {
-  png: "image/png",
-  jpg: "image/jpeg",
-  webp: "image/webp"
-};
-function staticImagePath(positionSegment, args) {
-  const style = args.style ?? "streets";
-  const size = `${args.width ?? 512}x${args.height ?? 512}${args.retina ? "@2x" : ""}`;
-  const format = args.format ?? "png";
-  return `/maps/${encodeURIComponent(style)}/static/${positionSegment}/${size}.${format}`;
-}
-function markerParam(markers, order) {
-  return markers.map((m) => {
-    const pair = order === "lng-first" ? `${m.longitude},${m.latitude}` : `${m.latitude},${m.longitude}`;
-    return `${pair}${m.color ? `,${m.color}` : ""}`;
-  }).join("|");
-}
-async function fetchImageResult(nb, path, query, caption, args, filePrefix = "map") {
-  const image = await nb.getBinary(path, query);
-  const mimeType = image.contentType.startsWith("image/") ? image.contentType : MIME_TYPES[args.format ?? "png"];
-  const savedPath = await saveImage(image.data, filePrefix, args.format ?? "png");
-  const location = savedPath ? ` Saved to ${savedPath} (for clients that cannot display images inline).` : "";
-  return {
-    content: [
-      { type: "image", data: Buffer.from(image.data).toString("base64"), mimeType },
-      { type: "text", text: caption + location }
-    ]
-  };
-}
-async function saveImage(data, prefix, ext) {
-  try {
-    const dir = imageOutputDir();
-    await mkdir(dir, { recursive: true });
-    const hash = createHash("sha1").update(data).digest("hex").slice(0, 8);
-    const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[-:]/g, "").replace(/\..+/, "");
-    const filePath = join2(dir, `${prefix}-${stamp}-${hash}.${ext === "jpg" ? "jpg" : ext}`);
-    await writeFile(filePath, data);
-    return filePath;
-  } catch (error2) {
-    logError("Could not save rendered image to disk", error2);
-    return void 0;
-  }
-}
-
-// src/tools/maps/static-map-image.ts
-var Schema10 = strictObject({
-  center: CoordinateSchema.describe("Center of the map view"),
-  zoom: number2().min(0).max(22).describe("Zoom level (0 = world, ~10 = city, ~15 = streets; fractional values allowed)"),
-  markers: array(CoordinateSchema.extend({ color: string2().optional() })).optional().describe('Markers to draw, each with optional color (e.g. "red", "#0000ff")'),
-  ...StaticImageShape
-});
-var staticMapImage = {
-  name: "static_map_image",
-  title: "Static Map Image",
-  description: 'Render a static map image centered on a location, optionally with markers; returns the image inline and also saves it to a local file (path in the result text) for clients that cannot display images. To draw a route, use static_route_map. Parameters: center {latitude, longitude} and zoom (0-22) (required); optional markers (array of {latitude, longitude, color}), width, height (default 512), style (streets | light | dark | hybrid), format (png | jpg | webp), retina. Example: {"center": {"latitude": 48.8566, "longitude": 2.3522}, "zoom": 14, "style": "dark", "markers": [{"latitude": 48.8584, "longitude": 2.2945, "color": "red"}]}',
-  inputSchema: Schema10,
-  annotations: READ_ONLY,
-  async run(args, nb) {
-    const position = `${args.center.latitude},${args.center.longitude},${args.zoom}`;
-    return fetchImageResult(
-      nb,
-      staticImagePath(position, args),
-      { markers: args.markers?.length ? markerParam(args.markers, "lng-first") : void 0 },
-      `Map centered at (${args.center.latitude}, ${args.center.longitude}), zoom ${args.zoom}` + (args.markers?.length ? `, ${args.markers.length} marker(s).` : "."),
-      args,
-      "map"
-    );
-  }
-};
 
 // src/tools/maps/polyline.ts
 var PRECISION = 1e5;
@@ -21108,64 +21254,233 @@ function fitPolylineToBudget(points, maxEncodedChars) {
   };
 }
 
-// src/tools/maps/static-route-map.ts
+// src/tools/maps/static-shared.ts
+var StaticImageShape = {
+  width: number2().int().min(16).max(2048).optional().describe("Image width in pixels (default 512)"),
+  height: number2().int().min(16).max(2048).optional().describe("Image height in pixels (default 512)"),
+  style: string2().optional().describe('Map style id: "streets", "light", "dark", or "hybrid" (default streets)'),
+  format: _enum(["png", "jpg", "webp"]).optional().describe("Image format (default png)"),
+  retina: boolean2().optional().describe("Render at @2x resolution for high-DPI displays")
+};
+var MarkerSchema = strictObject({
+  latitude: number2().min(-90).max(90),
+  longitude: number2().min(-180).max(180),
+  color: string2().optional().describe('Marker color, e.g. "red" or "#0000ff" (ignored when icon_url is set)'),
+  icon_url: string2().url().optional().describe("URL of a custom marker image (max 64 kB / 4096 px, e.g. 64x64 PNG)"),
+  anchor: _enum([
+    "top",
+    "left",
+    "bottom",
+    "right",
+    "center",
+    "topleft",
+    "bottomleft",
+    "topright",
+    "bottomright"
+  ]).optional().describe("Anchor point of a custom icon (default bottom)"),
+  scale: number2().positive().optional().describe("Custom icon scale factor (default 1)")
+});
+var PathSchema = strictObject({
+  points: array(CoordinateSchema).min(2).optional().describe("Vertices as {latitude, longitude} objects"),
+  geojson_coordinates: array(tuple([number2(), number2()])).min(2).optional().describe(
+    "Vertices as GeoJSON [longitude, latitude] pairs - pass an isochrone or GeoJSON ring here unchanged"
+  ),
+  stroke_color: string2().optional().describe("Line color (default blue)"),
+  stroke_width: number2().int().min(1).max(20).optional().describe("Line width in px (default 3)"),
+  fill_color: string2().optional().describe(
+    'Fill color for a closed shape, e.g. "rgba(255,0,0,0.3)" or "#ff000055"; omit for a line'
+  )
+}).describe("A line or filled polygon overlay");
+var PathsShape = {
+  paths: array(PathSchema).max(10).optional().describe("Extra lines/polygons to draw (e.g. isochrone contours as filled polygons)")
+};
+var MIME_TYPES = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  webp: "image/webp"
+};
+function staticImagePath(positionSegment, args) {
+  const style = args.style ?? "streets";
+  const size = `${args.width ?? 512}x${args.height ?? 512}${args.retina ? "@2x" : ""}`;
+  const format = args.format ?? "png";
+  return `/maps/${encodeURIComponent(style)}/static/${positionSegment}/${size}.${format}`;
+}
+function markerParam(markers, order) {
+  return markers.map((m) => {
+    const pair = order === "lng-first" ? `${m.longitude},${m.latitude}` : `${m.latitude},${m.longitude}`;
+    const commands = [];
+    if (m.icon_url) commands.push(`icon:${m.icon_url}`);
+    if (m.anchor) commands.push(`anchor:${m.anchor}`);
+    if (m.scale !== void 0) commands.push(`scale:${m.scale}`);
+    const color = m.color && !m.icon_url ? `,${m.color}` : "";
+    return `${commands.length ? commands.join("|") + "|" : ""}${pair}${color}`;
+  }).join("|");
+}
+async function fetchImageResult(nb, path, query, caption, args, filePrefix = "map") {
+  const image = await nb.getBinary(path, query);
+  const mimeType = image.contentType.startsWith("image/") ? image.contentType : MIME_TYPES[args.format ?? "png"];
+  const savedPath = await saveImage(image.data, filePrefix, args.format ?? "png");
+  const location = savedPath ? ` Saved to ${savedPath} (for clients that cannot display images inline).` : "";
+  return {
+    content: [
+      { type: "image", data: Buffer.from(image.data).toString("base64"), mimeType },
+      { type: "text", text: caption + location }
+    ]
+  };
+}
+async function saveImage(data, prefix, ext) {
+  try {
+    const dir = imageOutputDir();
+    await mkdir(dir, { recursive: true });
+    const hash = createHash("sha1").update(data).digest("hex").slice(0, 8);
+    const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[-:]/g, "").replace(/\..+/, "");
+    const filePath = join2(dir, `${prefix}-${stamp}-${hash}.${ext === "jpg" ? "jpg" : ext}`);
+    await writeFile(filePath, data);
+    return filePath;
+  } catch (error2) {
+    logError("Could not save rendered image to disk", error2);
+    return void 0;
+  }
+}
+var URL_BYTE_BUDGET = 8e3;
+function pathVertices(path) {
+  const vertices = path.points?.length ? path.points : (path.geojson_coordinates ?? []).map(([longitude, latitude]) => ({ latitude, longitude }));
+  if (path.fill_color && vertices.length >= 3) {
+    const first = vertices[0];
+    const last = vertices[vertices.length - 1];
+    if (first.latitude !== last.latitude || first.longitude !== last.longitude) {
+      return [...vertices, first];
+    }
+  }
+  return vertices;
+}
+function pathParams(paths, maxEncodedChars = Number.POSITIVE_INFINITY) {
+  let simplified = false;
+  const values = paths.map((path) => {
+    const style = [
+      `stroke:${path.stroke_color ?? "blue"}`,
+      `width:${path.stroke_width ?? 3}`,
+      `fill:${path.fill_color ?? "none"}`
+    ];
+    const fitted = fitPolylineToBudget(pathVertices(path), maxEncodedChars);
+    simplified ||= fitted.simplified;
+    return `${style.join("|")}|enc:${fitted.encoded}`;
+  });
+  return { values, simplified };
+}
+
+// src/tools/maps/static-map-image.ts
 var Schema11 = strictObject({
+  center: CoordinateSchema.describe("Center of the map view"),
+  zoom: number2().min(0).max(22).describe("Zoom level (0 = world, ~10 = city, ~15 = streets; fractional values allowed)"),
+  markers: array(MarkerSchema).optional().describe("Markers to draw, each with optional color or custom icon"),
+  ...PathsShape,
+  ...StaticImageShape
+});
+var staticMapImage = {
+  name: "static_map_image",
+  title: "Static Map Image",
+  description: 'Render a static map image centered on a location, with optional markers and line/polygon overlays; returns the image inline and also saves it to a local file (path in the result text) for clients that cannot display images. For a map auto-fitted to a route or to overlays, use static_route_map. Parameters: center {latitude, longitude} and zoom (0-22) (required); optional markers (array of {latitude, longitude, color, icon_url, anchor, scale}), paths (array of {points [{latitude, longitude}] OR geojson_coordinates [[longitude, latitude], ...], stroke_color, stroke_width, fill_color for a filled polygon}), width, height (default 512), style (streets | light | dark | hybrid), format (png | jpg | webp), retina. Example: {"center": {"latitude": 48.8566, "longitude": 2.3522}, "zoom": 14, "markers": [{"latitude": 48.8584, "longitude": 2.2945, "color": "red"}], "paths": [{"points": [{"latitude": 48.85, "longitude": 2.29}, {"latitude": 48.86, "longitude": 2.30}], "stroke_color": "green"}]}',
+  inputSchema: Schema11,
+  annotations: READ_ONLY,
+  async run(args, nb) {
+    const position = `${args.center.latitude},${args.center.longitude},${args.zoom}`;
+    const path = staticImagePath(position, args);
+    const markers = args.markers?.length ? markerParam(args.markers, "lng-first") : void 0;
+    let overlay = args.paths?.length ? pathParams(args.paths) : void 0;
+    for (const budget of [4e3, 2e3, 1e3, 500, 200]) {
+      if (!overlay || nb.buildUrl(path, { markers, path: overlay.values }).length <= URL_BYTE_BUDGET)
+        break;
+      overlay = pathParams(args.paths, budget);
+    }
+    const parts = [
+      `Map centered at (${args.center.latitude}, ${args.center.longitude}), zoom ${args.zoom}`
+    ];
+    if (args.markers?.length) parts.push(`${args.markers.length} marker(s)`);
+    if (args.paths?.length)
+      parts.push(
+        `${args.paths.length} overlay path(s)${overlay?.simplified ? " (simplified to fit the URL limit)" : ""}`
+      );
+    return fetchImageResult(
+      nb,
+      path,
+      { markers, path: overlay?.values },
+      `${parts.join(", ")}.`,
+      args,
+      "map"
+    );
+  }
+};
+
+// src/tools/maps/static-route-map.ts
+var Schema12 = strictObject({
   encoded_polyline: string2().optional().describe(
     "Route geometry as a Google encoded polyline (precision 5) \u2014 exactly what the directions tool returns with its default geometry setting"
   ),
   route_points: array(CoordinateSchema).min(2).optional().describe("Alternative to encoded_polyline: the route as an ordered list of coordinates"),
-  markers: array(CoordinateSchema.extend({ color: string2().optional() })).optional().describe("Extra markers, e.g. origin and destination, with optional color"),
+  markers: array(MarkerSchema).optional().describe("Extra markers, e.g. origin and destination, with optional color or custom icon"),
+  ...PathsShape,
   stroke_color: string2().optional().describe('Route line color (e.g. "blue", "#ff0000"; default blue)'),
   stroke_width: number2().int().min(1).max(20).optional().describe("Route line width in pixels (default 4)"),
   padding: number2().min(0).max(1).optional().describe("Margin around the route as a fraction of image size (default 0.1)"),
   ...StaticImageShape
 });
-var URL_BYTE_BUDGET = 8e3;
 var ENCODED_CHAR_BUDGETS = [4e3, 3e3, 2e3, 1200, 600, 200];
 var staticRouteMap = {
   name: "static_route_map",
   title: "Static Route Map",
-  description: 'Render a static map with a route drawn on it, auto-fitted to show the whole route; very long routes are simplified automatically to fit the map API URL limit (distances are unaffected). Returns the image inline and also saves it to a local file (path in the result text). Parameters: exactly one of encoded_polyline (the geometry string from directions, preferred) or route_points (array of {latitude, longitude}); optional markers (array of {latitude, longitude, color}, e.g. origin and destination), stroke_color, stroke_width, padding, width, height, style, format, retina. Example: {"encoded_polyline": "<geometry from directions>", "markers": [{"latitude": 37.7749, "longitude": -122.4194, "color": "green"}, {"latitude": 34.0522, "longitude": -118.2437, "color": "red"}]}',
-  inputSchema: Schema11,
+  description: 'Render a static map auto-fitted to a route and/or overlays: a route from directions, and/or lines and filled polygons such as isochrone contours; very long geometry is simplified automatically to fit the map API URL limit (distances unaffected). Returns the image inline and also saves it to a local file (path in the result text). Parameters: at least one of encoded_polyline (the geometry string from directions, preferred), route_points (array of {latitude, longitude}) or paths (array of {points OR geojson_coordinates [[longitude, latitude], ...], stroke_color, stroke_width, fill_color}); optional markers (array of {latitude, longitude, color, icon_url, anchor, scale}), stroke_color, stroke_width (route line), padding, width, height, style, format, retina. Example (isochrone contours) - Example: {"paths": [{"geojson_coordinates": [[-122.42, 37.77], [-122.40, 37.78], [-122.41, 37.79], [-122.42, 37.77]], "fill_color": "rgba(29,78,216,0.35)", "stroke_color": "#1d4ed8"}], "markers": [{"latitude": 37.7749, "longitude": -122.4194, "color": "red"}]}',
+  inputSchema: Schema12,
   annotations: READ_ONLY,
   async run(args, nb) {
-    if (!args.encoded_polyline && !args.route_points) {
-      throw new ToolInputError("Provide `encoded_polyline` (preferred) or `route_points`.");
-    }
     if (args.encoded_polyline && args.route_points) {
       throw new ToolInputError("Provide either `encoded_polyline` or `route_points`, not both.");
     }
-    const styleSegments = [
-      `stroke:${args.stroke_color ?? "blue"}`,
-      `width:${args.stroke_width ?? 4}`,
-      "fill:none"
-    ];
+    if (!args.encoded_polyline && !args.route_points && !args.paths?.length) {
+      throw new ToolInputError(
+        "Provide a route (`encoded_polyline` or `route_points`) and/or overlay `paths`."
+      );
+    }
     const markers = args.markers?.length ? markerParam(args.markers, "lat-first") : void 0;
     const padding = args.padding !== void 0 ? String(args.padding) : void 0;
     const path = staticImagePath("auto", args);
-    const buildQuery = (geometry2) => ({
-      path: `${styleSegments.join("|")}|${geometry2}`,
-      markers,
-      padding
-    });
-    let geometry = args.encoded_polyline ? `enc:${args.encoded_polyline}` : args.route_points.map((p) => `${p.latitude},${p.longitude}`).join("|");
-    let simplificationNote = "";
-    if (nb.buildUrl(path, buildQuery(geometry)).length > URL_BYTE_BUDGET) {
-      const points = args.encoded_polyline ? decodePolyline(args.encoded_polyline) : args.route_points;
-      for (const budget of ENCODED_CHAR_BUDGETS) {
-        const fitted = fitPolylineToBudget(points, budget);
-        geometry = `enc:${fitted.encoded}`;
-        if (nb.buildUrl(path, buildQuery(geometry)).length <= URL_BYTE_BUDGET) {
-          simplificationNote = ` Display geometry simplified from ${fitted.originalPointCount} to ${fitted.pointCount} points to fit the map URL limit; distances are unaffected.`;
-          break;
-        }
+    const routeStyle = [
+      `stroke:${args.stroke_color ?? "blue"}`,
+      `width:${args.stroke_width ?? 4}`,
+      "fill:none"
+    ].join("|");
+    const routePoints = args.encoded_polyline ? decodePolyline(args.encoded_polyline) : args.route_points ?? [];
+    const build2 = (budget) => {
+      const values = [];
+      let simplified = false;
+      if (routePoints.length) {
+        const fitted = fitPolylineToBudget(routePoints, budget);
+        simplified ||= fitted.simplified;
+        values.push(`${routeStyle}|enc:${fitted.encoded}`);
       }
+      if (args.paths?.length) {
+        const overlay = pathParams(args.paths, budget);
+        simplified ||= overlay.simplified;
+        values.push(...overlay.values);
+      }
+      return { values, simplified };
+    };
+    let built = build2(Number.POSITIVE_INFINITY);
+    for (const budget of ENCODED_CHAR_BUDGETS) {
+      if (nb.buildUrl(path, { path: built.values, markers, padding }).length <= URL_BYTE_BUDGET)
+        break;
+      built = build2(budget);
     }
+    const parts = ["Map rendered"];
+    if (routePoints.length) parts.push("with the route");
+    if (args.paths?.length) parts.push(`${args.paths.length} overlay path(s)`);
+    if (args.markers?.length) parts.push(`${args.markers.length} marker(s)`);
+    const note = built.simplified ? " Display geometry was simplified to fit the map URL limit; distances are unaffected." : "";
     return fetchImageResult(
       nb,
       path,
-      buildQuery(geometry),
-      `Route map rendered${args.markers?.length ? ` with ${args.markers.length} marker(s)` : ""}.` + simplificationNote,
+      { path: built.values, markers, padding },
+      `${parts.join(", ")}.${note}`,
       args,
       "route-map"
     );
@@ -21183,6 +21498,7 @@ var ALL_TOOLS = [
   geocodeReverse,
   geocodeStructured,
   isochrone,
+  placeBrowse,
   placeLookup,
   placeSearch,
   postcodeLookup,
@@ -21353,7 +21669,7 @@ function extractApiMessage(bodyText) {
 }
 
 // src/index.ts
-var pkg = true ? { version: "0.1.11" } : createRequire(import.meta.url)("../package.json");
+var pkg = true ? { version: "0.2.0" } : createRequire(import.meta.url)("../package.json");
 function main() {
   const args = process.argv.slice(2);
   if (args.includes("--version") || args.includes("-v")) {
