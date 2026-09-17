@@ -11,10 +11,14 @@
     "typecheck": "npm run typecheck --workspace packages/server",
     "test": "npm run test --workspace packages/server",
     "test:e2e": "npm run test:e2e --workspace packages/server",
+    "eval": "node --experimental-strip-types evals/run_evals.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
     "prettier": "^3.6.0"
+  },
+  "dependencies": {
+    "@mcpjam/sdk": "^8.8.0"
   }
 }
