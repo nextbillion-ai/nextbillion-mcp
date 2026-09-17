@@ -2561,112 +2561,6 @@ function handleIntersectionResults(result, left, right) {
   result.value = merged.data;
   return result;
 }
-var $ZodTuple = /* @__PURE__ */ $constructor("$ZodTuple", (inst, def) => {
-  $ZodType.init(inst, def);
-  const items = def.items;
-  inst._zod.parse = (payload, ctx) => {
-    const input = payload.value;
-    if (!Array.isArray(input)) {
-      payload.issues.push({
-        input,
-        inst,
-        expected: "tuple",
-        code: "invalid_type"
-      });
-      return payload;
-    }
-    payload.value = [];
-    const proms = [];
-    const optinStart = getTupleOptStart(items, "optin");
-    const optoutStart = getTupleOptStart(items, "optout");
-    if (!def.rest) {
-      if (input.length < optinStart) {
-        payload.issues.push({
-          code: "too_small",
-          minimum: optinStart,
-          inclusive: true,
-          input,
-          inst,
-          origin: "array"
-        });
-        return payload;
-      }
-      if (input.length > items.length) {
-        payload.issues.push({
-          code: "too_big",
-          maximum: items.length,
-          inclusive: true,
-          input,
-          inst,
-          origin: "array"
-        });
-      }
-    }
-    const itemResults = new Array(items.length);
-    for (let i = 0; i < items.length; i++) {
-      const r = items[i]._zod.run({ value: input[i], issues: [] }, ctx);
-      if (r instanceof Promise) {
-        proms.push(r.then((rr) => {
-          itemResults[i] = rr;
-        }));
-      } else {
-        itemResults[i] = r;
-      }
-    }
-    if (def.rest) {
-      let i = items.length - 1;
-      const rest = input.slice(items.length);
-      for (const el of rest) {
-        i++;
-        const result = def.rest._zod.run({ value: el, issues: [] }, ctx);
-        if (result instanceof Promise) {
-          proms.push(result.then((r) => handleTupleResult(r, payload, i)));
-        } else {
-          handleTupleResult(result, payload, i);
-        }
-      }
-    }
-    if (proms.length) {
-      return Promise.all(proms).then(() => handleTupleResults(itemResults, payload, items, input, optoutStart));
-    }
-    return handleTupleResults(itemResults, payload, items, input, optoutStart);
-  };
-});
-function getTupleOptStart(items, key) {
-  for (let i = items.length - 1; i >= 0; i--) {
-    if (items[i]._zod[key] !== "optional")
-      return i + 1;
-  }
-  return 0;
-}
-function handleTupleResult(result, final, index) {
-  if (result.issues.length) {
-    final.issues.push(...prefixIssues(index, result.issues));
-  }
-  final.value[index] = result.value;
-}
-function handleTupleResults(itemResults, final, items, input, optoutStart) {
-  for (let i = 0; i < items.length; i++) {
-    const r = itemResults[i];
-    const isPresent = i < input.length;
-    if (r.issues.length) {
-      if (!isPresent && i >= optoutStart) {
-        final.value.length = i;
-        break;
-      }
-      final.issues.push(...prefixIssues(i, r.issues));
-    }
-    final.value[i] = r.value;
-  }
-  for (let i = final.value.length - 1; i >= input.length; i--) {
-    if (items[i]._zod.optout === "optional" && final.value[i] === void 0) {
-      final.value.length = i;
-    } else {
-      break;
-    }
-  }
-  return final;
-}
 var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
   $ZodType.init(inst, def);
   inst._zod.parse = (payload, ctx) => {
@@ -5462,26 +5356,6 @@ function intersection(left, right) {
     type: "intersection",
     left,
     right
-  });
-}
-var ZodTuple = /* @__PURE__ */ $constructor("ZodTuple", (inst, def) => {
-  $ZodTuple.init(inst, def);
-  ZodType.init(inst, def);
-  inst._zod.processJSONSchema = (ctx, json, params) => tupleProcessor(inst, ctx, json, params);
-  inst.rest = (rest) => inst.clone({
-    ...inst._zod.def,
-    rest
-  });
-});
-function tuple(items, _paramsOrRest, _params) {
-  const hasRest = _paramsOrRest instanceof $ZodType;
-  const params = hasRest ? _params : _paramsOrRest;
-  const rest = hasRest ? _paramsOrRest : null;
-  return new ZodTuple({
-    type: "tuple",
-    items,
-    rest,
-    ...util_exports.normalizeParams(params)
   });
 }
 var ZodRecord = /* @__PURE__ */ $constructor("ZodRecord", (inst, def) => {
@@ -21282,7 +21156,7 @@ var MarkerSchema = strictObject({
 });
 var PathSchema = strictObject({
   points: array(CoordinateSchema).min(2).optional().describe("Vertices as {latitude, longitude} objects"),
-  geojson_coordinates: array(tuple([number2(), number2()])).min(2).optional().describe(
+  geojson_coordinates: array(array(number2()).min(2).max(2)).min(2).optional().describe(
     "Vertices as GeoJSON [longitude, latitude] pairs - pass an isochrone or GeoJSON ring here unchanged"
   ),
   stroke_color: string2().optional().describe("Line color (default blue)"),
