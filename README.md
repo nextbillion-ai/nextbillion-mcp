@@ -54,6 +54,42 @@ which hangs on some networks; see `distributions/manual/README.md`.)
 Tool inputs always use explicit `{latitude, longitude}` objects; the server handles the
 underlying API's coordinate-order conventions internally.
 
+## Privacy Policy
+
+`nextbillion-mcp` is a local MCP server: it runs on your own machine, is started by your
+MCP client, and communicates only with the NextBillion.ai API. NextBillion.ai's privacy
+policy applies to the API service: https://nextbillion.ai/privacy.
+
+**What is collected and sent.** When your AI client calls a tool, the server sends that
+tool call's arguments (for example addresses, place names, coordinates, route and map
+parameters) to `api.nextbillion.io` over HTTPS, authenticated with your API key, and
+returns the API's response to your client unchanged. The server does not collect or
+transmit anything else: no conversation content beyond the tool arguments, no files, no
+device or usage information. The server does not query your client's memory, chat history
+or files.
+
+**Telemetry.** None. The server contains no analytics, crash reporting or update checks;
+its only network destination is the NextBillion.ai API (configurable via `NBAI_BASE_URL`).
+
+**API key handling.** The key is read from the `NBAI_API_KEY` environment variable
+supplied by your client configuration, kept in memory for the life of the process, sent
+only to the NextBillion.ai API, and redacted from error messages and logs. It is never
+written to disk by the server.
+
+**Local storage.** Nothing is stored locally by default. If you set `NBAI_IMAGE_DIR`, the
+two map tools additionally save each rendered map image to that directory so that
+terminal clients can open it; those files are yours to keep or delete, and the server
+never overwrites existing files. Diagnostics go to the process's standard error stream,
+which your client may capture in its own logs.
+
+**Third-party sharing and retention.** The server shares data with no one other than
+NextBillion.ai. How NextBillion.ai uses and retains API request data is described in its
+privacy policy at https://nextbillion.ai/privacy.
+
+**Contact.** Privacy questions about the API service: see the contact details in the
+policy above. <!-- TODO(nextbillion): confirm the dedicated privacy contact address for
+the Anthropic directory submission and replace this note. -->
+
 ## Repository layout
 
 - `packages/server/` — **protocol layer**: the MCP server published to npm as `nextbillion-mcp`.

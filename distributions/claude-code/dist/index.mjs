@@ -20403,9 +20403,20 @@ function toError(value) {
 
 // src/config.ts
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
+function resolveImageDir(env = process.env) {
+  const raw = env.NBAI_IMAGE_DIR?.trim();
+  if (!raw) return {};
+  if (raw.toLowerCase() === "tmp") return { dir: join(tmpdir(), "nextbillion-mcp") };
+  if (!isAbsolute(raw)) {
+    return {
+      warning: `NBAI_IMAGE_DIR must be an absolute path or "tmp", got "${raw}"; map images will not be saved`
+    };
+  }
+  return { dir: raw };
+}
 function imageOutputDir(env = process.env) {
-  return env.NBAI_IMAGE_DIR?.trim() || join(tmpdir(), "nextbillion-mcp");
+  return resolveImageDir(env).dir;
 }
 var DEFAULT_BASE_URL = "https://api.nextbillion.io";
 var DEFAULT_TIMEOUT_MS = 3e4;
@@ -21329,13 +21340,18 @@ async function fetchImageResult(nb, path, query, caption, args, filePrefix = "ma
   };
 }
 async function saveImage(data, prefix, ext) {
+  const dir = imageOutputDir();
+  if (!dir) return void 0;
   try {
-    const dir = imageOutputDir();
     await mkdir(dir, { recursive: true });
     const hash = createHash("sha1").update(data).digest("hex").slice(0, 8);
     const stamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[-:]/g, "").replace(/\..+/, "");
     const filePath = join2(dir, `${prefix}-${stamp}-${hash}.${ext === "jpg" ? "jpg" : ext}`);
-    await writeFile(filePath, data);
+    try {
+      await writeFile(filePath, data, { flag: "wx" });
+    } catch (error2) {
+      if (error2.code !== "EEXIST") throw error2;
+    }
     return filePath;
   } catch (error2) {
     logError("Could not save rendered image to disk", error2);
@@ -21380,7 +21396,7 @@ var Schema11 = strictObject({
 var staticMapImage = {
   name: "static_map_image",
   title: "Static Map Image",
-  description: 'Render a static map image centered on a location, with optional markers and line/polygon overlays; returns the image inline and also saves it to a local file (path in the result text) for clients that cannot display images. For a map auto-fitted to a route or to overlays, use static_route_map. Parameters: center {latitude, longitude} and zoom (0-22) (required); optional markers (array of {latitude, longitude, color, icon_url, anchor, scale}), paths (array of {points [{latitude, longitude}] OR geojson_coordinates [[longitude, latitude], ...], stroke_color, stroke_width, fill_color for a filled polygon}), width, height (default 512), style (streets | light | dark | hybrid), format (png | jpg | webp), retina. Example: {"center": {"latitude": 48.8566, "longitude": 2.3522}, "zoom": 14, "markers": [{"latitude": 48.8584, "longitude": 2.2945, "color": "red"}], "paths": [{"points": [{"latitude": 48.85, "longitude": 2.29}, {"latitude": 48.86, "longitude": 2.30}], "stroke_color": "green"}]}',
+  description: 'Render a static map image centered on a location, with optional markers and line/polygon overlays; returns the image inline and, if NBAI_IMAGE_DIR is set, also saves it as a file (path in the result text). For a map auto-fitted to a route or to overlays, use static_route_map. Parameters: center {latitude, longitude} and zoom (0-22) (required); optional markers (array of {latitude, longitude, color, icon_url, anchor, scale}), paths (array of {points [{latitude, longitude}] OR geojson_coordinates [[longitude, latitude], ...], stroke_color, stroke_width, fill_color for a filled polygon}), width, height (default 512), style (streets | light | dark | hybrid), format (png | jpg | webp), retina. Example: {"center": {"latitude": 48.8566, "longitude": 2.3522}, "zoom": 14, "markers": [{"latitude": 48.8584, "longitude": 2.2945, "color": "red"}], "paths": [{"points": [{"latitude": 48.85, "longitude": 2.29}, {"latitude": 48.86, "longitude": 2.30}], "stroke_color": "green"}]}',
   inputSchema: Schema11,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -21429,7 +21445,7 @@ var ENCODED_CHAR_BUDGETS = [4e3, 3e3, 2e3, 1200, 600, 200];
 var staticRouteMap = {
   name: "static_route_map",
   title: "Static Route Map",
-  description: 'Render a static map auto-fitted to a route and/or overlays: a route from directions, and/or lines and filled polygons such as isochrone contours; very long geometry is simplified automatically to fit the map API URL limit (distances unaffected). Returns the image inline and also saves it to a local file (path in the result text). Parameters: at least one of encoded_polyline (the geometry string from directions, preferred), route_points (array of {latitude, longitude}) or paths (array of {points OR geojson_coordinates [[longitude, latitude], ...], stroke_color, stroke_width, fill_color}); optional markers (array of {latitude, longitude, color, icon_url, anchor, scale}), stroke_color, stroke_width (route line), padding, width, height, style, format, retina. Example (isochrone contours) - Example: {"paths": [{"geojson_coordinates": [[-122.42, 37.77], [-122.40, 37.78], [-122.41, 37.79], [-122.42, 37.77]], "fill_color": "rgba(29,78,216,0.35)", "stroke_color": "#1d4ed8"}], "markers": [{"latitude": 37.7749, "longitude": -122.4194, "color": "red"}]}',
+  description: 'Render a static map auto-fitted to a route and/or overlays: a route from directions, and/or lines and filled polygons such as isochrone contours; very long geometry is simplified automatically to fit the map API URL limit (distances unaffected). Returns the image inline and, if NBAI_IMAGE_DIR is set, also saves it as a file (path in the result text). Parameters: at least one of encoded_polyline (the geometry string from directions, preferred), route_points (array of {latitude, longitude}) or paths (array of {points OR geojson_coordinates [[longitude, latitude], ...], stroke_color, stroke_width, fill_color}); optional markers (array of {latitude, longitude, color, icon_url, anchor, scale}), stroke_color, stroke_width (route line), padding, width, height, style, format, retina. Example (isochrone contours) - Example: {"paths": [{"geojson_coordinates": [[-122.42, 37.77], [-122.40, 37.78], [-122.41, 37.79], [-122.42, 37.77]], "fill_color": "rgba(29,78,216,0.35)", "stroke_color": "#1d4ed8"}], "markers": [{"latitude": 37.7749, "longitude": -122.4194, "color": "red"}]}',
   inputSchema: Schema12,
   annotations: READ_ONLY,
   async run(args, nb) {
@@ -21669,7 +21685,7 @@ function extractApiMessage(bodyText) {
 }
 
 // src/index.ts
-var pkg = true ? { version: "0.2.0" } : createRequire(import.meta.url)("../package.json");
+var pkg = true ? { version: "0.2.1" } : createRequire(import.meta.url)("../package.json");
 function main() {
   const args = process.argv.slice(2);
   if (args.includes("--version") || args.includes("-v")) {
@@ -21686,7 +21702,8 @@ Environment variables:
   NBAI_API_KEY      (required) NextBillion.ai API key
   NBAI_BASE_URL     (optional) API base URL, default https://api.nextbillion.io
   NBAI_TIMEOUT_MS   (optional) per-request timeout, default 30000
-  NBAI_IMAGE_DIR    (optional) directory for saved map images, default <tmp>/nextbillion-mcp
+  NBAI_IMAGE_DIR    (optional) also save rendered maps to this absolute directory, or
+                    "tmp" for the OS temp dir; unset = nothing is written to disk
 `
     );
     return;
@@ -21707,6 +21724,9 @@ Environment variables:
     baseUrl: config2.baseUrl,
     timeoutMs: config2.timeoutMs
   });
+  const imageDir = resolveImageDir();
+  if (imageDir.warning) logError(imageDir.warning);
+  else if (imageDir.dir) logInfo(`rendered map images will also be saved to ${imageDir.dir}`);
   const handle = serveStdio(() => buildServer(nb, pkg.version));
   logInfo(`${SERVER_NAME} ${pkg.version} listening on stdio`);
   const shutdown = () => {
