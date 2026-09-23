@@ -49,10 +49,28 @@ describe('tool registry', () => {
     }
   });
 
-  it('marks every tool read-only', () => {
+  it('marks every tool read-only with the full annotation set', () => {
+    // Claude's connector directory requires a title and accurate safety hints on
+    // every tool; read-only tools run without per-call confirmation there.
     for (const tool of ALL_TOOLS) {
-      expect(tool.annotations?.readOnlyHint, tool.name).toBe(true);
-      expect(tool.annotations?.destructiveHint, tool.name).toBe(false);
+      expect(tool.annotations, tool.name).toEqual({
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true,
+      });
+    }
+  });
+
+  it('gives every tool a short name and a human-readable Title Case title', () => {
+    const minor = new Set(['by', 'of', 'for', 'and', 'along', 'to']);
+    for (const tool of ALL_TOOLS) {
+      expect(tool.name.length, tool.name).toBeLessThanOrEqual(64);
+      expect(tool.title.trim(), tool.name).toBe(tool.title);
+      expect(tool.title.length, tool.name).toBeGreaterThan(0);
+      for (const word of tool.title.split(' ')) {
+        if (!minor.has(word)) expect(word, `${tool.name} title word "${word}"`).toMatch(/^[A-Z]/);
+      }
     }
   });
 });
