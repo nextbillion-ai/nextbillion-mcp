@@ -43,6 +43,7 @@ const SUITE_PATH = resolve(process.cwd(), 'evals/nextbillion_eval_suite.json');
 
 interface TestCase {
   id: string;
+  title?: string;
   name: string;
   category: string;
   description: string;
@@ -162,9 +163,36 @@ async function main() {
     let errorMessage = '';
 
     try {
-      const runResult = await runner.run(tc.prompt, {
+      let runResult = await runner.run(tc.prompt, {
         timeout: { totalMs: 35_000, stepMs: 25_000 },
       });
+
+      // Handle rate limit / quota exceeded with backoff retry
+      if (runResult.hasError()) {
+        const errText = runResult.getError() || '';
+        if (
+          errText.includes('Quota exceeded') ||
+          errText.includes('rate-limit') ||
+          errText.includes('Please retry in') ||
+          errText.includes('RESOURCE_EXHAUSTED')
+        ) {
+          const matches = [...errText.matchAll(/Please retry in ([\d\.]+)s/g)];
+          let waitSecs = 60;
+          if (matches.length > 0) {
+            const parsed = matches.map((m) => Math.ceil(parseFloat(m[1])));
+            waitSecs = Math.max(...parsed) + 5;
+          }
+          console.log(
+            `\n  └─> [Rate Limit] Waiting ${waitSecs}s for quota window to clear before retrying...`,
+          );
+          await new Promise((r) => setTimeout(r, waitSecs * 1000));
+          runner.resetPromptHistory();
+          runResult = await runner.run(tc.prompt, {
+            timeout: { totalMs: 45_000, stepMs: 35_000 },
+          });
+        }
+      }
+
       if (runResult.hasError()) {
         status = 'FAIL';
         errorMessage = `API error: ${runResult.getError()}`;
@@ -217,6 +245,8 @@ async function main() {
       if (reporter && runResult) {
         try {
           await reporter.recordFromPrompt(runResult, {
+            caseTitle: tc.title || tc.description || tc.name,
+            caseId: tc.id,
             expectedToolCalls: tc.expectedTool ? [{ toolName: tc.expectedTool }] : [],
             isNegativeTest: tc.expectedTool === null,
           });
@@ -237,8 +267,8 @@ async function main() {
 
     runner.resetPromptHistory();
 
-    // Respect LLM rate limit (15 RPM on free tier)
-    await new Promise((r) => setTimeout(r, 1200));
+    // Respect LLM rate limit (140 requests per minute sliding window)
+    await new Promise((r) => setTimeout(r, 2500));
   }
 
   console.log(

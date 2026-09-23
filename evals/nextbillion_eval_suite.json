@@ -1,14 +1,20 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "suiteName": "nextbillion-mcp-eval-suite",
-  "description": "Comprehensive evaluation suite for NextBillion.ai MCP server covering all 16 tools across Geocoding, Places, Routing, and Maps.",
-  "version": "1.0.0",
+  "suiteName": "Nextbillion-MCPEval-Suite",
+  "description": "Comprehensive evaluation suite for NextBillion MCP tools: 2 representative test cases for each of the 16 registered tools (32 cases total).",
+  "version": "2.0.0",
+  "metadata": {
+    "totalCases": 32,
+    "toolsCovered": 16,
+    "casesPerTool": 2,
+    "updatedAt": "2026-09-18T10:25:15.899Z"
+  },
   "cases": [
     {
-      "id": "tc_01_autocomplete",
+      "id": "tc_01a_autocomplete_amphitheatre",
+      "title": "Autocomplete Google Amphitheatre address prefix",
       "name": "autocomplete",
       "category": "places_geocoding",
-      "description": "Strict address prefix completion",
+      "description": "Strict address prefix completion for Mountain View headquarters",
       "prompt": "I am typing 1600 Amphitheatre Pkwy into the search bar. Show autocomplete candidates for the prefix '1600 Amphitheatre Pkw'.",
       "expectedTool": "autocomplete",
       "expectedArgs": {
@@ -17,10 +23,31 @@
       "passCriteria": "Calls autocomplete with query matching prefix"
     },
     {
-      "id": "tc_02_autosuggest",
+      "id": "tc_01b_autocomplete_stat_prefix",
+      "title": "Autocomplete 'stat' prefix in Oklahoma City with country filter",
+      "name": "autocomplete",
+      "category": "places_geocoding",
+      "description": "Prefix completion for 'stat' biased around Oklahoma City coordinates from docs.nextbillion.ai",
+      "prompt": "Complete the partial address prefix 'stat' near latitude 35.4769, longitude -97.4872 restricted to country USA.",
+      "expectedTool": "autocomplete",
+      "expectedArgs": {
+        "query": "stat",
+        "near": {
+          "latitude": 35.4769,
+          "longitude": -97.4872
+        },
+        "country_codes": [
+          "USA"
+        ]
+      },
+      "passCriteria": "Calls autocomplete with query 'stat' and near coordinates"
+    },
+    {
+      "id": "tc_02a_autosuggest_misspelled_aquarium",
+      "title": "Autosuggest misspelled aquarium query",
       "name": "autosuggest",
       "category": "places_geocoding",
-      "description": "Typo-tolerant suggestions for search-as-you-type near coordinates",
+      "description": "Typo-tolerant suggestions for search-as-you-type near Boston coordinates",
       "prompt": "I made a typo while searching. Suggest places for the misspelled query 'aqauriums' near latitude 42.3501 and longitude -71.0689.",
       "expectedTool": "autosuggest",
       "expectedArgs": {
@@ -33,10 +60,25 @@
       "passCriteria": "Calls autosuggest with typo query and near coordinates"
     },
     {
-      "id": "tc_03_place_search",
+      "id": "tc_02b_autosuggest_london_museum",
+      "title": "Autosuggest partial tourist query with radius",
+      "name": "autosuggest",
+      "category": "places_geocoding",
+      "description": "Search-as-you-type suggestions for incomplete query 'London muse' from docs.nextbillion.ai",
+      "prompt": "Find search-as-you-type suggestions for the incomplete query 'London muse' within a 10000 meter radius of latitude 51.5074, longitude -0.1278.",
+      "expectedTool": "autosuggest",
+      "expectedArgs": {
+        "query": "London muse",
+        "radius_m": 10000
+      },
+      "passCriteria": "Calls autosuggest with query 'London muse' and radius"
+    },
+    {
+      "id": "tc_03a_place_search_coffee_sf",
+      "title": "Search coffee shops near location",
       "name": "place_search",
       "category": "places_geocoding",
-      "description": "Free-text POI and business search around location",
+      "description": "Free-text POI and business search around location with radius",
       "prompt": "Find coffee shops near latitude 37.7749, longitude -122.4194 within a 1000 meter radius.",
       "expectedTool": "place_search",
       "expectedArgs": {
@@ -50,10 +92,28 @@
       "passCriteria": "Calls place_search with query 'coffee', near coordinates, and radius"
     },
     {
-      "id": "tc_04_geocode_forward",
+      "id": "tc_03b_place_search_gas_light",
+      "title": "Search business by name around coordinates",
+      "name": "place_search",
+      "category": "places_geocoding",
+      "description": "Free-text place search for 'Gas Light' around San Francisco from docs.nextbillion.ai",
+      "prompt": "Search for the place or business 'Gas Light' around latitude 37.8037, longitude -122.4331.",
+      "expectedTool": "place_search",
+      "expectedArgs": {
+        "query": "Gas Light",
+        "near": {
+          "latitude": 37.8037,
+          "longitude": -122.4331
+        }
+      },
+      "passCriteria": "Calls place_search with query 'Gas Light' and coordinates"
+    },
+    {
+      "id": "tc_04a_geocode_forward_downing_st",
+      "title": "Geocode 10 Downing Street address",
       "name": "geocode_forward",
       "category": "places_geocoding",
-      "description": "Forward address-to-coordinates conversion",
+      "description": "Forward address-to-coordinates conversion for London landmark",
       "prompt": "What are the geographical coordinates and full postal address for '10 Downing Street, London, UK'?",
       "expectedTool": "geocode_forward",
       "expectedArgs": {
@@ -62,10 +122,27 @@
       "passCriteria": "Calls geocode_forward with the target address string"
     },
     {
-      "id": "tc_05_geocode_reverse",
+      "id": "tc_04b_geocode_forward_white_house",
+      "title": "Geocode White House with USA country code",
+      "name": "geocode_forward",
+      "category": "places_geocoding",
+      "description": "Forward address lookup with country filter from docs.nextbillion.ai",
+      "prompt": "Forward geocode '1600 Pennsylvania Avenue NW, Washington DC' filtered to country USA.",
+      "expectedTool": "geocode_forward",
+      "expectedArgs": {
+        "query": "1600 Pennsylvania Avenue NW, Washington DC",
+        "country_codes": [
+          "USA"
+        ]
+      },
+      "passCriteria": "Calls geocode_forward with query and country_codes"
+    },
+    {
+      "id": "tc_05a_geocode_reverse_paris",
+      "title": "Reverse geocode Paris coordinates",
       "name": "geocode_reverse",
       "category": "places_geocoding",
-      "description": "Coordinate-to-address reverse lookup",
+      "description": "Coordinate-to-address reverse lookup in Paris",
       "prompt": "What is the street address located at latitude 48.8566 and longitude 2.3522 in Paris?",
       "expectedTool": "geocode_reverse",
       "expectedArgs": {
@@ -77,10 +154,30 @@
       "passCriteria": "Calls geocode_reverse with the exact coordinates"
     },
     {
-      "id": "tc_06_geocode_structured",
+      "id": "tc_05b_geocode_reverse_berlin",
+      "title": "Reverse geocode Berlin coordinates with country filter",
+      "name": "geocode_reverse",
+      "category": "places_geocoding",
+      "description": "Coordinate-to-address reverse lookup in Berlin from docs.nextbillion.ai",
+      "prompt": "Reverse geocode the GPS coordinates latitude 52.5308, longitude 13.3856 in Germany (country code DEU).",
+      "expectedTool": "geocode_reverse",
+      "expectedArgs": {
+        "coordinate": {
+          "latitude": 52.5308,
+          "longitude": 13.3856
+        },
+        "country_codes": [
+          "DEU"
+        ]
+      },
+      "passCriteria": "Calls geocode_reverse with coordinates and country_codes DEU"
+    },
+    {
+      "id": "tc_06a_geocode_structured_baker_st",
+      "title": "Structured geocode 221B Baker Street London",
       "name": "geocode_structured",
       "category": "places_geocoding",
-      "description": "Structured multi-field address resolution",
+      "description": "Structured multi-field address resolution for London address",
       "prompt": "Find the coordinates for 221B Baker Street, London in country GBR using structured address fields.",
       "expectedTool": "geocode_structured",
       "expectedArgs": {
@@ -92,30 +189,83 @@
       "passCriteria": "Calls geocode_structured with country_code GBR and structured address components"
     },
     {
-      "id": "tc_07_geocode_batch",
+      "id": "tc_06b_geocode_structured_mullen_sf",
+      "title": "Structured geocode Mullen Ave San Francisco",
+      "name": "geocode_structured",
+      "category": "places_geocoding",
+      "description": "Resolve structured address components for Mullen Avenue from docs.nextbillion.ai",
+      "prompt": "Geocode this structured address: country 'USA', state 'California', city 'San Francisco', street 'Mullen Avenue', postal code '94110'.",
+      "expectedTool": "geocode_structured",
+      "expectedArgs": {
+        "country_code": "USA",
+        "state": "California",
+        "city": "San Francisco",
+        "street": "Mullen Avenue",
+        "postal_code": "94110"
+      },
+      "passCriteria": "Calls geocode_structured with USA, California, San Francisco, and Mullen Avenue"
+    },
+    {
+      "id": "tc_07a_geocode_batch_landmarks",
+      "title": "Batch geocode US landmarks",
       "name": "geocode_batch",
       "category": "places_geocoding",
-      "description": "Batch forward-geocoding multiple queries",
+      "description": "Batch forward-geocoding multiple queries in a single request",
       "prompt": "Geocode these three locations in a single batch request: 'Empire State Building, NY', 'Golden Gate Bridge, CA', and 'Space Needle, WA'.",
       "expectedTool": "geocode_batch",
       "expectedArgs": {
         "queries": [
-          { "query": "Empire State Building, NY" },
-          { "query": "Golden Gate Bridge, CA" },
-          { "query": "Space Needle, WA" }
+          {
+            "query": "Empire State Building, NY"
+          },
+          {
+            "query": "Golden Gate Bridge, CA"
+          },
+          {
+            "query": "Space Needle, WA"
+          }
         ]
       },
       "passCriteria": "Calls geocode_batch with 3 query objects"
     },
     {
-      "id": "tc_08_place_browse",
+      "id": "tc_07b_geocode_batch_whitehouse_empire",
+      "title": "Batch geocode White House and Empire State Building",
+      "name": "geocode_batch",
+      "category": "places_geocoding",
+      "description": "Batch forward geocode two prominent US addresses from docs.nextbillion.ai",
+      "prompt": "Perform a batch geocode request for '1600 Pennsylvania Avenue NW, Washington DC' and 'Empire State Building, 350 5th Ave, New York, NY' in country USA.",
+      "expectedTool": "geocode_batch",
+      "expectedArgs": {
+        "queries": [
+          {
+            "query": "1600 Pennsylvania Avenue NW, Washington DC",
+            "country_codes": [
+              "USA"
+            ]
+          },
+          {
+            "query": "Empire State Building, 350 5th Ave, New York, NY",
+            "country_codes": [
+              "USA"
+            ]
+          }
+        ]
+      },
+      "passCriteria": "Calls geocode_batch with 2 query objects with country_codes USA"
+    },
+    {
+      "id": "tc_08a_place_browse_restaurants",
+      "title": "Browse restaurants near Singapore coordinates",
       "name": "place_browse",
       "category": "places_geocoding",
       "description": "Category-based browsing without text query",
       "prompt": "List places in the 'restaurant' category near latitude 1.2839, longitude 103.8607 within an 800 meter radius.",
       "expectedTool": "place_browse",
       "expectedArgs": {
-        "categories": ["restaurant"],
+        "categories": [
+          "restaurant"
+        ],
         "near": {
           "latitude": 1.2839,
           "longitude": 103.8607
@@ -125,7 +275,28 @@
       "passCriteria": "Calls place_browse with categories ['restaurant'] and near coordinates"
     },
     {
-      "id": "tc_09_place_lookup",
+      "id": "tc_08b_place_browse_schools",
+      "title": "Browse schools near Berlin coordinates",
+      "name": "place_browse",
+      "category": "places_geocoding",
+      "description": "Category browsing for schools without a text query from docs.nextbillion.ai",
+      "prompt": "Browse places in the 'schools' category within 2000 meters of latitude 52.5308, longitude 13.3856.",
+      "expectedTool": "place_browse",
+      "expectedArgs": {
+        "categories": [
+          "schools"
+        ],
+        "near": {
+          "latitude": 52.5308,
+          "longitude": 13.3856
+        },
+        "radius_m": 2000
+      },
+      "passCriteria": "Calls place_browse with categories ['schools'], near, and radius"
+    },
+    {
+      "id": "tc_09a_place_lookup_mullen_ave",
+      "title": "Lookup place details for Mullen Avenue",
       "name": "place_lookup",
       "category": "places_geocoding",
       "description": "Retrieve full place details by unique place ID",
@@ -137,7 +308,21 @@
       "passCriteria": "Calls place_lookup with id '2EmBgAmFpR9dg0D89EBzNA'"
     },
     {
-      "id": "tc_10_postcode_lookup",
+      "id": "tc_09b_place_lookup_empire_state",
+      "title": "Lookup details for Empire State Building ID",
+      "name": "place_lookup",
+      "category": "places_geocoding",
+      "description": "Retrieve place details and address using Empire State Building unique ID from docs.nextbillion.ai",
+      "prompt": "Get the complete place details and access coordinates for place ID '5GjOCyXMUOsLhBw6vwpo_Q'.",
+      "expectedTool": "place_lookup",
+      "expectedArgs": {
+        "id": "5GjOCyXMUOsLhBw6vwpo_Q"
+      },
+      "passCriteria": "Calls place_lookup with id '5GjOCyXMUOsLhBw6vwpo_Q'"
+    },
+    {
+      "id": "tc_10a_postcode_lookup_la",
+      "title": "Lookup postal code 90011 USA",
       "name": "postcode_lookup",
       "category": "places_geocoding",
       "description": "Postal code centroid and boundary lookup",
@@ -150,7 +335,22 @@
       "passCriteria": "Calls postcode_lookup with postal_code '90011' and country 'USA'"
     },
     {
-      "id": "tc_11_directions",
+      "id": "tc_10b_postcode_lookup_india",
+      "title": "Lookup postal code 110007 India",
+      "name": "postcode_lookup",
+      "category": "places_geocoding",
+      "description": "Centroid and boundary retrieval for Indian postal code from docs.nextbillion.ai",
+      "prompt": "Look up the centroid and boundary for postal code '110007' in country 'India'.",
+      "expectedTool": "postcode_lookup",
+      "expectedArgs": {
+        "postal_code": "110007",
+        "country": "India"
+      },
+      "passCriteria": "Calls postcode_lookup with postal_code '110007' and country 'India'"
+    },
+    {
+      "id": "tc_11a_directions_sf_to_la",
+      "title": "Directions SF to LA avoiding tolls",
       "name": "directions",
       "category": "routing",
       "description": "Calculate driving directions and route geometry",
@@ -165,28 +365,96 @@
           "latitude": 34.0522,
           "longitude": -118.2437
         },
-        "avoid": ["toll"]
+        "avoid": [
+          "toll"
+        ]
       },
       "passCriteria": "Calls directions with origin, destination, and avoid containing 'toll'"
     },
     {
-      "id": "tc_12_distance_matrix",
+      "id": "tc_11b_directions_truck_hazmat",
+      "title": "Truck directions with hazardous cargo",
+      "name": "directions",
+      "category": "routing",
+      "description": "Truck route calculation with gross weight and flammable liquid hazmat from docs.nextbillion.ai",
+      "prompt": "Calculate truck directions from Barcelona (41.349302, 2.136480) to (41.389925, 2.136258) for an 18000 kg truck carrying flammable_liquid hazmat.",
+      "expectedTool": "directions",
+      "expectedArgs": {
+        "origin": {
+          "latitude": 41.349302,
+          "longitude": 2.13648
+        },
+        "destination": {
+          "latitude": 41.389925,
+          "longitude": 2.136258
+        },
+        "mode": "truck",
+        "truck_weight_kg": 18000,
+        "hazmat_type": [
+          "flammable_liquid"
+        ]
+      },
+      "passCriteria": "Calls directions with mode 'truck', truck_weight_kg, and hazmat_type"
+    },
+    {
+      "id": "tc_12a_distance_matrix_singapore",
+      "title": "Distance matrix Singapore 1x2",
       "name": "distance_matrix",
       "category": "routing",
       "description": "Compute multi-origin multi-destination travel distance/duration matrix",
       "prompt": "Calculate the driving distance and travel duration matrix from origin (1.29, 103.85) to two destination points (1.35, 103.99) and (1.30, 103.77).",
       "expectedTool": "distance_matrix",
       "expectedArgs": {
-        "origins": [{ "latitude": 1.29, "longitude": 103.85 }],
+        "origins": [
+          {
+            "latitude": 1.29,
+            "longitude": 103.85
+          }
+        ],
         "destinations": [
-          { "latitude": 1.35, "longitude": 103.99 },
-          { "latitude": 1.3, "longitude": 103.77 }
+          {
+            "latitude": 1.35,
+            "longitude": 103.99
+          },
+          {
+            "latitude": 1.3,
+            "longitude": 103.77
+          }
         ]
       },
       "passCriteria": "Calls distance_matrix with 1 origin and 2 destinations"
     },
     {
-      "id": "tc_13_isochrone",
+      "id": "tc_12b_distance_matrix_barcelona",
+      "title": "Distance matrix Barcelona 2x1",
+      "name": "distance_matrix",
+      "category": "routing",
+      "description": "Multi-origin distance and duration matrix computation from docs.nextbillion.ai",
+      "prompt": "Compute the distance matrix from two origins (41.349302, 2.136480) and (41.389925, 2.136258) to destination (41.357961, 2.097878).",
+      "expectedTool": "distance_matrix",
+      "expectedArgs": {
+        "origins": [
+          {
+            "latitude": 41.349302,
+            "longitude": 2.13648
+          },
+          {
+            "latitude": 41.389925,
+            "longitude": 2.136258
+          }
+        ],
+        "destinations": [
+          {
+            "latitude": 41.357961,
+            "longitude": 2.097878
+          }
+        ]
+      },
+      "passCriteria": "Calls distance_matrix with 2 origins and 1 destination"
+    },
+    {
+      "id": "tc_13a_isochrone_sf_contours",
+      "title": "Isochrone 10 and 20 minute driving contours",
       "name": "isochrone",
       "category": "routing",
       "description": "Travel time reachability contour polygon",
@@ -197,12 +465,36 @@
           "latitude": 37.7749,
           "longitude": -122.4194
         },
-        "contours_minutes": [10, 20]
+        "contours_minutes": [
+          10,
+          20
+        ]
       },
       "passCriteria": "Calls isochrone with origin and contours_minutes [10, 20]"
     },
     {
-      "id": "tc_14_search_along_route",
+      "id": "tc_13b_isochrone_5min_polygon",
+      "title": "Isochrone 5-minute car driving polygon",
+      "name": "isochrone",
+      "category": "routing",
+      "description": "Compute 5-minute car reachability polygon from docs.nextbillion.ai",
+      "prompt": "Calculate a 5-minute driving isochrone contour starting from latitude 34.047158, longitude -118.249772 returned as polygons.",
+      "expectedTool": "isochrone",
+      "expectedArgs": {
+        "origin": {
+          "latitude": 34.047158,
+          "longitude": -118.249772
+        },
+        "contours_minutes": [
+          5
+        ],
+        "polygons": true
+      },
+      "passCriteria": "Calls isochrone with origin, contours_minutes [5], and polygons true"
+    },
+    {
+      "id": "tc_14a_search_along_route_gas_station",
+      "title": "Search gas stations along 2-point route",
       "name": "search_along_route",
       "category": "routing",
       "description": "Find places matching query along a route with detour duration",
@@ -210,8 +502,14 @@
       "expectedTool": "search_along_route",
       "expectedArgs": {
         "route_points": [
-          { "latitude": 34.0493, "longitude": -118.2557 },
-          { "latitude": 34.0415, "longitude": -118.231 }
+          {
+            "latitude": 34.0493,
+            "longitude": -118.2557
+          },
+          {
+            "latitude": 34.0415,
+            "longitude": -118.231
+          }
         ],
         "query": "gas station",
         "max_detour_seconds": 600
@@ -219,7 +517,40 @@
       "passCriteria": "Calls search_along_route with 2 route points, query, and max_detour_seconds"
     },
     {
-      "id": "tc_15_static_map_image",
+      "id": "tc_14b_search_along_route_4waypoints",
+      "title": "Search gas stations along 4-waypoint route",
+      "name": "search_along_route",
+      "category": "routing",
+      "description": "Find gas stations along a 4-waypoint route with 600 second max detour from docs.nextbillion.ai",
+      "prompt": "Search for gas stations along the driving route [(34.04932, -118.25574), (34.04711, -118.24977), (34.04154, -118.23108), (34.03882, -118.20757)] with maximum detour of 600 seconds.",
+      "expectedTool": "search_along_route",
+      "expectedArgs": {
+        "route_points": [
+          {
+            "latitude": 34.04932,
+            "longitude": -118.25574
+          },
+          {
+            "latitude": 34.04711,
+            "longitude": -118.24977
+          },
+          {
+            "latitude": 34.04154,
+            "longitude": -118.23108
+          },
+          {
+            "latitude": 34.03882,
+            "longitude": -118.20757
+          }
+        ],
+        "query": "gas station",
+        "max_detour_seconds": 600
+      },
+      "passCriteria": "Calls search_along_route with 4 route points and max_detour_seconds 600"
+    },
+    {
+      "id": "tc_15a_static_map_paris",
+      "title": "Static map of Paris with red marker",
       "name": "static_map_image",
       "category": "maps",
       "description": "Render static map image centered on location with markers",
@@ -242,7 +573,28 @@
       "passCriteria": "Calls static_map_image with center, zoom 14, and red marker"
     },
     {
-      "id": "tc_16_static_route_map",
+      "id": "tc_15b_static_map_hybrid_style",
+      "title": "Hybrid static map centered in LA",
+      "name": "static_map_image",
+      "category": "maps",
+      "description": "Render hybrid static map image centered at coordinates from docs.nextbillion.ai",
+      "prompt": "Render a 512x512 hybrid static map image centered at latitude 33.93, longitude -118.12 at zoom 9.",
+      "expectedTool": "static_map_image",
+      "expectedArgs": {
+        "center": {
+          "latitude": 33.93,
+          "longitude": -118.12
+        },
+        "zoom": 9,
+        "style": "hybrid",
+        "width": 512,
+        "height": 512
+      },
+      "passCriteria": "Calls static_map_image with center, zoom 9, style hybrid, width 512, height 512"
+    },
+    {
+      "id": "tc_16a_static_route_map_sf",
+      "title": "Static route map from SF route points",
       "name": "static_route_map",
       "category": "maps",
       "description": "Render static map auto-fitted to route points",
@@ -250,118 +602,61 @@
       "expectedTool": "static_route_map",
       "expectedArgs": {
         "route_points": [
-          { "latitude": 37.77, "longitude": -122.42 },
-          { "latitude": 37.78, "longitude": -122.4 },
-          { "latitude": 37.79, "longitude": -122.41 }
+          {
+            "latitude": 37.77,
+            "longitude": -122.42
+          },
+          {
+            "latitude": 37.78,
+            "longitude": -122.4
+          },
+          {
+            "latitude": 37.79,
+            "longitude": -122.41
+          }
         ],
         "stroke_color": "blue"
       },
       "passCriteria": "Calls static_route_map with route_points and stroke_color"
     },
     {
-      "id": "tc_17_boundary_poi_search",
-      "name": "boundary_poi_vs_address",
-      "category": "disambiguation",
-      "description": "Ensure POI query selects place_search instead of geocode_forward",
-      "prompt": "Where is the nearest pharmacy around coordinates 40.7128, -74.0060?",
-      "expectedTool": "place_search",
-      "forbiddenTools": ["geocode_forward"],
-      "passCriteria": "Must choose place_search rather than geocode_forward"
-    },
-    {
-      "id": "tc_18_boundary_address_geocode",
-      "name": "boundary_address_vs_poi",
-      "category": "disambiguation",
-      "description": "Ensure exact address lookup selects geocode_forward instead of place_search",
-      "prompt": "What are the exact GPS coordinates for the building at 350 5th Ave, New York, NY 10118?",
-      "expectedTool": "geocode_forward",
-      "forbiddenTools": ["place_search"],
-      "passCriteria": "Must choose geocode_forward rather than place_search"
-    },
-    {
-      "id": "tc_19_boundary_structured_geocode",
-      "name": "boundary_structured_vs_forward",
-      "category": "disambiguation",
-      "description": "Ensure pre-parsed address components select geocode_structured",
-      "prompt": "I have already parsed the address into fields: country 'USA', city 'Seattle', state 'WA', street 'Pike St', house number '100'. Geocode these structured fields.",
-      "expectedTool": "geocode_structured",
-      "forbiddenTools": ["geocode_forward"],
-      "passCriteria": "Must choose geocode_structured when fields are separated"
-    },
-    {
-      "id": "tc_20_boundary_matrix_vs_directions",
-      "name": "boundary_matrix_vs_directions",
-      "category": "disambiguation",
-      "description": "Ensure multi-pair travel calculation selects distance_matrix instead of repeated directions",
-      "prompt": "Calculate a travel duration table between 3 depot coordinates and 4 retail store coordinates to optimize our dispatch schedule.",
-      "expectedTool": "distance_matrix",
-      "forbiddenTools": ["directions"],
-      "passCriteria": "Must choose distance_matrix for multi-pair dispatch table"
-    },
-    {
-      "id": "tc_21_boundary_static_route_vs_image",
-      "name": "boundary_static_route_vs_image",
-      "category": "disambiguation",
-      "description": "Ensure auto-fitted path geometry selects static_route_map",
-      "prompt": "Generate an auto-fitted map image that outlines this driving route path: (40.71, -74.00) to (40.75, -73.98).",
+      "id": "tc_16b_static_route_map_polygon_path",
+      "title": "Auto-fitted static map with polygon overlay",
+      "name": "static_route_map",
+      "category": "maps",
+      "description": "Render auto-fitted static map showing polygon path vertices from docs.nextbillion.ai",
+      "prompt": "Render an auto-fitted static map outlining this path polygon [(45.8, 5.9), (47.8, 5.9), (47.8, 10.5), (45.8, 10.5), (45.8, 5.9)] with a green stroke.",
       "expectedTool": "static_route_map",
-      "forbiddenTools": ["static_map_image"],
-      "passCriteria": "Must choose static_route_map for route outline auto-fitting"
-    },
-    {
-      "id": "tc_22_boundary_category_browse",
-      "name": "boundary_browse_vs_search",
-      "category": "disambiguation",
-      "description": "Ensure category browsing selects place_browse instead of keyword search",
-      "prompt": "Browse all locations categorized as 'hospital' within 2000m of (51.5074, -0.1278) sorted purely by distance without any text query.",
-      "expectedTool": "place_browse",
-      "forbiddenTools": ["place_search"],
-      "passCriteria": "Must choose place_browse when asked for category browsing without query"
-    },
-    {
-      "id": "tc_23_negative_general_knowledge",
-      "name": "negative_general_knowledge",
-      "category": "negative",
-      "description": "Verifies model does NOT invoke map tools for general history questions",
-      "prompt": "Who was the 16th president of the United States and what year was the Gettysburg Address delivered?",
-      "expectedTool": null,
-      "passCriteria": "No tool should be called"
-    },
-    {
-      "id": "tc_24_negative_coding_task",
-      "name": "negative_coding_task",
-      "category": "negative",
-      "description": "Verifies model does NOT invoke map tools for code generation",
-      "prompt": "Write a Python function to compute the Fibonacci sequence up to n terms using dynamic programming.",
-      "expectedTool": null,
-      "passCriteria": "No tool should be called"
-    },
-    {
-      "id": "tc_25_negative_weather_request",
-      "name": "negative_weather_request",
-      "category": "negative",
-      "description": "Verifies model does NOT invoke NextBillion map tools for weather forecasts",
-      "prompt": "Will it rain tomorrow in Chicago? What is the current temperature and forecast?",
-      "expectedTool": null,
-      "passCriteria": "No tool should be called"
-    },
-    {
-      "id": "tc_26_chain_directions_then_map",
-      "name": "chain_directions_then_map",
-      "category": "chaining",
-      "description": "Two-step workflow: plan driving route then render static route map",
-      "prompt": "First calculate the driving route from (37.7749, -122.4194) to (37.3382, -121.8863), and then generate a static route map image for that route.",
-      "expectedTool": "directions",
-      "passCriteria": "Calls directions as initial step"
-    },
-    {
-      "id": "tc_27_chain_search_then_lookup",
-      "name": "chain_search_then_lookup",
-      "category": "chaining",
-      "description": "Two-step workflow: search for POI then fetch details by place ID",
-      "prompt": "Search for 'Eiffel Tower' in Paris near (48.8584, 2.2945), and then look up its full place details using its place ID.",
-      "expectedTool": "place_search",
-      "passCriteria": "Calls place_search as initial step"
+      "expectedArgs": {
+        "paths": [
+          {
+            "points": [
+              {
+                "latitude": 45.8,
+                "longitude": 5.9
+              },
+              {
+                "latitude": 47.8,
+                "longitude": 5.9
+              },
+              {
+                "latitude": 47.8,
+                "longitude": 10.5
+              },
+              {
+                "latitude": 45.8,
+                "longitude": 10.5
+              },
+              {
+                "latitude": 45.8,
+                "longitude": 5.9
+              }
+            ],
+            "stroke_color": "green"
+          }
+        ]
+      },
+      "passCriteria": "Calls static_route_map with paths and green stroke_color"
     }
   ]
 }
