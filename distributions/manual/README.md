@@ -36,6 +36,11 @@ Add to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in your project):
 
 ## Claude Desktop
 
+The simplest route is the extension bundle: download `nextbillion-mcp-<version>.mcpb` from
+the [latest release](https://github.com/nextbillion-ai/nextbillion-mcp/releases/latest) and
+open it; see [`../claude-desktop/README.md`](../claude-desktop/README.md). The manual
+configuration below is the alternative for people who prefer npx.
+
 Claude Desktop → Settings → Developer → Edit Config opens `claude_desktop_config.json`
 (macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`,
 Windows: `%APPDATA%\Claude\claude_desktop_config.json`). Add:

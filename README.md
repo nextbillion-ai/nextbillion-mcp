@@ -12,6 +12,12 @@ SDK's built-in legacy negotiation.
 Get an API key at [console.nextbillion.ai](https://console.nextbillion.ai) and export it as
 `NBAI_API_KEY` in your shell profile.
 
+**Claude Desktop extension:** download `nextbillion-mcp-<version>.mcpb` from the
+[latest release](https://github.com/nextbillion-ai/nextbillion-mcp/releases/latest), open it
+(or Settings → Extensions → Advanced settings → Install Extension…), and paste your API key when
+prompted. The server is bundled, so no Node.js install is needed. Details in
+[`distributions/claude-desktop/README.md`](distributions/claude-desktop/README.md).
+
 **Claude Code plugin** (this repository doubles as a plugin marketplace):
 
 ```bash
@@ -86,9 +92,7 @@ which your client may capture in its own logs.
 NextBillion.ai. How NextBillion.ai uses and retains API request data is described in its
 privacy policy at https://nextbillion.ai/privacy.
 
-**Contact.** Privacy questions about the API service: see the contact details in the
-policy above. <!-- TODO(nextbillion): confirm the dedicated privacy contact address for
-the Anthropic directory submission and replace this note. -->
+**Contact.** Privacy or support questions: support@nextbillion.ai.
 
 ## Repository layout
 
@@ -98,7 +102,8 @@ the Anthropic directory submission and replace this note. -->
   - `src/nbclient/` — shared NextBillion HTTP client (auth, timeout, retry, key redaction)
   - `src/transports/` — (stdio is served via the SDK entry; HTTP transport lands here later)
 - `distributions/` — **distribution layer**: zero-logic install packaging per client
-  (Claude Code plugin, Codex plugin bundle, Cursor snippet, manual configuration).
+  (Claude Desktop extension, Claude Code plugin, Codex plugin bundle, Cursor snippet, manual
+  configuration).
 - `deploy/` — placeholder for the future hosted (Streamable HTTP) deployment.
 
 ## Development
