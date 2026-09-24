@@ -1,5 +1,6 @@
 # Generated artifacts
 node_modules/
 dist/
+dist-mcpb/
 # The committed plugin bundle is esbuild output, not hand-written source
 distributions/claude-code/dist/

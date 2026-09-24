@@ -19,6 +19,10 @@ read-only tools have no side effects).
 - README gains a full **Privacy Policy** section (data sent to the API, no telemetry, API
   key handling, no local storage unless `NBAI_IMAGE_DIR` is set, policy link) as required
   for the Claude Desktop extension directory submission.
+- Claude Desktop extension: `npm run build:mcpb` packs the server into
+  `nextbillion-mcp-<version>.mcpb` (manifest in `distributions/claude-desktop/`, built in CI,
+  attached to the GitHub release). The extension bundles the server, asks for the API key at
+  install, and never writes to disk.
 - Tests guard that every tool exposes a Title Case `title` and the full read-only
   annotation set over `tools/list`; one `distance_matrix` sentence that directed model
   behaviour was reworded (#5).

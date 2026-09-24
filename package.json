@@ -12,9 +12,11 @@
     "test": "npm run test --workspace packages/server",
     "test:e2e": "npm run test:e2e --workspace packages/server",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:mcpb": "node scripts/build-mcpb.mjs"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2",
     "prettier": "^3.6.0"
   }
 }
