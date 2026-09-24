@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.2.1 — 2026-09-23
+
+Preparation for the Claude Desktop extension directory (Anthropic's review checks that
+read-only tools have no side effects).
+
+- **Rendered map images are no longer saved to disk by default.** Previously every
+  `static_map_image` / `static_route_map` call also wrote the image to
+  `<OS temp dir>/nextbillion-mcp/`. Now the server writes nothing unless you opt in.
+  Desktop hosts (Claude Desktop, Claude Code, Cursor) display the inline image and lose
+  nothing. **To re-enable saving**, set `NBAI_IMAGE_DIR` in the server's environment to
+  an absolute directory, or to `tmp` for the OS temp directory (portable across
+  platforms); the result caption then reports the file path as before. The Codex plugin
+  and the Codex snippet in `distributions/manual/README.md` set `NBAI_IMAGE_DIR=tmp`
+  because that client cannot display images. Relative paths are rejected with a startup
+  warning, and an existing file is never overwritten. Both map tool descriptions state the
+  optional save.
+- README gains a full **Privacy Policy** section (data sent to the API, no telemetry, API
+  key handling, no local storage unless `NBAI_IMAGE_DIR` is set, policy link) as required
+  for the Claude Desktop extension directory submission.
+- Tests guard that every tool exposes a Title Case `title` and the full read-only
+  annotation set over `tools/list`; one `distance_matrix` sentence that directed model
+  behaviour was reworded (#5).
+
 ## 0.2.0 — 2026-09-08
 
 Closes the capability gaps found in the external MCP-server evaluation and Arnav's audit.
