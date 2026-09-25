@@ -20,5 +20,8 @@
   },
   "dependencies": {
     "@mcpjam/sdk": "^8.8.0"
+  },
+  "overrides": {
+    "@mcpjam/evaluators": "0.3.0"
   }
 }

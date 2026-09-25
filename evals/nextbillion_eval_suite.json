@@ -1,5 +1,5 @@
 {
-  "suiteName": "Nextbillion-MCPEval-Suite",
+  "suiteName": "Nextbillion-MCPEval-Suite-Gemini",
   "description": "Comprehensive evaluation suite for NextBillion MCP tools: 2 representative test cases for each of the 16 registered tools (32 cases total).",
   "version": "2.0.0",
   "metadata": {
