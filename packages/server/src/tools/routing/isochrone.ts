@@ -62,6 +62,7 @@ export const isochrone: NbTool<typeof Schema> = {
     '-122.4194}, "contours_minutes": [5, 10], "polygons": true}',
   inputSchema: Schema,
   annotations: READ_ONLY,
+  docs: ['routing/isochrone-api/isochrone-api'],
   async run(args, nb) {
     if (!args.contours_minutes?.length && !args.contours_meters?.length) {
       throw new ToolInputError('Provide `contours_minutes` or `contours_meters`.');

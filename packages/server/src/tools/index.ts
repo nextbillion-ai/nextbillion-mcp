@@ -12,6 +12,9 @@ import { isochrone } from './routing/isochrone.js';
 import { searchAlongRoute } from './routing/search-along-route.js';
 import { staticMapImage } from './maps/static-map-image.js';
 import { staticRouteMap } from './maps/static-route-map.js';
+import { getDocumentation } from './docs/get-documentation.js';
+import { listDocumentationTopics } from './docs/list-documentation-topics.js';
+import { searchDocumentation } from './docs/search-documentation.js';
 
 /**
  * Every tool served by this MCP server, sorted by name. The order is deliberately
@@ -24,6 +27,9 @@ export const ALL_TOOLS: ReadonlyArray<NbTool> = [
   directions,
   distanceMatrix,
   geocodeBatch,
+  getDocumentation,
+  listDocumentationTopics,
+  searchDocumentation,
   geocodeForward,
   geocodeReverse,
   geocodeStructured,

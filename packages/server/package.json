@@ -10,6 +10,7 @@
   "main": "dist/index.js",
   "files": [
     "dist",
+    "data",
     "README.md"
   ],
   "engines": {
@@ -35,7 +36,9 @@
     "test:e2e": "vitest run tests/e2e",
     "dev": "tsx src/index.ts",
     "docs:validate": "tsx scripts/docs/validate-mapping.ts",
-    "docs:eval-check": "tsx scripts/docs/eval-check.ts"
+    "docs:eval-check": "tsx scripts/docs/eval-check.ts",
+    "docs:build-index": "tsx scripts/docs/build-index.ts",
+    "docs:eval": "tsx scripts/docs/eval-run.ts"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "^2.0.0",

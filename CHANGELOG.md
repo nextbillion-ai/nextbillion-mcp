@@ -2,7 +2,16 @@
 
 ## Unreleased
 
-Groundwork for the documentation knowledge base (0.3.0), no runtime or package changes yet:
+Documentation knowledge base (planned 0.3.0):
+
+- **Three documentation tools**: `search_documentation` (ranked excerpts with `source_url`
+  and `related_tools`), `get_documentation` (one page or section, code samples on
+  request) and `list_documentation_topics`. They read a bundled index of 342 pages from
+  docs.nextbillion.ai (`packages/server/data/docs-index.json`, about 1 MB compressed) and
+  never use the network. The server now sends initialisation `instructions` telling hosts
+  to use `search_documentation` for how-to questions. Every API tool declares the pages
+  that document it, which feeds `related_tools`. Retrieval is BM25 with the docs' own
+  vocabulary; on the held-out eval split recall@5 is 97.6% and MRR 0.91.
 
 - `packages/server/docs/` holds the checked-in inputs for the upcoming documentation
   tools: the mapping of docs-repo pages to live URLs (rules plus `url-overrides.json`),

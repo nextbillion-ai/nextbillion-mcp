@@ -142,6 +142,7 @@ export const directions: NbTool<typeof Schema> = {
     '18000, "hazmat_type": ["flammable_liquid"]}',
   inputSchema: Schema,
   annotations: READ_ONLY,
+  docs: ['routing/directions-api/directions-api'],
   async run(args, nb) {
     const service = args.service ?? 'flexible';
     if (service === 'fast' && args.mode && args.mode !== 'car' && args.mode !== 'truck') {

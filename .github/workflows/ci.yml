@@ -27,6 +27,7 @@ jobs:
       - run: npm run build
       - run: node scripts/sync-plugin-bundle.mjs --check
       - run: npm test
+      - run: npm run docs:eval --workspace packages/server -- --gate
       - run: npm run build:mcpb
       - uses: actions/upload-artifact@v4
         with:

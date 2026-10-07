@@ -95,6 +95,7 @@ export const distanceMatrix: NbTool<typeof Schema> = {
     '"longitude": 103.77}], "route_failed_prompt": true}',
   inputSchema: Schema,
   annotations: READ_ONLY,
+  docs: ['routing/distance-matrix/synchronous', 'routing/distance-matrix/asynchronous'],
   async run(args, nb) {
     const service = args.service ?? 'fast';
     if (service === 'fast' && args.mode && args.mode !== 'car' && args.mode !== 'truck') {

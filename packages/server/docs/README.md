@@ -42,7 +42,12 @@ npm run docs:validate -- --docs ../../../nb-public-docs --fetch-sitemap --write
 npm run docs:validate
 npm test
 
-# 4. Rebuild the packed index (lands with the indexer) and bump the patch version, then open a PR
+# 4. Rebuild the packed index, copy it into the Claude Code plugin, run the retrieval eval
+npm run docs:build-index -- --docs ../../../nb-public-docs
+cd ../.. && npm run build && node scripts/sync-plugin-bundle.mjs && cd packages/server
+npm run docs:eval -- --gate
+
+# 5. Bump the patch version (scripts/check-dist-versions.mjs lists every manifest), then open a PR
 ```
 
 Review the diff of the two reports in the PR: a new entry in `files-without-urls.md` means a page was excluded, and growth in `urls-without-files.md` means the site gained pages the repo does not have.
@@ -73,4 +78,10 @@ Review the diff of the two reports in the PR: a new entry in `files-without-urls
 }
 ```
 
-`npm run docs:eval-check` validates the file against the published pages and the served tools. The retrieval runner that drives the built server over MCP and reports recall@k, MRR and paraphrase recall per split arrives with the search tools.
+`npm run docs:eval-check` validates the file against the published pages and the served tools. `npm run docs:eval` drives `search_documentation` through a real MCP client and reports recall@k and MRR per split and per variant kind; `--gate` applies the CI thresholds on the held-out split (recall@5 ≥ 0.90, MRR ≥ 0.75) and `--stdio` runs against the built bundle instead of an in-process server.
+
+Tuning rule: boosts, synonyms (`src/docs/synonyms.ts`) and stemming are tuned on the tuning split only. The first synonym set (2026-10-07) was seeded from misses across both splits, so the held-out numbers from that date are optimistic by a few points; everything after that follows the rule.
+
+## Index file (`../data/docs-index.json`)
+
+Built by `npm run docs:build-index -- --docs <clone>` from the pinned commit; deterministic for a given commit. Plain chunks with page metadata, no prebuilt term index (ranking changes do not need a docs rebuild). The server resolves it at `../data/docs-index.json` relative to its bundle, which holds for the npm package, the Claude Code plugin (`distributions/claude-code/data/`, kept in sync by `scripts/sync-plugin-bundle.mjs`) and the Claude Desktop extension (staged by `scripts/build-mcpb.mjs`). `NBAI_DOCS_INDEX=<path>` overrides the location (tests and experiments only).
