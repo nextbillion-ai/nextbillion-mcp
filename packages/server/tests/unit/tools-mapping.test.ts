@@ -18,7 +18,7 @@ import { fakeNbClient } from '../helpers/fake-fetch.js';
 const PNG = { body: new Uint8Array([137, 80, 78, 71]), contentType: 'image/png' };
 
 describe('tool registry', () => {
-  it('exposes exactly the 19 tools, sorted by name', () => {
+  it('exposes exactly the 20 tools, sorted by name', () => {
     const names = ALL_TOOLS.map((t) => t.name);
     expect(names).toEqual([...names].sort());
     expect(names).toEqual([
@@ -30,6 +30,7 @@ describe('tool registry', () => {
       'geocode_forward',
       'geocode_reverse',
       'geocode_structured',
+      'get_api_parameters',
       'get_documentation',
       'isochrone',
       'list_documentation_topics',
@@ -60,7 +61,7 @@ describe('tool registry', () => {
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
-        openWorldHint: !tool.name.includes('documentation'),
+        openWorldHint: !/documentation|api_parameters/.test(tool.name),
       });
     }
   });

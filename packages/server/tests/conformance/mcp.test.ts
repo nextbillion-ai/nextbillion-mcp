@@ -38,11 +38,11 @@ describe('MCP conformance', () => {
     await client.connect(clientTransport);
   });
 
-  it('lists all 19 tools in deterministic sorted order with titles, schemas and annotations', async () => {
+  it('lists all 20 tools in deterministic sorted order with titles, schemas and annotations', async () => {
     const result = await client.listTools();
     const names = result.tools.map((t) => t.name);
     expect(names).toEqual(ALL_TOOLS.map((t) => t.name));
-    expect(result.tools).toHaveLength(19);
+    expect(result.tools).toHaveLength(20);
     for (const tool of result.tools) {
       expect(tool.title, tool.name).toBeTruthy();
       expect(tool.description, tool.name).toBeTruthy();
@@ -52,7 +52,7 @@ describe('MCP conformance', () => {
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
-        openWorldHint: !tool.name.includes('documentation'),
+        openWorldHint: !/documentation|api_parameters/.test(tool.name),
       });
     }
   });

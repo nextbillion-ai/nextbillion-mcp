@@ -4,7 +4,14 @@ import { buildDocsIndex } from '../../src/docs/store.js';
 import type { DocsIndexFile } from '../../src/docs/types.js';
 
 const file: DocsIndexFile = {
-  meta: { format: 1, commit_sha: 'abc1234', built_at: '2026-10-07', pages: 3, chunks: 5 },
+  meta: {
+    format: 2,
+    commit_sha: 'abc1234',
+    built_at: '2026-10-07',
+    pages: 3,
+    chunks: 5,
+    parameters: 0,
+  },
   pages: [
     {
       doc_id: 'routing/directions-api/directions-api',
@@ -76,6 +83,7 @@ const file: DocsIndexFile = {
       text: 'Add a marker to the Android map view with a custom icon drawable.',
     },
   ],
+  parameters: [],
 };
 const index = buildDocsIndex(file);
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { getApiParameters, normalizeEndpoint } from '../../src/tools/docs/get-api-parameters.js';
 import { getDocumentation, MAX_PAGE_CHARS } from '../../src/tools/docs/get-documentation.js';
 import { listDocumentationTopics } from '../../src/tools/docs/list-documentation-topics.js';
 import { searchDocumentation } from '../../src/tools/docs/search-documentation.js';
@@ -106,5 +107,41 @@ describe('list_documentation_topics', () => {
       true,
     );
     expect(flutter.text).toContain('## Maps');
+  });
+});
+
+describe('get_api_parameters', () => {
+  it('passes acceptance test 3: truck_weight under the Flexible variant with type and description', async () => {
+    const { data, text } = await run(getApiParameters, {
+      endpoint: 'directions',
+      name: 'truck_weight',
+    });
+    expect(data.parameters.length).toBeGreaterThan(0);
+    const record = data.parameters[0];
+    expect(record.type).toBe('integer');
+    expect(record.description.length).toBeGreaterThan(10);
+    expect(record.heading_path.join(' ')).toContain('Flexible');
+    expect(record.units).toBe('kilograms');
+    expect(text).toContain('truck_weight');
+  });
+
+  it('returns every variant for an endpoint and accepts loose endpoint spellings', async () => {
+    const { data } = await run(getApiParameters, { endpoint: 'Directions API', name: 'origin' });
+    expect(data.endpoints).toEqual(
+      expect.arrayContaining(['directions/flexible', 'directions/fast']),
+    );
+    expect(normalizeEndpoint('/Directions API/')).toBe('directions');
+    expect(normalizeEndpoint('distance-matrix-api/synchronous')).toBe(
+      'distance-matrix/synchronous',
+    );
+  });
+
+  it('reports SDK pages as unsupported and unknown endpoints as input errors', async () => {
+    const { data } = await run(getApiParameters, { doc_id: 'maps/mobile-sdks/android/mapview' });
+    expect(data.unsupported).toBe(true);
+    await expect(getApiParameters.run({ endpoint: 'no-such-api' }, nb)).rejects.toBeInstanceOf(
+      ToolInputError,
+    );
+    await expect(getApiParameters.run({}, nb)).rejects.toBeInstanceOf(ToolInputError);
   });
 });

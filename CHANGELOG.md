@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-08
 
-Documentation knowledge base (planned 0.3.0):
+Documentation knowledge base: the server can now answer questions about the APIs from the
+official documentation, offline, with citations. 16 → 20 tools.
 
 - **Three documentation tools**: `search_documentation` (ranked excerpts with `source_url`
   and `related_tools`), `get_documentation` (one page or section, code samples on
@@ -12,6 +13,16 @@ Documentation knowledge base (planned 0.3.0):
   to use `search_documentation` for how-to questions. Every API tool declares the pages
   that document it, which feeds `related_tools`. Retrieval is BM25 with the docs' own
   vocabulary; on the held-out eval split recall@5 is 97.6% and MRR 0.91.
+- **`get_api_parameters`**: structured request parameters (type, required, default, allowed
+  values, units, description) for a REST endpoint, parsed from the reference pages' tables,
+  with every API variant (`directions/flexible`, `directions/fast`, `geofence/create`, …).
+  Units are only reported when the docs state them; `packages/server/docs/reports/missing-units-report.md`
+  lists numeric parameters without one for the docs team.
+- The `directions`, `distance_matrix`, `isochrone` and `place_search` descriptions point
+  how-to questions to `search_documentation`.
+- CI gates documentation retrieval on the held-out eval split (recall@5 ≥ 0.90, MRR ≥ 0.75,
+  no regression against `docs/eval/baseline.json`). Refreshing the docs is a manual
+  procedure documented in `packages/server/docs/README.md`.
 
 - `packages/server/docs/` holds the checked-in inputs for the upcoming documentation
   tools: the mapping of docs-repo pages to live URLs (rules plus `url-overrides.json`),

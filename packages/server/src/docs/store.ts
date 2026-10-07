@@ -7,7 +7,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Bm25Field } from './bm25.js';
 import { tokenize } from './tokenizer.js';
-import type { ChunkRecord, DocsIndexFile, DocsIndexMeta, PageRecord } from './types.js';
+import type {
+  ChunkRecord,
+  DocsIndexFile,
+  DocsIndexMeta,
+  PageRecord,
+  ParameterRecord,
+} from './types.js';
 
 export interface DocsIndex {
   meta: DocsIndexMeta;
@@ -18,6 +24,9 @@ export interface DocsIndex {
   chunksByDoc: ReadonlyMap<string, number[]>;
   body: Bm25Field;
   head: Bm25Field;
+  parameters: ReadonlyArray<ParameterRecord>;
+  /** Distinct endpoints in index order. */
+  endpoints: ReadonlyArray<string>;
 }
 
 /**
@@ -56,12 +65,14 @@ export function buildDocsIndex(file: DocsIndexFile): DocsIndex {
     chunksByDoc,
     body: new Bm25Field(bodyDocs),
     head: new Bm25Field(headDocs),
+    parameters: file.parameters,
+    endpoints: [...new Set(file.parameters.map((p) => p.endpoint))],
   };
 }
 
 export function loadDocsIndex(path: string = defaultIndexPath()): DocsIndex {
   const file = JSON.parse(readFileSync(path, 'utf8')) as DocsIndexFile;
-  if (file.meta?.format !== 1) throw new Error(`unsupported documentation index format in ${path}`);
+  if (file.meta?.format !== 2) throw new Error(`unsupported documentation index format in ${path}`);
   return buildDocsIndex(file);
 }
 

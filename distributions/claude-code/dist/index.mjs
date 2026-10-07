@@ -6212,7 +6212,7 @@ var init_text_search = __esm({
         "places/search/search-places-api/search-places-apis"
       ],
       title: "Search Places",
-      description: 'Search for places, points of interest and businesses with a free-text query (e.g. "gas station", "coffee"), ranked by relevance around a location. Use geocode_forward for plain address-to-coordinates conversion. Parameters: query (required); optional near {latitude, longitude} (recommended), radius_m (with near), country_codes, bounding_box {west, south, east, north}, limit, language, view. Example: {"query": "coffee", "near": {"latitude": 37.7749, "longitude": -122.4194}, "radius_m": 1000, "limit": 5}',
+      description: 'Search for places, points of interest and businesses with a free-text query (e.g. "gas station", "coffee"), ranked by relevance around a location. Use geocode_forward for plain address-to-coordinates conversion. For how-to questions about this API, use search_documentation. Parameters: query (required); optional near {latitude, longitude} (recommended), radius_m (with near), country_codes, bounding_box {west, south, east, north}, limit, language, view. Example: {"query": "coffee", "near": {"latitude": 37.7749, "longitude": -122.4194}, "radius_m": 1000, "limit": 5}',
       path: "/discover",
       noun: "place"
     });
@@ -6574,7 +6574,7 @@ var init_directions = __esm({
     directions = {
       name: "directions",
       title: "Directions",
-      description: 'Calculate a route between an origin and a destination with optional waypoints; returns distance (meters), duration (seconds) and an encoded polyline per route - pass the polyline to static_route_map to draw it. Use distance_matrix for many origin/destination pairs. Parameters: origin, destination {latitude, longitude} (required); optional waypoints (array, max 200), mode (car | truck | motorcycle | bike | walk), service ("flexible" default: all modes and options; "fast": car/truck only, lower latency), route_type, departure_time (UNIX seconds), avoid (soft filter), exclude (strict filter), road_info (max_speed, toll_distance, toll_cost, toll_info, truck_route, stop_sign, traffic_light), honor_restrictions, alternatives, steps (fast only), geometry (polyline | polyline6), truck options: truck_size_cm {height, width, length}, truck_weight_kg, truck_axle_load (tonnes), hazmat_type, emission_class (euro0-euro9), cross_border. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "destination": {"latitude": 34.0522, "longitude": -118.2437}, "mode": "truck", "truck_weight_kg": 18000, "hazmat_type": ["flammable_liquid"]}',
+      description: 'Calculate a route between an origin and a destination with optional waypoints; returns distance (meters), duration (seconds) and an encoded polyline per route - pass the polyline to static_route_map to draw it. Use distance_matrix for many pairs. pairs. For how-to questions about this API, use search_documentation. Parameters: origin, destination {latitude, longitude} (required); optional waypoints (array, max 200), mode (car | truck | motorcycle | bike | walk), service ("flexible" default: all modes and options; "fast": car/truck only, lower latency), route_type, departure_time (UNIX seconds), avoid (soft filter), exclude (strict filter), road_info (max_speed, toll_*, truck_route, stop_sign, traffic_light), honor_restrictions, alternatives, steps (fast only), geometry (polyline | polyline6), truck options: truck_size_cm {height, width, length}, truck_weight_kg, truck_axle_load (tonnes), hazmat_type, emission_class (euro0-euro9), cross_border. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "destination": {"latitude": 34.0522, "longitude": -118.2437}, "mode": "truck", "truck_weight_kg": 18000, "hazmat_type": ["flammable_liquid"]}',
       inputSchema: Schema7,
       annotations: READ_ONLY,
       docs: ["routing/directions-api/directions-api"],
@@ -6664,7 +6664,7 @@ var init_distance_matrix = __esm({
     distanceMatrix = {
       name: "distance_matrix",
       title: "Distance Matrix",
-      description: 'Compute travel distance (meters) and duration (seconds) for every origin-to-destination pair in one call; one row per origin with one element per destination, in input order. Use it instead of repeated directions calls when several pairs are needed. Parameters: origins, destinations (arrays of {latitude, longitude}, required); optional mode, service ("fast" default: up to 1000x1000 points; "flexible": the options below, max 50x50), route_type, departure_time, avoid (soft), exclude (strict), honor_restrictions, route_failed_prompt (unroutable pairs return -1 instead of 0), truck options: truck_size_cm {height, width, length}, truck_weight_kg, truck_axle_load, hazmat_type, emission_class, cross_border. Example: {"origins": [{"latitude": 1.29, "longitude": 103.85}], "destinations": [{"latitude": 1.35, "longitude": 103.99}, {"latitude": 1.3, "longitude": 103.77}], "route_failed_prompt": true}',
+      description: 'Compute travel distance (meters) and duration (seconds) for every origin-to-destination pair in one call; one row per origin with one element per destination, in input order. Use it instead of repeated directions calls when several pairs are needed. For how-to questions about this API, use search_documentation. Parameters: origins, destinations (arrays of {latitude, longitude}, required); optional mode, service ("fast" default: up to 1000x1000 points; "flexible": the options below, max 50x50), route_type, departure_time, avoid (soft), exclude (strict), honor_restrictions, route_failed_prompt (unroutable pairs return -1 instead of 0), truck options: truck_size_cm {height, width, length}, truck_weight_kg, truck_axle_load, hazmat_type, emission_class, cross_border. Example: {"origins": [{"latitude": 1.29, "longitude": 103.85}], "destinations": [{"latitude": 1.35, "longitude": 103.99}, {"latitude": 1.3, "longitude": 103.77}], "route_failed_prompt": true}',
       inputSchema: Schema8,
       annotations: READ_ONLY,
       docs: ["routing/distance-matrix/synchronous", "routing/distance-matrix/asynchronous"],
@@ -6733,7 +6733,7 @@ var init_isochrone = __esm({
     isochrone = {
       name: "isochrone",
       title: "Isochrone",
-      description: 'Calculate the area reachable from a point within given travel times or distances; returns a GeoJSON FeatureCollection of contours (geometry coordinates are [longitude, latitude]). To draw the result, pass each contour ring to static_route_map as paths[].geojson_coordinates with a fill_color. Parameters: origin {latitude, longitude} (required); exactly one of contours_minutes (array, up to 4 values, max 40) or contours_meters (array, up to 4 values, max 60000); optional mode, polygons (true for Polygon geometry), denoise, generalize (meters), contours_colors (hex without #, one per contour), departure_time. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "contours_minutes": [5, 10], "polygons": true}',
+      description: 'Calculate the area reachable from a point within given travel times or distances; returns a GeoJSON FeatureCollection of contours (geometry coordinates are [longitude, latitude]). To draw the result, pass each contour ring to static_route_map as paths[].geojson_coordinates with a fill_color. For how-to questions about this API, use search_documentation. Parameters: origin {latitude, longitude} (required); exactly one of contours_minutes (array, up to 4 values, max 40) or contours_meters (array, up to 4 values, max 60000); optional mode, polygons (true for Polygon geometry), denoise, generalize (meters), contours_colors (hex without #, one per contour), departure_time. Example: {"origin": {"latitude": 37.7749, "longitude": -122.4194}, "contours_minutes": [5, 10], "polygons": true}',
       inputSchema: Schema9,
       annotations: READ_ONLY,
       docs: ["routing/isochrone-api/isochrone-api"],
@@ -7220,29 +7220,6 @@ var init_static_route_map = __esm({
   }
 });
 
-// src/docs/markdown.ts
-function hasUnbalancedFence(text) {
-  let open;
-  for (const line of text.split("\n")) {
-    if (open === void 0) {
-      const fence = FENCE_OPEN.exec(line);
-      if (fence) open = fence[1];
-      continue;
-    }
-    const close = FENCE_CLOSE.exec(line);
-    if (close && close[1][0] === open[0] && close[1].length >= open.length) open = void 0;
-  }
-  return open !== void 0;
-}
-var FENCE_OPEN, FENCE_CLOSE;
-var init_markdown = __esm({
-  "src/docs/markdown.ts"() {
-    "use strict";
-    FENCE_OPEN = /^\s{0,3}(`{3,}|~{3,})(.*)$/;
-    FENCE_CLOSE = /^\s{0,3}(`{3,}|~{3,})\s*$/;
-  }
-});
-
 // src/docs/bm25.ts
 var Bm25Field;
 var init_bm25 = __esm({
@@ -7377,12 +7354,14 @@ function buildDocsIndex(file) {
     chunks: file.chunks,
     chunksByDoc,
     body: new Bm25Field(bodyDocs),
-    head: new Bm25Field(headDocs)
+    head: new Bm25Field(headDocs),
+    parameters: file.parameters,
+    endpoints: [...new Set(file.parameters.map((p) => p.endpoint))]
   };
 }
 function loadDocsIndex(path = defaultIndexPath()) {
   const file = JSON.parse(readFileSync(path, "utf8"));
-  if (file.meta?.format !== 1) throw new Error(`unsupported documentation index format in ${path}`);
+  if (file.meta?.format !== 2) throw new Error(`unsupported documentation index format in ${path}`);
   return buildDocsIndex(file);
 }
 function getDocsIndex() {
@@ -7399,7 +7378,7 @@ var init_store = __esm({
 });
 
 // src/tools/docs/descriptions.ts
-var SERVER_INSTRUCTIONS, SEARCH_DOCUMENTATION_DESCRIPTION, GET_DOCUMENTATION_DESCRIPTION, LIST_DOCUMENTATION_TOPICS_DESCRIPTION, DOCS_TOOL_ANNOTATIONS;
+var SERVER_INSTRUCTIONS, SEARCH_DOCUMENTATION_DESCRIPTION, GET_DOCUMENTATION_DESCRIPTION, GET_API_PARAMETERS_DESCRIPTION, LIST_DOCUMENTATION_TOPICS_DESCRIPTION, DOCS_TOOL_ANNOTATIONS;
 var init_descriptions = __esm({
   "src/tools/docs/descriptions.ts"() {
     "use strict";
@@ -7415,6 +7394,7 @@ Parameters:
 - include_examples (boolean, optional): default false.
 Example: {"query": "truck_size truck_weight routing", "api": "Directions"}`;
     GET_DOCUMENTATION_DESCRIPTION = 'Fetch the full text of one documentation page by its doc_id, as returned by search_documentation. Use when an excerpt is not enough to answer accurately. Pages over the size limit return truncated: true and a section list; request one section with section. Sample request and response bodies are omitted unless include_examples is true.\nParameters:\n- doc_id (string, required): page id from search results.\n- section (string, optional): heading of one section to return.\n- include_examples (boolean, optional): default false.\nExample: {"doc_id": "routing/directions-api/examples/legal-routes-for-a-given-truck-weight"}';
+    GET_API_PARAMETERS_DESCRIPTION = 'Get structured parameter details for a NextBillion REST API endpoint: type, required, default, allowed values, units and description. Prefer this over searching prose for questions about a specific parameter. Returns every matching API variant (e.g. directions/flexible and directions/fast); check heading_path. Empty units means the docs do not state the unit; do not infer it. SDK methods are not covered.\nParameters:\n- endpoint (string, required unless doc_id given): API slug, optionally with variant, e.g. directions or directions/flexible.\n- doc_id (string, optional): page id instead of endpoint.\n- name (string, optional): one parameter name.\nExample: {"endpoint": "directions", "name": "truck_weight"}';
     LIST_DOCUMENTATION_TOPICS_DESCRIPTION = `List the available documentation categories, APIs and pages, with index metadata. Use when you don't yet know the right terms to search for, e.g. to see which APIs exist for a problem area before searching.
 Parameters:
 - category (string, optional): limit to one category.
@@ -7426,6 +7406,146 @@ Example: {"category": "Optimization"}`;
       idempotentHint: true,
       openWorldHint: false
     };
+  }
+});
+
+// src/tools/docs/get-api-parameters.ts
+function normalizeEndpoint(raw) {
+  const [api = "", ...rest] = raw.trim().toLowerCase().replace(/^\/+|\/+$/g, "").replace(/[\s_]+/g, "-").split("/");
+  const apiSlug = api.split("-").filter((t) => t.length > 0 && t !== "api" && t !== "apis").join("-");
+  return rest.length > 0 ? `${apiSlug}/${rest.join("/")}` : apiSlug;
+}
+var Schema13, MAX_RECORDS, getApiParameters;
+var init_get_api_parameters = __esm({
+  "src/tools/docs/get-api-parameters.ts"() {
+    "use strict";
+    init_v4();
+    init_store();
+    init_types();
+    init_descriptions();
+    Schema13 = strictObject({
+      endpoint: string2().optional().describe(
+        "API slug with optional variant, e.g. directions, directions/flexible, geofence/create"
+      ),
+      doc_id: string2().optional().describe("Page id instead of endpoint"),
+      name: string2().optional().describe("One parameter name, e.g. truck_weight")
+    });
+    MAX_RECORDS = 200;
+    getApiParameters = {
+      name: "get_api_parameters",
+      title: "Get API Parameters",
+      description: GET_API_PARAMETERS_DESCRIPTION,
+      inputSchema: Schema13,
+      annotations: DOCS_TOOL_ANNOTATIONS,
+      async run(args) {
+        if (!args.endpoint && !args.doc_id) throw new ToolInputError("give endpoint or doc_id");
+        const index = getDocsIndex();
+        const commit = index.meta.commit_sha.slice(0, 7);
+        let records;
+        let scope;
+        if (args.doc_id) {
+          const docId = args.doc_id.trim().replace(/^\/+|\/+$/g, "").replace(/\.md$/i, "");
+          const page = index.pages.get(docId);
+          if (page === void 0) throw new ToolInputError(`unknown doc_id "${args.doc_id}"`);
+          if (page.sdk !== void 0) {
+            const text = `${page.title} is an SDK page (${page.sdk}); SDK method tables are not covered by get_api_parameters. Use get_documentation for the page text.`;
+            return {
+              content: [{ type: "text", text }],
+              structuredContent: {
+                commit_sha: index.meta.commit_sha,
+                doc_id: docId,
+                unsupported: true,
+                reason: text,
+                parameters: []
+              }
+            };
+          }
+          records = index.parameters.filter((p) => p.doc_id === docId);
+          scope = docId;
+        } else {
+          const endpoint = normalizeEndpoint(args.endpoint);
+          records = index.parameters.filter(
+            (p) => p.endpoint === endpoint || p.endpoint.startsWith(`${endpoint}/`)
+          );
+          scope = endpoint;
+          if (records.length === 0) {
+            const first = endpoint.split("/")[0] ?? endpoint;
+            const similar = index.endpoints.filter((e) => e.includes(first) || first.includes(e.split("/")[0] ?? e)).slice(0, 8);
+            throw new ToolInputError(
+              `no parameters for endpoint "${args.endpoint}"${similar.length > 0 ? `; similar endpoints: ${similar.join(", ")}` : ""}. Known endpoints: ${[...new Set(index.endpoints.map((e) => e.split("/")[0]))].join(", ")}`
+            );
+          }
+        }
+        if (args.name) {
+          const wanted = args.name.trim().toLowerCase();
+          const exact = records.filter((p) => p.name.toLowerCase() === wanted);
+          records = exact.length > 0 ? exact : records.filter((p) => p.name.toLowerCase().includes(wanted));
+          if (records.length === 0)
+            throw new ToolInputError(`no parameter named "${args.name}" under ${scope}`);
+        }
+        const total = records.length;
+        const truncated = total > MAX_RECORDS;
+        if (truncated) records = records.slice(0, MAX_RECORDS);
+        const endpoints = [...new Set(records.map((p) => p.endpoint))];
+        const lines = [
+          `${total} parameter(s) for ${scope} across ${endpoints.length} endpoint variant(s) (docs commit ${commit}). units null = the docs do not state a unit.` + (truncated ? ` Showing the first ${MAX_RECORDS}; narrow with name or a variant.` : "")
+        ];
+        for (const endpoint of endpoints) {
+          const group = records.filter((p) => p.endpoint === endpoint);
+          lines.push(
+            "",
+            `## ${endpoint} \u2014 ${group[0].doc_id} > ${group[0].heading_path.slice(1).join(" > ")}`
+          );
+          for (const p of group) {
+            const attrs = [
+              p.type ?? "type unknown",
+              p.required === true ? "required" : p.required === false ? "optional" : null,
+              p.default !== null ? `default ${p.default}` : null,
+              p.allowed_values.length > 0 ? `allowed ${p.allowed_values.join(" | ")}` : null,
+              p.minimum !== void 0 ? `min ${p.minimum}` : null,
+              p.maximum !== void 0 ? `max ${p.maximum}` : null,
+              p.units !== null ? `unit ${p.units}` : null,
+              p.location ? `${p.location} parameter` : null
+            ].filter((a) => a !== null);
+            lines.push(`- ${p.name} (${attrs.join(", ")}): ${p.description}`);
+          }
+        }
+        return {
+          content: [{ type: "text", text: lines.join("\n") }],
+          structuredContent: {
+            commit_sha: index.meta.commit_sha,
+            scope,
+            endpoints,
+            total,
+            truncated,
+            parameters: records
+          }
+        };
+      }
+    };
+  }
+});
+
+// src/docs/markdown.ts
+function hasUnbalancedFence(text) {
+  let open;
+  for (const line of text.split("\n")) {
+    if (open === void 0) {
+      const fence = FENCE_OPEN.exec(line);
+      if (fence) open = fence[1];
+      continue;
+    }
+    const close = FENCE_CLOSE.exec(line);
+    if (close && close[1][0] === open[0] && close[1].length >= open.length) open = void 0;
+  }
+  return open !== void 0;
+}
+var FENCE_OPEN, FENCE_CLOSE;
+var init_markdown = __esm({
+  "src/docs/markdown.ts"() {
+    "use strict";
+    FENCE_OPEN = /^\s{0,3}(`{3,}|~{3,})(.*)$/;
+    FENCE_CLOSE = /^\s{0,3}(`{3,}|~{3,})\s*$/;
   }
 });
 
@@ -7441,7 +7561,7 @@ function cutAtLine(text, max) {
   }
   return head.trimEnd();
 }
-var Schema13, MAX_PAGE_CHARS, getDocumentation;
+var Schema14, MAX_PAGE_CHARS, getDocumentation;
 var init_get_documentation = __esm({
   "src/tools/docs/get-documentation.ts"() {
     "use strict";
@@ -7450,7 +7570,7 @@ var init_get_documentation = __esm({
     init_store();
     init_types();
     init_descriptions();
-    Schema13 = strictObject({
+    Schema14 = strictObject({
       doc_id: string2().min(1).describe("Page id from search_documentation or list_documentation_topics"),
       section: string2().optional().describe("Heading (or its anchor) of one section to return"),
       include_examples: boolean2().optional().describe("Include sample request/response code blocks (default false)")
@@ -7460,7 +7580,7 @@ var init_get_documentation = __esm({
       name: "get_documentation",
       title: "Get Documentation Page",
       description: GET_DOCUMENTATION_DESCRIPTION,
-      inputSchema: Schema13,
+      inputSchema: Schema14,
       annotations: DOCS_TOOL_ANNOTATIONS,
       async run(args) {
         const index = getDocsIndex();
@@ -7743,7 +7863,7 @@ var init_search = __esm({
 });
 
 // src/tools/docs/list-documentation-topics.ts
-var Schema14, listDocumentationTopics;
+var Schema15, listDocumentationTopics;
 var init_list_documentation_topics = __esm({
   "src/tools/docs/list-documentation-topics.ts"() {
     "use strict";
@@ -7751,7 +7871,7 @@ var init_list_documentation_topics = __esm({
     init_search();
     init_store();
     init_descriptions();
-    Schema14 = strictObject({
+    Schema15 = strictObject({
       category: string2().optional().describe("Only this category, e.g. Routing"),
       sdk: string2().optional().describe("Only pages of this platform: Android, iOS, Flutter, Web")
     });
@@ -7759,7 +7879,7 @@ var init_list_documentation_topics = __esm({
       name: "list_documentation_topics",
       title: "List Documentation Topics",
       description: LIST_DOCUMENTATION_TOPICS_DESCRIPTION,
-      inputSchema: Schema14,
+      inputSchema: Schema15,
       annotations: DOCS_TOOL_ANNOTATIONS,
       async run(args) {
         const index = getDocsIndex();
@@ -7856,7 +7976,7 @@ var init_links = __esm({
 });
 
 // src/tools/docs/search-documentation.ts
-var Schema15, CONTENT_NOTICE, searchDocumentation;
+var Schema16, CONTENT_NOTICE, searchDocumentation;
 var init_search_documentation = __esm({
   "src/tools/docs/search-documentation.ts"() {
     "use strict";
@@ -7865,7 +7985,7 @@ var init_search_documentation = __esm({
     init_store();
     init_descriptions();
     init_links();
-    Schema15 = strictObject({
+    Schema16 = strictObject({
       query: string2().min(1).describe("Search terms, ideally the docs\u2019 own vocabulary"),
       category: string2().optional().describe("Boost one category, e.g. Routing, Places"),
       api: string2().optional().describe("Boost one API, e.g. Directions"),
@@ -7878,7 +7998,7 @@ var init_search_documentation = __esm({
       name: "search_documentation",
       title: "Search Documentation",
       description: SEARCH_DOCUMENTATION_DESCRIPTION,
-      inputSchema: Schema15,
+      inputSchema: Schema16,
       annotations: DOCS_TOOL_ANNOTATIONS,
       async run(args) {
         const index = getDocsIndex();
@@ -7962,6 +8082,7 @@ var init_tools = __esm({
     init_search_along_route();
     init_static_map_image();
     init_static_route_map();
+    init_get_api_parameters();
     init_get_documentation();
     init_list_documentation_topics();
     init_search_documentation();
@@ -7971,6 +8092,7 @@ var init_tools = __esm({
       directions,
       distanceMatrix,
       geocodeBatch,
+      getApiParameters,
       getDocumentation,
       listDocumentationTopics,
       searchDocumentation,
@@ -22840,7 +22962,7 @@ function extractApiMessage(bodyText) {
 }
 
 // src/index.ts
-var pkg = true ? { version: "0.2.2" } : createRequire(import.meta.url)("../package.json");
+var pkg = true ? { version: "0.3.0" } : createRequire(import.meta.url)("../package.json");
 function main() {
   const args = process.argv.slice(2);
   if (args.includes("--version") || args.includes("-v")) {

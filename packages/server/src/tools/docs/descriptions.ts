@@ -39,6 +39,19 @@ export const GET_DOCUMENTATION_DESCRIPTION =
   '- include_examples (boolean, optional): default false.\n' +
   'Example: {"doc_id": "routing/directions-api/examples/legal-routes-for-a-given-truck-weight"}';
 
+export const GET_API_PARAMETERS_DESCRIPTION =
+  'Get structured parameter details for a NextBillion REST API endpoint: type, required, ' +
+  'default, allowed values, units and description. Prefer this over searching prose for ' +
+  'questions about a specific parameter. Returns every matching API variant (e.g. ' +
+  'directions/flexible and directions/fast); check heading_path. Empty units means the docs ' +
+  'do not state the unit; do not infer it. SDK methods are not covered.\n' +
+  'Parameters:\n' +
+  '- endpoint (string, required unless doc_id given): API slug, optionally with variant, ' +
+  'e.g. directions or directions/flexible.\n' +
+  '- doc_id (string, optional): page id instead of endpoint.\n' +
+  '- name (string, optional): one parameter name.\n' +
+  'Example: {"endpoint": "directions", "name": "truck_weight"}';
+
 export const LIST_DOCUMENTATION_TOPICS_DESCRIPTION =
   'List the available documentation categories, APIs and pages, with index metadata. Use ' +
   "when you don't yet know the right terms to search for, e.g. to see which APIs exist for a " +

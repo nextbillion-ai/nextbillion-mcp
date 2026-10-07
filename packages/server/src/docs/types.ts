@@ -7,13 +7,14 @@ export type PageType = 'reference' | 'example' | 'guide';
 export type ChunkType = 'content' | 'example' | 'response_schema';
 
 export interface DocsIndexMeta {
-  format: 1;
+  format: 2;
   /** Commit of nextbillion-ai/nb-public-docs the index was built from. */
   commit_sha: string;
   /** Commit date of that docs commit (deterministic, so rebuilds without changes are no-ops). */
   built_at: string;
   pages: number;
   chunks: number;
+  parameters: number;
 }
 
 export interface PageRecord {
@@ -52,8 +53,30 @@ export interface ChunkRecord {
   text: string;
 }
 
+/** One request parameter of a REST endpoint, parsed from a reference page table (spec §6). */
+export interface ParameterRecord {
+  /** `<api-slug>[/<variant>]`, e.g. `directions/flexible`, `geofence/create`. */
+  endpoint: string;
+  name: string;
+  type: string | null;
+  /** null when the table layout does not state it. */
+  required: boolean | null;
+  default: string | null;
+  allowed_values: string[];
+  example?: string;
+  minimum?: string;
+  maximum?: string;
+  /** Unit stated in the docs; null when not stated (never inferred). */
+  units: string | null;
+  location: 'query' | 'body' | 'path' | null;
+  description: string;
+  heading_path: string[];
+  doc_id: string;
+}
+
 export interface DocsIndexFile {
   meta: DocsIndexMeta;
   pages: PageRecord[];
   chunks: ChunkRecord[];
+  parameters: ParameterRecord[];
 }

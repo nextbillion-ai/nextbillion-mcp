@@ -12,7 +12,10 @@ const pageIds = new Set(index.pages.map((p) => p.doc_id));
 
 describe('committed documentation index', () => {
   it('was built from the pinned docs commit and is internally consistent', () => {
-    expect(index.meta.format).toBe(1);
+    expect(index.meta.format).toBe(2);
+    expect(index.meta.parameters).toBe(index.parameters.length);
+    expect(index.parameters.length).toBeGreaterThan(500);
+    for (const p of index.parameters) expect(pageIds.has(p.doc_id), p.endpoint).toBe(true);
     expect(index.meta.commit_sha).toBe(pin.commit);
     expect(index.meta.pages).toBe(index.pages.length);
     expect(index.meta.chunks).toBe(index.chunks.length);

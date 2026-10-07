@@ -3,16 +3,17 @@
  * the labelled questions in docs/eval/questions.json (spec §10).
  *
  * Usage (from packages/server):
- *   tsx scripts/docs/eval-run.ts [--split tuning|held_out|all] [--stdio] [--gate] [--json <file>] [--quiet]
+ *   tsx scripts/docs/eval-run.ts [--split tuning|held_out|all] [--stdio] [--gate] [--update-baseline] [--json <file>] [--quiet]
  *
  * Default: in-process server over an in-memory transport (fast, deterministic).
  * --stdio spawns the built bundle (dist/index.js) instead, which also proves the shipped
  * artifact finds its data file. --gate applies the CI thresholds on the held-out split:
- * recall@k >= 0.90 and MRR >= 0.75; exit code 1 when not met.
+ * recall@k >= 0.90 and MRR >= 0.75, and no query that was a hit in docs/eval/baseline.json
+ * may regress; exit code 1 when not met. --update-baseline rewrites the baseline from this run.
  */
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildServer } from '../../src/core/server.js';
@@ -32,6 +33,13 @@ const useStdio = args.includes('--stdio');
 const gate = args.includes('--gate');
 const quiet = args.includes('--quiet');
 const jsonOut = option('--json');
+const updateBaseline = args.includes('--update-baseline');
+const BASELINE = join(serverRoot, 'docs/eval/baseline.json');
+
+interface Baseline {
+  updated_at: string;
+  hits: Record<string, boolean>;
+}
 
 export const GATE = { recall: 0.9, mrr: 0.75 };
 
@@ -192,16 +200,32 @@ async function main(): Promise<void> {
   }
   if (jsonOut) writeFileSync(jsonOut, `${JSON.stringify({ report, results }, null, 2)}\n`);
 
+  const hits: Record<string, boolean> = {};
+  for (const r of results) hits[`${r.id}/${r.kind}`] = r.hit;
+  if (updateBaseline) {
+    const baseline: Baseline = { updated_at: new Date().toISOString().slice(0, 10), hits };
+    writeFileSync(BASELINE, `${JSON.stringify(baseline, null, 2)}\n`);
+    console.log(`baseline written: ${Object.keys(hits).length} queries`);
+  }
+  let regressions: string[] = [];
+  if (gate && existsSync(BASELINE) && !updateBaseline) {
+    const baseline = JSON.parse(readFileSync(BASELINE, 'utf8')) as Baseline;
+    regressions = Object.entries(baseline.hits)
+      .filter(([key, wasHit]) => wasHit && hits[key] === false)
+      .map(([key]) => key);
+  }
+
   if (gate) {
     const held = report.held_out;
     if (held === undefined) {
       console.error('gate: no held_out questions were evaluated');
       process.exit(1);
     }
-    const ok = held.recall >= GATE.recall && held.mrr >= GATE.mrr;
+    const ok = held.recall >= GATE.recall && held.mrr >= GATE.mrr && regressions.length === 0;
     console.log(
-      `\ngate on held_out: recall@k ${pct(held.recall)} (>= ${pct(GATE.recall)}), MRR ${held.mrr.toFixed(3)} (>= ${GATE.mrr}) -> ${ok ? 'PASS' : 'FAIL'}`,
+      `\ngate on held_out: recall@k ${pct(held.recall)} (>= ${pct(GATE.recall)}), MRR ${held.mrr.toFixed(3)} (>= ${GATE.mrr}), regressions ${regressions.length} -> ${ok ? 'PASS' : 'FAIL'}`,
     );
+    for (const key of regressions) console.log(`- regressed: ${key}`);
     if (!ok) process.exit(1);
   }
 }

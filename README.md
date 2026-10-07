@@ -65,7 +65,7 @@ underlying API's coordinate-order conventions internally.
 
 ### Documentation tools
 
-Three tools answer questions about the APIs and SDKs from the official documentation without a network call: `search_documentation` returns ranked excerpts with a `source_url` to cite and the name of the tool that performs the operation, `get_documentation` returns one page or one section, and `list_documentation_topics` lists what is covered. The index (342 pages of docs.nextbillion.ai) ships inside the package and is rebuilt when the docs change; see `packages/server/docs/README.md`. Pages that exist on the site but not in the docs repository (solutions, apps, help, the Web Maps SDK v1) are not covered.
+Four tools answer questions about the APIs and SDKs from the official documentation without a network call: `search_documentation` returns ranked excerpts with a `source_url` to cite and the name of the tool that performs the operation, `get_documentation` returns one page or one section, `get_api_parameters` returns the request parameters of a REST endpoint as structured records (units only when the docs state them), and `list_documentation_topics` lists what is covered. The index (342 pages of docs.nextbillion.ai) ships inside the package and is rebuilt when the docs change; see `packages/server/docs/README.md`. Pages that exist on the site but not in the docs repository (solutions, apps, help, the Web Maps SDK v1) are not covered.
 
 ## Privacy Policy
 
