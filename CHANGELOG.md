@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+Groundwork for the documentation knowledge base (0.3.0), no runtime or package changes yet:
+
+- `packages/server/docs/` holds the checked-in inputs for the upcoming documentation
+  tools: the mapping of docs-repo pages to live URLs (rules plus `url-overrides.json`),
+  a pinned page list and sitemap snapshot, two coverage reports, and a labelled retrieval
+  eval set (37 questions, tuning and held-out splits). `npm run docs:validate` and
+  `npm run docs:eval-check` keep them consistent and run in CI without access to the
+  private docs repository. The refresh procedure is manual by decision (see
+  `packages/server/docs/README.md`).
+
 ## 0.2.2 — 2026-09-29
 
 - Claude Desktop extension listing text revised for the directory submission (description

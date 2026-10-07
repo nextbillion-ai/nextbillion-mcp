@@ -1,0 +1,692 @@
+{
+  "version": 1,
+  "k": 5,
+  "questions": [
+    {
+      "id": "ext-01-4-batch-geocode-format",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "What is the request body format and batch size limit for geocoding multiple places at once with the Geocoding API?"
+        },
+        { "kind": "keywords", "text": "batch geocode request body limit" },
+        {
+          "kind": "paraphrase",
+          "text": "How many addresses can I send in one batch geocoding call and what does the payload look like?"
+        }
+      ],
+      "expected_doc_ids": ["places/geocoding/batch-geocode/batch-geocode"],
+      "expected_related_tools": ["geocode_batch"]
+    },
+    {
+      "id": "ext-01-5-geocoding-modes",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "What is the difference between forward geocoding, reverse geocoding and structured geocoding, and when should each be used?"
+        },
+        { "kind": "keywords", "text": "forward reverse structured geocoding difference" },
+        {
+          "kind": "paraphrase",
+          "text": "Which geocoding endpoint do I use for an address string, for coordinates, and for separate address fields?"
+        }
+      ],
+      "expected_doc_ids": [
+        "places/geocoding/forward-geocode/forward-geocode",
+        "places/geocoding/reverse-geocode/reverse-geocode",
+        "places/geocoding/structured-geocode/structured-geocode"
+      ],
+      "expected_related_tools": ["geocode_forward", "geocode_reverse", "geocode_structured"]
+    },
+    {
+      "id": "ext-01-6-geocode-country-bbox",
+      "split": "held_out",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I filter forward geocoding results by country ISO codes or a bounding box?"
+        },
+        { "kind": "keywords", "text": "geocode in countryCode bbox filter" },
+        {
+          "kind": "paraphrase",
+          "text": "Can forward geocoding be restricted to one country or to a rectangle of coordinates?"
+        }
+      ],
+      "expected_doc_ids": ["places/geocoding/forward-geocode/forward-geocode"],
+      "expected_related_tools": ["geocode_forward"]
+    },
+    {
+      "id": "ext-02-4-autocomplete-vs-autosuggest",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "What is the difference between the Autocomplete and Autosuggest APIs, and which suits a real-time keystroke search bar?"
+        },
+        { "kind": "keywords", "text": "autocomplete autosuggest difference" },
+        {
+          "kind": "paraphrase",
+          "text": "For a search box that queries on every keystroke, should I call autosuggest or autocomplete?"
+        }
+      ],
+      "expected_doc_ids": [
+        "places/autosuggestions/autosuggest-api",
+        "places/autosuggestions/autocomplete-api"
+      ],
+      "expected_related_tools": ["autosuggest", "autocomplete"]
+    },
+    {
+      "id": "ext-02-5-search-along-route-detour",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How does the Search Along Route API calculate detour time when finding places along a route polyline?"
+        },
+        { "kind": "keywords", "text": "search along route detour time polyline" },
+        {
+          "kind": "paraphrase",
+          "text": "When I look for POIs along a trip, how is the extra time to reach each one computed and limited?"
+        }
+      ],
+      "expected_doc_ids": ["places/search/search-along-route-api/search-along-route-api"],
+      "expected_related_tools": ["search_along_route"]
+    },
+    {
+      "id": "ext-02-6-place-lookup-fields",
+      "split": "held_out",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "What place details such as opening hours, phone number, categories and address components does the Place Lookup API return for a place id?"
+        },
+        { "kind": "keywords", "text": "place lookup response fields opening hours contacts" },
+        {
+          "kind": "paraphrase",
+          "text": "Given a place ID, which metadata can I fetch about that place?"
+        }
+      ],
+      "expected_doc_ids": ["places/place-lookup/place-lookup"],
+      "expected_related_tools": ["place_lookup"]
+    },
+    {
+      "id": "ext-03-4-directions-fast-vs-flexible",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "What is the difference between the Directions API Fast and Flexible versions, and which should I use for commercial truck routing?"
+        },
+        { "kind": "keywords", "text": "directions option flexible fast difference" },
+        {
+          "kind": "paraphrase",
+          "text": "When do I need option=flexible in a directions request instead of the default fast mode?"
+        }
+      ],
+      "expected_doc_ids": ["routing/directions-api/directions-api"],
+      "expected_related_tools": ["directions"]
+    },
+    {
+      "id": "ext-03-5-nav-sdk-route-line-theme",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I customize the navigation route line color and switch between dark and light theme in the Flutter or iOS Navigation SDK?"
+        },
+        { "kind": "keywords", "text": "navigation SDK route line style theme mode" },
+        {
+          "kind": "paraphrase",
+          "text": "Can I change the colour of the route drawn during turn-by-turn navigation and use a dark mode in the mobile navigation SDK?"
+        }
+      ],
+      "expected_doc_ids": [
+        "routing/mobile-sdks/flutter/examples/customize-route-line-style",
+        "routing/mobile-sdks/flutter/examples/navigation-theme-mode",
+        "routing/mobile-sdks/ios/examples/route-lines-styling"
+      ]
+    },
+    {
+      "id": "ext-03-6-truck-dimensions-hazmat",
+      "split": "held_out",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "Which Directions API parameters specify truck weight, axle load, height, length and hazardous materials class?"
+        },
+        { "kind": "keywords", "text": "truck_size truck_weight truck_axle_load hazmat_type" },
+        {
+          "kind": "paraphrase",
+          "text": "How do I describe my truck's dimensions, weight and hazmat cargo when requesting a route?"
+        }
+      ],
+      "expected_doc_ids": [
+        "routing/directions-api/directions-api",
+        "routing/directions-api/examples/get-routes-for-hazmat-load",
+        "routing/directions-api/examples/directions-for-custom-truck-sizes"
+      ],
+      "expected_related_tools": ["directions"]
+    },
+    {
+      "id": "ext-04-4-static-map-styles-retina",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "Which map styles and resolution scale factors such as @2x does the Static Images API support?"
+        },
+        { "kind": "keywords", "text": "static image style dark @2x scale" },
+        {
+          "kind": "paraphrase",
+          "text": "Can I request a retina-resolution static map in a dark or satellite style?"
+        }
+      ],
+      "expected_doc_ids": ["maps/static-images-api/static-images-api"],
+      "expected_related_tools": ["static_map_image"]
+    },
+    {
+      "id": "ext-04-5-static-map-bounding-box",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I build a static map request that fits several coordinates automatically without giving a center and zoom?"
+        },
+        { "kind": "keywords", "text": "static image bounds auto fit" },
+        {
+          "kind": "paraphrase",
+          "text": "Is there a bounding-box mode for static map images so the viewport adjusts to the markers?"
+        }
+      ],
+      "expected_doc_ids": ["maps/static-images-api/static-images-api"],
+      "expected_related_tools": ["static_map_image", "static_route_map"]
+    },
+    {
+      "id": "ext-04-6-static-map-markers-polygons",
+      "split": "held_out",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I format custom marker pins with colors and labels, and polygon fills with hex colors and opacity, in Static Images API URLs?"
+        },
+        { "kind": "keywords", "text": "static image markers path fill color opacity" },
+        {
+          "kind": "paraphrase",
+          "text": "What is the URL syntax for coloured markers and a filled polygon on a static map?"
+        }
+      ],
+      "expected_doc_ids": ["maps/static-images-api/static-images-api"],
+      "expected_related_tools": ["static_map_image"]
+    },
+    {
+      "id": "ext-05-4-tracking-sdk-callbacks",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "Show me how to initialize the location tracking manager and listen to asset location update callbacks in the Android or iOS Tracking SDK."
+        },
+        { "kind": "keywords", "text": "tracking SDK location manager asset tracking callback" },
+        {
+          "kind": "paraphrase",
+          "text": "In the mobile tracking SDK, how do I start location collection and get notified when an asset's position updates?"
+        }
+      ],
+      "expected_doc_ids": [
+        "tracking/mobile-sdks/android/location-manager",
+        "tracking/mobile-sdks/android/asset-tracking-callback",
+        "tracking/mobile-sdks/ios/location-manager-and-collection",
+        "tracking/mobile-sdks/ios/asset-tracking-callback"
+      ]
+    },
+    {
+      "id": "ext-05-5-geofence-event-alerts",
+      "split": "held_out",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I configure automated alerts for speeding, idling and geofence enter or exit events in Live Tracking?"
+        },
+        { "kind": "keywords", "text": "live tracking monitor speeding idle enter exit events" },
+        {
+          "kind": "paraphrase",
+          "text": "What are the steps to get notified when a tracked vehicle speeds, idles, or crosses a geofence boundary?"
+        }
+      ],
+      "expected_doc_ids": [
+        "tracking/live-tracking-api/live-tracking-api",
+        "tracking/live-tracking-api/examples/receive-enter-and-exit-events",
+        "tracking/live-tracking-api/examples/receive-speeding-alerts",
+        "tracking/live-tracking-api/examples/receive-idle-alerts"
+      ]
+    },
+    {
+      "id": "ext-05-6-snap-vs-route-reconstruction",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "We have noisy GPS points from driver phones. When should we use the Snap to Road API versus the Route Reconstruction API for map matching?"
+        },
+        { "kind": "keywords", "text": "snap to road route reconstruction map matching" },
+        {
+          "kind": "paraphrase",
+          "text": "Which API cleans up raw GPS traces onto the road network, snap to roads or route reconstruction, and how do they differ?"
+        }
+      ],
+      "expected_doc_ids": [
+        "routing/snap-to-road/snap-to-road",
+        "tracking/route-reconstruction-api/route-reconstruction-api"
+      ],
+      "match": "all"
+    },
+    {
+      "id": "ext-06-4-fleet-dispatch-api-selection",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "We have 50 delivery trucks and 300 orders across a city. Which API should we use to optimize multi-vehicle routes and assignments?"
+        },
+        { "kind": "keywords", "text": "route optimization multiple vehicles jobs" },
+        {
+          "kind": "paraphrase",
+          "text": "What is the right NextBillion product for vehicle routing with many vehicles and many stops?"
+        }
+      ],
+      "expected_doc_ids": ["optimization/route-optimization-api/route-optimization-api"]
+    },
+    {
+      "id": "ext-06-5-driver-assignment-sync-async",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "What are the limits and latency trade-offs between the synchronous Driver Assignment API and asynchronous batch submission?"
+        },
+        { "kind": "keywords", "text": "driver assignment synchronous asynchronous limits" },
+        {
+          "kind": "paraphrase",
+          "text": "Should I call driver assignment synchronously or submit it as an async job, and what are the size limits of each?"
+        }
+      ],
+      "expected_doc_ids": ["optimization/driver-assignment-api/driver-assignment-api"]
+    },
+    {
+      "id": "ext-06-6-clustering-capacity",
+      "split": "held_out",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How does the Clustering API partition delivery orders into clusters while respecting vehicle capacity limits?"
+        },
+        { "kind": "keywords", "text": "clustering API capacity constraints" },
+        {
+          "kind": "paraphrase",
+          "text": "Can the clustering endpoint group jobs so that each group fits within a vehicle's capacity?"
+        }
+      ],
+      "expected_doc_ids": ["optimization/clustering-api/clustering-api"]
+    },
+    {
+      "id": "ext-07-5-weather-api",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "Does NextBillion provide a weather API that can return precipitation data along a delivery route?"
+        },
+        { "kind": "keywords", "text": "weather API precipitation route" },
+        {
+          "kind": "paraphrase",
+          "text": "Is there a way to get weather conditions or forecasts for the roads my vehicles will travel?"
+        }
+      ],
+      "expected_doc_ids": [
+        "map-data/weather-api/weather-api",
+        "map-data/weather-forecast-api/weather-forecast-api"
+      ]
+    },
+    {
+      "id": "ext-07-6-traffic-incidents-filters",
+      "split": "held_out",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "What filtering options does the Traffic Incidents API support, and what does the criticality field in the response mean?"
+        },
+        { "kind": "keywords", "text": "traffic incidents criticality filter" },
+        {
+          "kind": "paraphrase",
+          "text": "How do I narrow down traffic incident results, and how is incident severity expressed?"
+        }
+      ],
+      "expected_doc_ids": ["map-data/traffic-incidents-api/traffic-incidents-api"]
+    },
+    {
+      "id": "ext-08-1-flutter-avoid-tolls",
+      "split": "tuning",
+      "source": "external-eval-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I avoid toll roads when fetching a route in the Flutter Navigation SDK?"
+        },
+        { "kind": "keywords", "text": "flutter navigation avoid toll" },
+        {
+          "kind": "paraphrase",
+          "text": "In the Flutter SDK, can route requests exclude tolls and highways?"
+        }
+      ],
+      "expected_doc_ids": [
+        "routing/mobile-sdks/flutter/examples/fetch-route-and-launch-navigation",
+        "routing/directions-api/examples/avoid-tolls-and-highways"
+      ]
+    },
+    {
+      "id": "spec-acceptance-2-truck-height-weight",
+      "split": "held_out",
+      "source": "spec-v4-acceptance",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I get directions for a truck that respects height and weight limits?"
+        },
+        { "kind": "keywords", "text": "truck height weight limits directions" },
+        {
+          "kind": "paraphrase",
+          "text": "I need a legal route for a heavy, tall truck; which directions options enforce the restrictions?"
+        }
+      ],
+      "expected_doc_ids": [
+        "routing/directions-api/examples/directions-for-custom-truck-sizes",
+        "routing/directions-api/examples/legal-routes-for-a-given-truck-weight"
+      ],
+      "match": "all",
+      "expected_related_tools": ["directions"],
+      "notes": "Spec §10 acceptance test 2: both pages in the top 5 with related_tools containing directions."
+    },
+    {
+      "id": "chan-batch-geocode-position-access",
+      "split": "tuning",
+      "source": "nextbillion-mcp-channel-2026-09",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "Does the batch geocode response include the position and access coordinates for each result?"
+        },
+        { "kind": "keywords", "text": "batch geocode response position access" },
+        {
+          "kind": "paraphrase",
+          "text": "What coordinate fields come back per item when I geocode a batch of addresses?"
+        }
+      ],
+      "expected_doc_ids": ["places/geocoding/batch-geocode/batch-geocode"],
+      "expected_related_tools": ["geocode_batch"]
+    },
+    {
+      "id": "chan-static-map-marker-coordinate-order",
+      "split": "tuning",
+      "source": "nextbillion-mcp-channel-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "In the Static Images API markers parameter, are coordinates latitude,longitude or longitude,latitude?"
+        },
+        { "kind": "keywords", "text": "static image markers coordinate order" },
+        {
+          "kind": "paraphrase",
+          "text": "What order do I write the lat and lng for a marker on a static map image?"
+        }
+      ],
+      "expected_doc_ids": ["maps/static-images-api/static-images-api"],
+      "expected_related_tools": ["static_map_image"]
+    },
+    {
+      "id": "chan-isochrone-limits",
+      "split": "held_out",
+      "source": "nextbillion-mcp-channel-2026-08",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "What is the maximum number of contours and the maximum travel time or distance for an isochrone request?"
+        },
+        { "kind": "keywords", "text": "isochrone contours_minutes contours_meters maximum" },
+        {
+          "kind": "paraphrase",
+          "text": "How far out can an isochrone go and how many rings can I ask for at once?"
+        }
+      ],
+      "expected_doc_ids": ["routing/isochrone-api/isochrone-api"],
+      "expected_related_tools": ["isochrone"]
+    },
+    {
+      "id": "own-distance-matrix-async",
+      "split": "tuning",
+      "source": "mcpengineer-seed",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "When should I use the asynchronous Distance Matrix API instead of the synchronous one, and how do I fetch the result?"
+        },
+        { "kind": "keywords", "text": "distance matrix asynchronous task_id result" },
+        {
+          "kind": "paraphrase",
+          "text": "For a very large origin-destination matrix, is there a job-based endpoint and how do I collect its output?"
+        }
+      ],
+      "expected_doc_ids": [
+        "routing/distance-matrix/asynchronous",
+        "routing/distance-matrix/synchronous"
+      ],
+      "expected_related_tools": ["distance_matrix"]
+    },
+    {
+      "id": "own-route-optimization-depots",
+      "split": "tuning",
+      "source": "mcpengineer-seed",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I model depots where vehicles start and load goods in the Route Optimization API?"
+        },
+        { "kind": "keywords", "text": "route optimization depots vehicle start" },
+        {
+          "kind": "paraphrase",
+          "text": "Can I define warehouses that vehicles must visit to pick up before serving jobs in an optimization request?"
+        }
+      ],
+      "expected_doc_ids": ["optimization/route-optimization-api/tutorials/depots"]
+    },
+    {
+      "id": "own-route-optimization-reoptimize",
+      "split": "held_out",
+      "source": "mcpengineer-seed",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How can I re-optimize an existing route plan when new orders arrive during the day?"
+        },
+        { "kind": "keywords", "text": "re-optimize route plan new tasks" },
+        {
+          "kind": "paraphrase",
+          "text": "Is there a way to update an already dispatched optimization solution with additional jobs?"
+        }
+      ],
+      "expected_doc_ids": [
+        "optimization/route-optimization-api/tutorials/re-optimizing-a-route-plan"
+      ]
+    },
+    {
+      "id": "own-android-maps-markers",
+      "split": "tuning",
+      "source": "mcpengineer-seed",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I add markers with custom icons to the map in the Android Maps SDK?"
+        },
+        { "kind": "keywords", "text": "android maps sdk marker custom icon" },
+        {
+          "kind": "paraphrase",
+          "text": "On Android, what is the way to place pins with my own images on a NextBillion map view?"
+        }
+      ],
+      "expected_doc_ids": [
+        "maps/mobile-sdks/android/markers-and-annotations",
+        "maps/mobile-sdks/android/examples/mapview-markers"
+      ]
+    },
+    {
+      "id": "own-geofence-polygon",
+      "split": "held_out",
+      "source": "mcpengineer-seed",
+      "queries": [
+        { "kind": "sentence", "text": "How do I create a polygon geofence with the Geofence API?" },
+        { "kind": "keywords", "text": "geofence create polygon" },
+        {
+          "kind": "paraphrase",
+          "text": "What request creates a geofenced area defined by a list of boundary coordinates?"
+        }
+      ],
+      "expected_doc_ids": ["tracking/geofence-api/geofence-api"]
+    },
+    {
+      "id": "own-ios-tracking-trips",
+      "split": "tuning",
+      "source": "mcpengineer-seed",
+      "queries": [
+        { "kind": "sentence", "text": "How do I start and end a trip in the iOS Tracking SDK?" },
+        { "kind": "keywords", "text": "iOS tracking SDK start trip end trip" },
+        {
+          "kind": "paraphrase",
+          "text": "Using the iPhone tracking SDK, how do I mark the beginning and completion of a delivery run?"
+        }
+      ],
+      "expected_doc_ids": ["tracking/mobile-sdks/ios/tracking-trips"]
+    },
+    {
+      "id": "own-geotab-integration",
+      "split": "held_out",
+      "source": "mcpengineer-seed",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I set up the Geotab integration and connect it to the Route Optimization API?"
+        },
+        { "kind": "keywords", "text": "geotab integration setup route optimization" },
+        {
+          "kind": "paraphrase",
+          "text": "What are the steps to use NextBillion optimization from inside Geotab?"
+        }
+      ],
+      "expected_doc_ids": [
+        "integrations/geotab/set-up-geotab-application",
+        "integrations/geotab/integrate-with-route-optimization-api"
+      ]
+    },
+    {
+      "id": "own-web-maps-migrate-v2",
+      "split": "tuning",
+      "source": "mcpengineer-seed",
+      "queries": [
+        { "kind": "sentence", "text": "How do I migrate from Web Maps SDK v1 to v2?" },
+        { "kind": "keywords", "text": "web maps sdk migrate v2" },
+        {
+          "kind": "paraphrase",
+          "text": "What changes when upgrading the JavaScript maps SDK to the second version?"
+        }
+      ],
+      "expected_doc_ids": ["maps/mobile-sdks/web-maps/migrate-to-v2"]
+    },
+    {
+      "id": "own-postcode-geocode",
+      "split": "held_out",
+      "source": "mcpengineer-seed",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I geocode a postal code to get its location and boundary?"
+        },
+        { "kind": "keywords", "text": "geocode postcode" },
+        {
+          "kind": "paraphrase",
+          "text": "Is there an endpoint that turns a ZIP or postal code into coordinates?"
+        }
+      ],
+      "expected_doc_ids": ["places/geocoding/geocode-postcode/geocode-postcode"],
+      "expected_related_tools": ["postcode_lookup"]
+    },
+    {
+      "id": "own-directions-future-departure",
+      "split": "tuning",
+      "source": "mcpengineer-seed",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "How do I plan a route for a departure time in the future so it accounts for typical traffic?"
+        },
+        { "kind": "keywords", "text": "directions departure_time future trip" },
+        {
+          "kind": "paraphrase",
+          "text": "Can I ask for directions as if leaving tomorrow morning, with predicted traffic?"
+        }
+      ],
+      "expected_doc_ids": ["routing/directions-api/examples/plan-a-future-trip"],
+      "expected_related_tools": ["directions"]
+    },
+    {
+      "id": "own-hours-of-service",
+      "split": "held_out",
+      "source": "mcpengineer-seed",
+      "queries": [
+        {
+          "kind": "sentence",
+          "text": "Does routing take driver hours of service rules into account?"
+        },
+        { "kind": "keywords", "text": "hours of service API" },
+        {
+          "kind": "paraphrase",
+          "text": "Is there support for mandatory driver rest breaks and duty-time limits in route planning?"
+        }
+      ],
+      "expected_doc_ids": ["routing/hours-of-service-api/hours-of-service-api"]
+    },
+    {
+      "id": "own-raster-tiles-url",
+      "split": "tuning",
+      "source": "mcpengineer-seed",
+      "queries": [
+        { "kind": "sentence", "text": "What is the URL template for raster map tiles?" },
+        { "kind": "keywords", "text": "raster tiles URL z x y" },
+        {
+          "kind": "paraphrase",
+          "text": "How do I load NextBillion's PNG map tiles into a generic tile-based map library?"
+        }
+      ],
+      "expected_doc_ids": ["maps/raster-tiles-api/raster-tiles-api"]
+    }
+  ]
+}
