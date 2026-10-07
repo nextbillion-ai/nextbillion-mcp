@@ -1,6 +1,6 @@
-# Documentation knowledge base: inputs, mapping and eval set
+# Documentation knowledge base: inputs and mapping
 
-This directory holds the checked-in inputs for the documentation tools (`search_documentation`, `get_documentation`, `get_api_parameters`, `list_documentation_topics`). The source is the private repository `nextbillion-ai/nb-public-docs`; nothing here requires access to it at build or test time.
+This directory holds the checked-in inputs for the documentation tools (`search_documentation`, `get_documentation`, `get_api_parameters`, `list_documentation_topics`). The source is the private repository `nextbillion-ai/nb-public-docs`; nothing here requires access to it at build or test time. Retrieval quality is checked by the unit tests on the committed index (spec acceptance tests) and by the manual host pass before a release.
 
 | File                            | What it is                                                                                 | Maintained by                                      |
 | ------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
@@ -10,7 +10,6 @@ This directory holds the checked-in inputs for the documentation tools (`search_
 | `url-overrides.json`            | Folder aliases and page overrides for the path-to-URL mapping (see below)                  | by hand                                            |
 | `reports/files-without-urls.md` | Pages that are not indexed, and why                                                        | `npm run docs:validate -- --write`                 |
 | `reports/urls-without-files.md` | Live pages with no source in the docs repo (known coverage gap)                            | same                                               |
-| `eval/questions.json`           | Labelled retrieval questions with expected pages (schema below)                            | by hand; owner named in `#nextbillion-mcp`         |
 
 ## How a page gets its URL
 
@@ -42,47 +41,14 @@ npm run docs:validate -- --docs ../../../nb-public-docs --fetch-sitemap --write
 npm run docs:validate
 npm test
 
-# 4. Rebuild the packed index, copy it into the Claude Code plugin, run the retrieval eval
+# 4. Rebuild the packed index and copy it into the Claude Code plugin
 npm run docs:build-index -- --docs ../../../nb-public-docs
 cd ../.. && npm run build && node scripts/sync-plugin-bundle.mjs && cd packages/server
-npm run docs:eval -- --gate
-# if the ranking changed on purpose (new pages, tuned synonyms), accept the new results:
-npm run docs:eval -- --update-baseline
 
 # 5. Bump the patch version (scripts/check-dist-versions.mjs lists every manifest), then open a PR
 ```
 
 Review the diff of the two reports in the PR: a new entry in `files-without-urls.md` means a page was excluded, and growth in `urls-without-files.md` means the site gained pages the repo does not have.
-
-## Eval set schema (`eval/questions.json`)
-
-```jsonc
-{
-  "version": 1,
-  "k": 5, // recall and MRR are computed over the top k results
-  "questions": [
-    {
-      "id": "ext-01-4", // kebab-case, unique
-      "split": "tuning", // "tuning" or "held_out"; boosts and synonyms are tuned on tuning only
-      "source": "external-eval-2026-08", // where the question came from
-      "queries": [
-        // 2 to 3 variants, each kind at most once, "sentence" required; scored separately
-        { "kind": "sentence", "text": "the question as a developer would type it" },
-        { "kind": "keywords", "text": "distilled search terms" },
-        { "kind": "paraphrase", "text": "the same question in other words" },
-      ],
-      "expected_doc_ids": ["places/geocoding/batch-geocode/batch-geocode"], // published pages only
-      "match": "any", // "any" (default): one expected page in the top k is a hit; "all": every page must be
-      "expected_related_tools": ["geocode_batch"], // optional; names of served tools
-      "notes": "optional",
-    },
-  ],
-}
-```
-
-`npm run docs:eval-check` validates the file against the published pages and the served tools. `npm run docs:eval` drives `search_documentation` through a real MCP client and reports recall@k and MRR per split and per variant kind; `--gate` applies the CI thresholds on the held-out split (recall@5 ≥ 0.90, MRR ≥ 0.75) and `--stdio` runs against the built bundle instead of an in-process server.
-
-Tuning rule: boosts, synonyms (`src/docs/synonyms.ts`) and stemming are tuned on the tuning split only. The first synonym set (2026-10-07) was seeded from misses across both splits, so the held-out numbers from that date are optimistic by a few points; everything after that follows the rule.
 
 ## Index file (`../data/docs-index.json`)
 

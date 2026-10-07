@@ -1,7 +1,7 @@
 /**
  * Query-side synonym expansion: everyday phrasing → the docs' own terms (spec §7).
  * Matched case-insensitively against the raw query; the expansion is appended, never
- * substituted, so the original words still score. Maintained alongside the eval set.
+ * substituted, so the original words still score. Maintained by hand.
  */
 export const SYNONYMS: ReadonlyArray<readonly [pattern: RegExp, expansion: string]> = [
   [
