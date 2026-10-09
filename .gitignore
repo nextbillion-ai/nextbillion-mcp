@@ -9,3 +9,4 @@ dist-mcpb/
 .env.*
 coverage/
 .DS_Store
+packages/server/package.json

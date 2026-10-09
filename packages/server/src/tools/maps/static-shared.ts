@@ -70,7 +70,7 @@ export const PathSchema = z
       .optional()
       .describe('Vertices as {latitude, longitude} objects'),
     geojson_coordinates: z
-      .array(z.tuple([z.number(), z.number()]))
+      .array(z.array(z.number()).min(2).max(2))
       .min(2)
       .optional()
       .describe(
