@@ -39,8 +39,8 @@
     "docs:build-index": "tsx scripts/docs/build-index.ts"
   },
   "devDependencies": {
-    "@modelcontextprotocol/client": "^2.0.0",
-    "@modelcontextprotocol/server": "^2.0.0",
+    "@modelcontextprotocol/client": "^2.1.0",
+    "@modelcontextprotocol/server": "^2.1.0",
     "@types/node": "^24.0.0",
     "esbuild": "^0.28.2",
     "tsx": "^4.23.0",
