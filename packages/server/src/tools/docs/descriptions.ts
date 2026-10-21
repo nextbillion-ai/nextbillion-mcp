@@ -38,7 +38,8 @@ export const GET_DOCUMENTATION_DESCRIPTION =
   'search_documentation. Use when an excerpt is not enough to answer accurately. Pages over ' +
   'the size limit return truncated: true and a section list; a single section can be ' +
   'requested with section. Sample request and response bodies are omitted unless ' +
-  'include_examples is true.\n' +
+  'include_examples is true. An unknown doc_id or section returns found: false with ' +
+  'similar ids or the section list.\n' +
   'Parameters:\n' +
   '- doc_id (string, required): page id from search results.\n' +
   '- section (string, optional): heading of one section to return.\n' +
@@ -53,7 +54,8 @@ export const GET_API_PARAMETERS_DESCRIPTION =
   'the documentation does not state a unit. SDK methods are not covered.\n' +
   'Parameters:\n' +
   '- endpoint (string, required unless doc_id given): API slug, optionally with variant, ' +
-  'e.g. directions or directions/flexible.\n' +
+  'e.g. directions or directions/flexible; a tool name such as geocode_batch or a doc_id ' +
+  'also resolves. An unknown endpoint returns found: false with similar endpoints.\n' +
   '- doc_id (string, optional): page id instead of endpoint.\n' +
   '- name (string, optional): one parameter name.\n' +
   'Example: {"endpoint": "directions", "name": "truck_weight"}';
