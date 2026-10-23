@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.3.2 — 2026-10-22
+
+Documentation tools: six fixes found while reproducing the knowledge-base evaluation runs
+of 15 October, plus a refresh of the bundled documentation. No new tools, no schema changes.
+
+- **Documentation refreshed to nb-public-docs 713d1e5 (2026-10-22).** 25 new pages: Android
+  Offline Maps (14) and Android Offline Navigation (11), mapped to their live URLs (five
+  files were renamed in the repo after publishing; the overrides keep the live slugs).
+  Updated pages: Directions API gains the `require=truck_route` parameter and the freight
+  network wording for `prefer`; Distance Matrix and Navigation API `prefer` wording; Route
+  Optimization gains `coordinate_jobs` (multi-technician jobs, 21 fields) and
+  `options.coordination` (3); Hours of Service fixes the type of
+  `driver_current_hos_state.daily_cycle_duty_times` (array of integer). 342 → 367 pages,
+  1,435 → 1,460 parameters, index 7.3 → 7.5 MB.
+- **`get_api_parameters` resolves more endpoint spellings.** Hosts build the slug from
+  whatever they have seen, so `geocode/batch`, `geocode_batch` (the tool name),
+  `Batch Geocode API` and the page's doc_id now all resolve to `batch-geocode`; the result
+  says what the input was matched by. The evaluation's one failing case was this miss.
+- **Array-element request-body fields are extracted.** Field names such as `[].q`,
+  `[].limit` (JSON-array request bodies; Batch Geocode has six) were dropped by the
+  extractor's name pattern, so the endpoint returned only `key`. 1,429 → 1,435 parameters.
+- **No near-empty search chunks.** 451 of the 4,537 index chunks were a bare heading such
+  as `## Request Body` (the heading was flushed alone when the next block was a large
+  table or code sample) and 982 were under 100 characters; they ranked well and came back
+  as results with an empty excerpt. Tiny chunks are now merged into their neighbour at
+  build time (`mergeTinyChunks`): 3,568 chunks, none under 100 characters, pages still
+  rejoin losslessly.
+- **One search result per page section.** Several chunks of the same section no longer
+  repeat the same title, heading and source_url; the best-scoring chunk represents the
+  section.
+- **sdk filter fallback.** When the `sdk` filter hides the page the query is really about
+  (the best unfiltered hit scores at least 1.5× the best filtered one), the result names
+  that page in `best_unfiltered` and in the text instead of filling the list with sdk
+  pages that share only incidental words.
+- **`get_documentation` returns pages up to 15% over the 32,000-character cap whole.** The
+  Directions API page (33.5k) was cut by 4.6% and hosts fetched it twice. When a page is
+  truncated, the section list now comes before the content.
+- **Lookup misses are results, not tool errors.** An unknown endpoint, parameter name,
+  doc_id or section returns `isError: false` with `found: false` and suggestions (similar
+  endpoints or doc_ids, the parameter names under the scope, or the page's sections).
+  Evaluation harnesses and the directory review count any tool error as a failure, even
+  when the message lets the model recover. Malformed input (neither endpoint nor doc_id)
+  is still an input error.
+- Nine new unit tests, including the three evaluation cases as retrieval checks.
+
 ## 0.3.1 — 2026-10-11
 
 Preparation of the Claude Desktop extension for Anthropic's directory review (replaces the

@@ -16,6 +16,7 @@ import {
   chunkSection,
   hasUnbalancedFence,
   headingAnchor,
+  mergeTinyChunks,
   parseBlocks,
   splitSections,
 } from '../../src/docs/markdown.js';
@@ -96,16 +97,14 @@ for (const file of files) {
     }));
 
   const pageChunks: ChunkRecord[] = [];
-  for (const section of sections) {
-    for (const chunk of chunkSection(section)) {
-      pageChunks.push({
-        chunk_id: `${docId}#${pageChunks.length}`,
-        doc_id: docId,
-        chunk_type: chunk.chunkType,
-        heading_path: chunk.headingPath,
-        text: chunk.text,
-      });
-    }
+  for (const chunk of mergeTinyChunks(sections.flatMap((section) => chunkSection(section)))) {
+    pageChunks.push({
+      chunk_id: `${docId}#${pageChunks.length}`,
+      doc_id: docId,
+      chunk_type: chunk.chunkType,
+      heading_path: chunk.headingPath,
+      text: chunk.text,
+    });
   }
 
   // Integrity: lossless join, no split fence, no split table.

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { hasUnbalancedFence } from '../../src/docs/markdown.js';
+import { hasUnbalancedFence, MIN_CHUNK_CHARS } from '../../src/docs/markdown.js';
 import type { DocsIndexFile } from '../../src/docs/types.js';
 import { ALL_TOOLS } from '../../src/tools/index.js';
 
@@ -41,6 +41,16 @@ describe('committed documentation index', () => {
       const first = cur.text.split('\n')[0] ?? '';
       expect(/^\s*\|/.test(prevLast) && /^\s*\|/.test(first), cur.chunk_id).toBe(false);
     }
+  });
+
+  it('has no near-empty chunks and carries the batch geocode body fields', () => {
+    const tiny = index.chunks.filter((c) => c.text.trim().length < MIN_CHUNK_CHARS);
+    expect(tiny.map((c) => c.chunk_id)).toEqual([]);
+    const batch = index.parameters.filter((p) => p.endpoint === 'batch-geocode');
+    expect(batch.map((p) => p.name)).toEqual(
+      expect.arrayContaining(['key', '[].q', '[].at', '[].in', '[].types', '[].limit', '[].lang']),
+    );
+    expect(batch.find((p) => p.name === '[].q')?.location).toBe('body');
   });
 
   it('tags SDK pages with a platform and all pages with a live URL', () => {

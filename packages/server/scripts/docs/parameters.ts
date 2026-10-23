@@ -277,7 +277,8 @@ export function extractParameters(page: PageRecord, markdown: string): Parameter
 
       for (const row of table.rows) {
         const name = code(row[col('name')] ?? '');
-        if (!/^[A-Za-z_][\w.\-\[\]]*$/.test(name)) continue;
+        // `[].q` names the field of each array element in a JSON-array request body.
+        if (!/^(\[\]\.)?[A-Za-z_][\w.\-\[\]]*$/.test(name)) continue;
         const format = col('format') !== -1 ? parseFormat(row[col('format')]!) : {};
         const typeCell = col('type') !== -1 ? clean(row[col('type')]!) : '';
         let type = format.type ?? (typeCell ? code(typeCell).toLowerCase() : null);

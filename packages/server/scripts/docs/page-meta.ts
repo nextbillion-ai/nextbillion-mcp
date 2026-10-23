@@ -20,6 +20,7 @@ export const SDK_FOLDERS: Record<string, { api: string; sdk: string }> = {
   'maps/mobile-sdks/jetpack-compose': { api: 'Maps SDK Jetpack Compose Extension', sdk: 'Android' },
   'maps/mobile-sdks/web-maps': { api: 'Web Maps SDK', sdk: 'Web' },
   'maps/mobile-sdks/ios-offline-maps': { api: 'iOS Offline Maps', sdk: 'iOS' },
+  'maps/mobile-sdks/android-offline-maps': { api: 'Android Offline Maps', sdk: 'Android' },
   'routing/mobile-sdks/android': { api: 'Android Navigation SDK', sdk: 'Android' },
   'routing/mobile-sdks/ios': { api: 'iOS Navigation SDK', sdk: 'iOS' },
   'routing/mobile-sdks/flutter': { api: 'Flutter Navigation SDK', sdk: 'Flutter' },
@@ -28,6 +29,10 @@ export const SDK_FOLDERS: Record<string, { api: string; sdk: string }> = {
     sdk: 'Android',
   },
   'routing/mobile-sdks/ios-offline-navigation': { api: 'iOS Offline Navigation', sdk: 'iOS' },
+  'routing/mobile-sdks/android-offline-navigation': {
+    api: 'Android Offline Navigation',
+    sdk: 'Android',
+  },
   'tracking/mobile-sdks/android': { api: 'Android Tracking SDK', sdk: 'Android' },
   'tracking/mobile-sdks/ios': { api: 'iOS Tracking SDK', sdk: 'iOS' },
   'tracking/mobile-sdks/flutter': { api: 'Flutter Tracking SDK', sdk: 'Flutter' },
