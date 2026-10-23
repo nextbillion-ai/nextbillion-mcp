@@ -38,7 +38,8 @@ jobs:
           cid=$(docker run -d -p 18080:8080 -e NBAI_PUBLIC_URL=http://localhost:18080 nextbillion-mcp:ci)
           for i in $(seq 1 20); do curl -fsS http://localhost:18080/healthz && break || sleep 1; done
           curl -fsS http://localhost:18080/.well-known/oauth-protected-resource
-          docker logs "$cid" | grep -q 'listening on http' || (docker logs "$cid"; exit 1)
+          # The server logs to stderr (stdout is reserved for stdio transports).
+          docker logs "$cid" 2>&1 | grep -q 'listening on http' || (docker logs "$cid" 2>&1; exit 1)
           docker rm -f "$cid"
 
   image:
