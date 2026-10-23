@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
   schedule:
     # Nightly at 02:00 UTC: includes live-API e2e to catch upstream API changes.
@@ -16,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run format:check
@@ -31,6 +32,48 @@ jobs:
         with:
           name: claude-desktop-extension
           path: dist-mcpb/*.mcpb
+      # Hosted mode: the image must build and answer /healthz with the bundled docs index.
+      - run: docker build -t nextbillion-mcp:ci .
+      - run: |
+          cid=$(docker run -d -p 18080:8080 -e NBAI_PUBLIC_URL=http://localhost:18080 nextbillion-mcp:ci)
+          for i in $(seq 1 20); do curl -fsS http://localhost:18080/healthz && break || sleep 1; done
+          curl -fsS http://localhost:18080/.well-known/oauth-protected-resource
+          # The server logs to stderr (stdout is reserved for stdio transports).
+          docker logs "$cid" 2>&1 | grep -q 'listening on http' || (docker logs "$cid" 2>&1; exit 1)
+          docker rm -f "$cid"
+
+  image:
+    # Publishes the hosted image to the company registry on release tags. Runs on the
+    # company's self-hosted runners, which provide `nip` and its registry credentials
+    # (see nextbillion-ai/github-runner); pushes to
+    # asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp:<tag>.
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and push image
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          [ "$tag" = "$GITHUB_REF" ] && tag="sha-${GITHUB_SHA::7}"
+          export DOCKER_CONFIG="$(mktemp -d)"
+          NIP_TARGETS=asia-southeast1 nip -t "nextbillion-mcp:${tag}" .
+          image="asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp:${tag}"
+          echo "pushed ${image}"
+          echo "image=${image}" >> "$GITHUB_OUTPUT"
+        id: push
+      # Rolls the new image out to the hosted service (infrastructure is Terraform-managed in
+      # nextbillion-ai/nextbillion-infra; the image field there is ignored so this step owns it).
+      # Only release tags deploy; manual dispatch builds and pushes without deploying.
+      - name: Deploy to Cloud Run
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          gcloud run deploy nextbillion-mcp \
+            --project nextbillion-controlled --region asia-southeast1 \
+            --image "${{ steps.push.outputs.image }}" --quiet
+          url=$(gcloud run services describe nextbillion-mcp --project nextbillion-controlled --region asia-southeast1 --format 'value(status.url)')
+          for i in $(seq 1 30); do curl -fsS "$url/healthz" && break || sleep 2; done
+          curl -fsS https://mcp.nextbillion.io/healthz
 
   e2e:
     # Live-API smoke tests; needs the NBAI_API_KEY secret (sandbox key).
@@ -40,7 +83,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run test:e2e

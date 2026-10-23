@@ -4297,29 +4297,29 @@ var init_json_schema_processors = __esm({
       // do not set
     };
     stringProcessor = (schema, ctx, _json, _params) => {
-      const json = _json;
-      json.type = "string";
+      const json3 = _json;
+      json3.type = "string";
       const { minimum, maximum, format, patterns, contentEncoding } = schema._zod.bag;
       if (typeof minimum === "number")
-        json.minLength = minimum;
+        json3.minLength = minimum;
       if (typeof maximum === "number")
-        json.maxLength = maximum;
+        json3.maxLength = maximum;
       if (format) {
-        json.format = formatMap[format] ?? format;
-        if (json.format === "")
-          delete json.format;
+        json3.format = formatMap[format] ?? format;
+        if (json3.format === "")
+          delete json3.format;
         if (format === "time") {
-          delete json.format;
+          delete json3.format;
         }
       }
       if (contentEncoding)
-        json.contentEncoding = contentEncoding;
+        json3.contentEncoding = contentEncoding;
       if (patterns && patterns.size > 0) {
         const regexes = [...patterns];
         if (regexes.length === 1)
-          json.pattern = regexes[0].source;
+          json3.pattern = regexes[0].source;
         else if (regexes.length > 1) {
-          json.allOf = [
+          json3.allOf = [
             ...regexes.map((regex) => ({
               ...ctx.target === "draft-07" || ctx.target === "draft-04" || ctx.target === "openapi-3.0" ? { type: "string" } : {},
               pattern: regex.source
@@ -4329,40 +4329,40 @@ var init_json_schema_processors = __esm({
       }
     };
     numberProcessor = (schema, ctx, _json, _params) => {
-      const json = _json;
+      const json3 = _json;
       const { minimum, maximum, format, multipleOf, exclusiveMaximum, exclusiveMinimum } = schema._zod.bag;
       if (typeof format === "string" && format.includes("int"))
-        json.type = "integer";
+        json3.type = "integer";
       else
-        json.type = "number";
+        json3.type = "number";
       const exMin = typeof exclusiveMinimum === "number" && exclusiveMinimum >= (minimum ?? Number.NEGATIVE_INFINITY);
       const exMax = typeof exclusiveMaximum === "number" && exclusiveMaximum <= (maximum ?? Number.POSITIVE_INFINITY);
       const legacy = ctx.target === "draft-04" || ctx.target === "openapi-3.0";
       if (exMin) {
         if (legacy) {
-          json.minimum = exclusiveMinimum;
-          json.exclusiveMinimum = true;
+          json3.minimum = exclusiveMinimum;
+          json3.exclusiveMinimum = true;
         } else {
-          json.exclusiveMinimum = exclusiveMinimum;
+          json3.exclusiveMinimum = exclusiveMinimum;
         }
       } else if (typeof minimum === "number") {
-        json.minimum = minimum;
+        json3.minimum = minimum;
       }
       if (exMax) {
         if (legacy) {
-          json.maximum = exclusiveMaximum;
-          json.exclusiveMaximum = true;
+          json3.maximum = exclusiveMaximum;
+          json3.exclusiveMaximum = true;
         } else {
-          json.exclusiveMaximum = exclusiveMaximum;
+          json3.exclusiveMaximum = exclusiveMaximum;
         }
       } else if (typeof maximum === "number") {
-        json.maximum = maximum;
+        json3.maximum = maximum;
       }
       if (typeof multipleOf === "number")
-        json.multipleOf = multipleOf;
+        json3.multipleOf = multipleOf;
     };
-    booleanProcessor = (_schema, _ctx, json, _params) => {
-      json.type = "boolean";
+    booleanProcessor = (_schema, _ctx, json3, _params) => {
+      json3.type = "boolean";
     };
     bigintProcessor = (_schema, ctx, _json, _params) => {
       if (ctx.unrepresentable === "throw") {
@@ -4374,13 +4374,13 @@ var init_json_schema_processors = __esm({
         throw new Error("Symbols cannot be represented in JSON Schema");
       }
     };
-    nullProcessor = (_schema, ctx, json, _params) => {
+    nullProcessor = (_schema, ctx, json3, _params) => {
       if (ctx.target === "openapi-3.0") {
-        json.type = "string";
-        json.nullable = true;
-        json.enum = [null];
+        json3.type = "string";
+        json3.nullable = true;
+        json3.enum = [null];
       } else {
-        json.type = "null";
+        json3.type = "null";
       }
     };
     undefinedProcessor = (_schema, ctx, _json, _params) => {
@@ -4393,8 +4393,8 @@ var init_json_schema_processors = __esm({
         throw new Error("Void cannot be represented in JSON Schema");
       }
     };
-    neverProcessor = (_schema, _ctx, json, _params) => {
-      json.not = {};
+    neverProcessor = (_schema, _ctx, json3, _params) => {
+      json3.not = {};
     };
     anyProcessor = (_schema, _ctx, _json, _params) => {
     };
@@ -4405,16 +4405,16 @@ var init_json_schema_processors = __esm({
         throw new Error("Date cannot be represented in JSON Schema");
       }
     };
-    enumProcessor = (schema, _ctx, json, _params) => {
+    enumProcessor = (schema, _ctx, json3, _params) => {
       const def = schema._zod.def;
       const values = getEnumValues(def.entries);
       if (values.every((v) => typeof v === "number"))
-        json.type = "number";
+        json3.type = "number";
       if (values.every((v) => typeof v === "string"))
-        json.type = "string";
-      json.enum = values;
+        json3.type = "string";
+      json3.enum = values;
     };
-    literalProcessor = (schema, ctx, json, _params) => {
+    literalProcessor = (schema, ctx, json3, _params) => {
       const def = schema._zod.def;
       const vals = [];
       for (const val of def.values) {
@@ -4436,22 +4436,22 @@ var init_json_schema_processors = __esm({
       if (vals.length === 0) {
       } else if (vals.length === 1) {
         const val = vals[0];
-        json.type = val === null ? "null" : typeof val;
+        json3.type = val === null ? "null" : typeof val;
         if (ctx.target === "draft-04" || ctx.target === "openapi-3.0") {
-          json.enum = [val];
+          json3.enum = [val];
         } else {
-          json.const = val;
+          json3.const = val;
         }
       } else {
         if (vals.every((v) => typeof v === "number"))
-          json.type = "number";
+          json3.type = "number";
         if (vals.every((v) => typeof v === "string"))
-          json.type = "string";
+          json3.type = "string";
         if (vals.every((v) => typeof v === "boolean"))
-          json.type = "boolean";
+          json3.type = "boolean";
         if (vals.every((v) => v === null))
-          json.type = "null";
-        json.enum = vals;
+          json3.type = "null";
+        json3.enum = vals;
       }
     };
     nanProcessor = (_schema, ctx, _json, _params) => {
@@ -4459,16 +4459,16 @@ var init_json_schema_processors = __esm({
         throw new Error("NaN cannot be represented in JSON Schema");
       }
     };
-    templateLiteralProcessor = (schema, _ctx, json, _params) => {
-      const _json = json;
+    templateLiteralProcessor = (schema, _ctx, json3, _params) => {
+      const _json = json3;
       const pattern = schema._zod.pattern;
       if (!pattern)
         throw new Error("Pattern not found in template literal");
       _json.type = "string";
       _json.pattern = pattern.source;
     };
-    fileProcessor = (schema, _ctx, json, _params) => {
-      const _json = json;
+    fileProcessor = (schema, _ctx, json3, _params) => {
+      const _json = json3;
       const file = {
         type: "string",
         format: "binary",
@@ -4491,8 +4491,8 @@ var init_json_schema_processors = __esm({
         Object.assign(_json, file);
       }
     };
-    successProcessor = (_schema, _ctx, json, _params) => {
-      json.type = "boolean";
+    successProcessor = (_schema, _ctx, json3, _params) => {
+      json3.type = "boolean";
     };
     customProcessor = (_schema, ctx, _json, _params) => {
       if (ctx.unrepresentable === "throw") {
@@ -4520,27 +4520,27 @@ var init_json_schema_processors = __esm({
       }
     };
     arrayProcessor = (schema, ctx, _json, params) => {
-      const json = _json;
+      const json3 = _json;
       const def = schema._zod.def;
       const { minimum, maximum } = schema._zod.bag;
       if (typeof minimum === "number")
-        json.minItems = minimum;
+        json3.minItems = minimum;
       if (typeof maximum === "number")
-        json.maxItems = maximum;
-      json.type = "array";
-      json.items = process2(def.element, ctx, {
+        json3.maxItems = maximum;
+      json3.type = "array";
+      json3.items = process2(def.element, ctx, {
         ...params,
         path: [...params.path, "items"]
       });
     };
     objectProcessor = (schema, ctx, _json, params) => {
-      const json = _json;
+      const json3 = _json;
       const def = schema._zod.def;
-      json.type = "object";
-      json.properties = {};
+      json3.type = "object";
+      json3.properties = {};
       const shape = def.shape;
       for (const key in shape) {
-        json.properties[key] = process2(shape[key], ctx, {
+        json3.properties[key] = process2(shape[key], ctx, {
           ...params,
           path: [...params.path, "properties", key]
         });
@@ -4555,21 +4555,21 @@ var init_json_schema_processors = __esm({
         }
       }));
       if (requiredKeys.size > 0) {
-        json.required = Array.from(requiredKeys);
+        json3.required = Array.from(requiredKeys);
       }
       if (def.catchall?._zod.def.type === "never") {
-        json.additionalProperties = false;
+        json3.additionalProperties = false;
       } else if (!def.catchall) {
         if (ctx.io === "output")
-          json.additionalProperties = false;
+          json3.additionalProperties = false;
       } else if (def.catchall) {
-        json.additionalProperties = process2(def.catchall, ctx, {
+        json3.additionalProperties = process2(def.catchall, ctx, {
           ...params,
           path: [...params.path, "additionalProperties"]
         });
       }
     };
-    unionProcessor = (schema, ctx, json, params) => {
+    unionProcessor = (schema, ctx, json3, params) => {
       const def = schema._zod.def;
       const isExclusive = def.inclusive === false;
       const options = def.options.map((x, i) => process2(x, ctx, {
@@ -4577,12 +4577,12 @@ var init_json_schema_processors = __esm({
         path: [...params.path, isExclusive ? "oneOf" : "anyOf", i]
       }));
       if (isExclusive) {
-        json.oneOf = options;
+        json3.oneOf = options;
       } else {
-        json.anyOf = options;
+        json3.anyOf = options;
       }
     };
-    intersectionProcessor = (schema, ctx, json, params) => {
+    intersectionProcessor = (schema, ctx, json3, params) => {
       const def = schema._zod.def;
       const a = process2(def.left, ctx, {
         ...params,
@@ -4597,12 +4597,12 @@ var init_json_schema_processors = __esm({
         ...isSimpleIntersection(a) ? a.allOf : [a],
         ...isSimpleIntersection(b) ? b.allOf : [b]
       ];
-      json.allOf = allOf;
+      json3.allOf = allOf;
     };
     tupleProcessor = (schema, ctx, _json, params) => {
-      const json = _json;
+      const json3 = _json;
       const def = schema._zod.def;
-      json.type = "array";
+      json3.type = "array";
       const prefixPath = ctx.target === "draft-2020-12" ? "prefixItems" : "items";
       const restPath = ctx.target === "draft-2020-12" ? "items" : ctx.target === "openapi-3.0" ? "items" : "additionalItems";
       const prefixItems = def.items.map((x, i) => process2(x, ctx, {
@@ -4614,37 +4614,37 @@ var init_json_schema_processors = __esm({
         path: [...params.path, restPath, ...ctx.target === "openapi-3.0" ? [def.items.length] : []]
       }) : null;
       if (ctx.target === "draft-2020-12") {
-        json.prefixItems = prefixItems;
+        json3.prefixItems = prefixItems;
         if (rest) {
-          json.items = rest;
+          json3.items = rest;
         }
       } else if (ctx.target === "openapi-3.0") {
-        json.items = {
+        json3.items = {
           anyOf: prefixItems
         };
         if (rest) {
-          json.items.anyOf.push(rest);
+          json3.items.anyOf.push(rest);
         }
-        json.minItems = prefixItems.length;
+        json3.minItems = prefixItems.length;
         if (!rest) {
-          json.maxItems = prefixItems.length;
+          json3.maxItems = prefixItems.length;
         }
       } else {
-        json.items = prefixItems;
+        json3.items = prefixItems;
         if (rest) {
-          json.additionalItems = rest;
+          json3.additionalItems = rest;
         }
       }
       const { minimum, maximum } = schema._zod.bag;
       if (typeof minimum === "number")
-        json.minItems = minimum;
+        json3.minItems = minimum;
       if (typeof maximum === "number")
-        json.maxItems = maximum;
+        json3.maxItems = maximum;
     };
     recordProcessor = (schema, ctx, _json, params) => {
-      const json = _json;
+      const json3 = _json;
       const def = schema._zod.def;
-      json.type = "object";
+      json3.type = "object";
       const keyType = def.keyType;
       const keyBag = keyType._zod.bag;
       const patterns = keyBag?.patterns;
@@ -4653,18 +4653,18 @@ var init_json_schema_processors = __esm({
           ...params,
           path: [...params.path, "patternProperties", "*"]
         });
-        json.patternProperties = {};
+        json3.patternProperties = {};
         for (const pattern of patterns) {
-          json.patternProperties[pattern.source] = valueSchema;
+          json3.patternProperties[pattern.source] = valueSchema;
         }
       } else {
         if (ctx.target === "draft-07" || ctx.target === "draft-2020-12") {
-          json.propertyNames = process2(def.keyType, ctx, {
+          json3.propertyNames = process2(def.keyType, ctx, {
             ...params,
             path: [...params.path, "propertyNames"]
           });
         }
-        json.additionalProperties = process2(def.valueType, ctx, {
+        json3.additionalProperties = process2(def.valueType, ctx, {
           ...params,
           path: [...params.path, "additionalProperties"]
         });
@@ -4673,19 +4673,19 @@ var init_json_schema_processors = __esm({
       if (keyValues) {
         const validKeyValues = [...keyValues].filter((v) => typeof v === "string" || typeof v === "number");
         if (validKeyValues.length > 0) {
-          json.required = validKeyValues;
+          json3.required = validKeyValues;
         }
       }
     };
-    nullableProcessor = (schema, ctx, json, params) => {
+    nullableProcessor = (schema, ctx, json3, params) => {
       const def = schema._zod.def;
       const inner = process2(def.innerType, ctx, params);
       const seen = ctx.seen.get(schema);
       if (ctx.target === "openapi-3.0") {
         seen.ref = def.innerType;
-        json.nullable = true;
+        json3.nullable = true;
       } else {
-        json.anyOf = [inner, { type: "null" }];
+        json3.anyOf = [inner, { type: "null" }];
       }
     };
     nonoptionalProcessor = (schema, ctx, _json, params) => {
@@ -4694,22 +4694,22 @@ var init_json_schema_processors = __esm({
       const seen = ctx.seen.get(schema);
       seen.ref = def.innerType;
     };
-    defaultProcessor = (schema, ctx, json, params) => {
+    defaultProcessor = (schema, ctx, json3, params) => {
       const def = schema._zod.def;
       process2(def.innerType, ctx, params);
       const seen = ctx.seen.get(schema);
       seen.ref = def.innerType;
-      json.default = JSON.parse(JSON.stringify(def.defaultValue));
+      json3.default = JSON.parse(JSON.stringify(def.defaultValue));
     };
-    prefaultProcessor = (schema, ctx, json, params) => {
+    prefaultProcessor = (schema, ctx, json3, params) => {
       const def = schema._zod.def;
       process2(def.innerType, ctx, params);
       const seen = ctx.seen.get(schema);
       seen.ref = def.innerType;
       if (ctx.io === "input")
-        json._prefault = JSON.parse(JSON.stringify(def.defaultValue));
+        json3._prefault = JSON.parse(JSON.stringify(def.defaultValue));
     };
-    catchProcessor = (schema, ctx, json, params) => {
+    catchProcessor = (schema, ctx, json3, params) => {
       const def = schema._zod.def;
       process2(def.innerType, ctx, params);
       const seen = ctx.seen.get(schema);
@@ -4720,7 +4720,7 @@ var init_json_schema_processors = __esm({
       } catch {
         throw new Error("Dynamic catch values are not supported in JSON Schema");
       }
-      json.default = catchValue;
+      json3.default = catchValue;
     };
     pipeProcessor = (schema, ctx, _json, params) => {
       const def = schema._zod.def;
@@ -4730,12 +4730,12 @@ var init_json_schema_processors = __esm({
       const seen = ctx.seen.get(schema);
       seen.ref = innerType;
     };
-    readonlyProcessor = (schema, ctx, json, params) => {
+    readonlyProcessor = (schema, ctx, json3, params) => {
       const def = schema._zod.def;
       process2(def.innerType, ctx, params);
       const seen = ctx.seen.get(schema);
       seen.ref = def.innerType;
-      json.readOnly = true;
+      json3.readOnly = true;
     };
     promiseProcessor = (schema, ctx, _json, params) => {
       const def = schema._zod.def;
@@ -5338,7 +5338,7 @@ var init_schemas2 = __esm({
     _ZodString = /* @__PURE__ */ $constructor("_ZodString", (inst, def) => {
       $ZodString.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => stringProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => stringProcessor(inst, ctx, json3, params);
       const bag = inst._zod.bag;
       inst.format = bag.format ?? null;
       inst.minLength = bag.minimum ?? null;
@@ -5505,7 +5505,7 @@ var init_schemas2 = __esm({
     ZodNumber = /* @__PURE__ */ $constructor("ZodNumber", (inst, def) => {
       $ZodNumber.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => numberProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => numberProcessor(inst, ctx, json3, params);
       _installLazyMethods(inst, "ZodNumber", {
         gt(value, params) {
           return this.check(_gt(value, params));
@@ -5567,12 +5567,12 @@ var init_schemas2 = __esm({
     ZodBoolean = /* @__PURE__ */ $constructor("ZodBoolean", (inst, def) => {
       $ZodBoolean.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => booleanProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => booleanProcessor(inst, ctx, json3, params);
     });
     ZodBigInt = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
       $ZodBigInt.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => bigintProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => bigintProcessor(inst, ctx, json3, params);
       inst.gte = (value, params) => inst.check(_gte(value, params));
       inst.min = (value, params) => inst.check(_gte(value, params));
       inst.gt = (value, params) => inst.check(_gt(value, params));
@@ -5594,27 +5594,27 @@ var init_schemas2 = __esm({
     ZodNull = /* @__PURE__ */ $constructor("ZodNull", (inst, def) => {
       $ZodNull.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => nullProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => nullProcessor(inst, ctx, json3, params);
     });
     ZodAny = /* @__PURE__ */ $constructor("ZodAny", (inst, def) => {
       $ZodAny.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => anyProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => anyProcessor(inst, ctx, json3, params);
     });
     ZodUnknown = /* @__PURE__ */ $constructor("ZodUnknown", (inst, def) => {
       $ZodUnknown.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => unknownProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => unknownProcessor(inst, ctx, json3, params);
     });
     ZodNever = /* @__PURE__ */ $constructor("ZodNever", (inst, def) => {
       $ZodNever.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => neverProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => neverProcessor(inst, ctx, json3, params);
     });
     ZodDate = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
       $ZodDate.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => dateProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => dateProcessor(inst, ctx, json3, params);
       inst.min = (value, params) => inst.check(_gte(value, params));
       inst.max = (value, params) => inst.check(_lte(value, params));
       const c = inst._zod.bag;
@@ -5624,7 +5624,7 @@ var init_schemas2 = __esm({
     ZodArray = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
       $ZodArray.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => arrayProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => arrayProcessor(inst, ctx, json3, params);
       inst.element = def.element;
       _installLazyMethods(inst, "ZodArray", {
         min(n, params) {
@@ -5647,7 +5647,7 @@ var init_schemas2 = __esm({
     ZodObject = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
       $ZodObjectJIT.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => objectProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => objectProcessor(inst, ctx, json3, params);
       util_exports.defineLazy(inst, "shape", () => {
         return def.shape;
       });
@@ -5696,7 +5696,7 @@ var init_schemas2 = __esm({
     ZodUnion = /* @__PURE__ */ $constructor("ZodUnion", (inst, def) => {
       $ZodUnion.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => unionProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => unionProcessor(inst, ctx, json3, params);
       inst.options = def.options;
     });
     ZodDiscriminatedUnion = /* @__PURE__ */ $constructor("ZodDiscriminatedUnion", (inst, def) => {
@@ -5706,12 +5706,12 @@ var init_schemas2 = __esm({
     ZodIntersection = /* @__PURE__ */ $constructor("ZodIntersection", (inst, def) => {
       $ZodIntersection.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => intersectionProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => intersectionProcessor(inst, ctx, json3, params);
     });
     ZodTuple = /* @__PURE__ */ $constructor("ZodTuple", (inst, def) => {
       $ZodTuple.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => tupleProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => tupleProcessor(inst, ctx, json3, params);
       inst.rest = (rest) => inst.clone({
         ...inst._zod.def,
         rest
@@ -5720,14 +5720,14 @@ var init_schemas2 = __esm({
     ZodRecord = /* @__PURE__ */ $constructor("ZodRecord", (inst, def) => {
       $ZodRecord.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => recordProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => recordProcessor(inst, ctx, json3, params);
       inst.keyType = def.keyType;
       inst.valueType = def.valueType;
     });
     ZodEnum = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
       $ZodEnum.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => enumProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => enumProcessor(inst, ctx, json3, params);
       inst.enum = def.entries;
       inst.options = Object.values(def.entries);
       const keys = new Set(Object.keys(def.entries));
@@ -5765,7 +5765,7 @@ var init_schemas2 = __esm({
     ZodLiteral = /* @__PURE__ */ $constructor("ZodLiteral", (inst, def) => {
       $ZodLiteral.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => literalProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => literalProcessor(inst, ctx, json3, params);
       inst.values = new Set(def.values);
       Object.defineProperty(inst, "value", {
         get() {
@@ -5779,7 +5779,7 @@ var init_schemas2 = __esm({
     ZodTransform = /* @__PURE__ */ $constructor("ZodTransform", (inst, def) => {
       $ZodTransform.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => transformProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => transformProcessor(inst, ctx, json3, params);
       inst._zod.parse = (payload, _ctx) => {
         if (_ctx.direction === "backward") {
           throw new $ZodEncodeError(inst.constructor.name);
@@ -5813,51 +5813,51 @@ var init_schemas2 = __esm({
     ZodOptional = /* @__PURE__ */ $constructor("ZodOptional", (inst, def) => {
       $ZodOptional.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => optionalProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => optionalProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.innerType;
     });
     ZodExactOptional = /* @__PURE__ */ $constructor("ZodExactOptional", (inst, def) => {
       $ZodExactOptional.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => optionalProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => optionalProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.innerType;
     });
     ZodNullable = /* @__PURE__ */ $constructor("ZodNullable", (inst, def) => {
       $ZodNullable.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => nullableProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => nullableProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.innerType;
     });
     ZodDefault = /* @__PURE__ */ $constructor("ZodDefault", (inst, def) => {
       $ZodDefault.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => defaultProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => defaultProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.innerType;
       inst.removeDefault = inst.unwrap;
     });
     ZodPrefault = /* @__PURE__ */ $constructor("ZodPrefault", (inst, def) => {
       $ZodPrefault.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => prefaultProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => prefaultProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.innerType;
     });
     ZodNonOptional = /* @__PURE__ */ $constructor("ZodNonOptional", (inst, def) => {
       $ZodNonOptional.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => nonoptionalProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => nonoptionalProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.innerType;
     });
     ZodCatch = /* @__PURE__ */ $constructor("ZodCatch", (inst, def) => {
       $ZodCatch.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => catchProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => catchProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.innerType;
       inst.removeCatch = inst.unwrap;
     });
     ZodPipe = /* @__PURE__ */ $constructor("ZodPipe", (inst, def) => {
       $ZodPipe.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => pipeProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => pipeProcessor(inst, ctx, json3, params);
       inst.in = def.in;
       inst.out = def.out;
     });
@@ -5868,19 +5868,19 @@ var init_schemas2 = __esm({
     ZodReadonly = /* @__PURE__ */ $constructor("ZodReadonly", (inst, def) => {
       $ZodReadonly.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => readonlyProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => readonlyProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.innerType;
     });
     ZodLazy = /* @__PURE__ */ $constructor("ZodLazy", (inst, def) => {
       $ZodLazy.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => lazyProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => lazyProcessor(inst, ctx, json3, params);
       inst.unwrap = () => inst._zod.def.getter();
     });
     ZodCustom = /* @__PURE__ */ $constructor("ZodCustom", (inst, def) => {
       $ZodCustom.init(inst, def);
       ZodType.init(inst, def);
-      inst._zod.processJSONSchema = (ctx, json, params) => customProcessor(inst, ctx, json, params);
+      inst._zod.processJSONSchema = (ctx, json3, params) => customProcessor(inst, ctx, json3, params);
     });
   }
 });
@@ -6005,6 +6005,48 @@ function loadConfig(env = process.env) {
     baseUrl: (env.NBAI_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, ""),
     timeoutMs
   };
+}
+function loadHttpConfig(env = process.env) {
+  const port = env.PORT ? Number(env.PORT) : 8080;
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+    throw new ConfigError(`PORT must be a TCP port number, got: ${env.PORT}`);
+  }
+  const allowHttp = /^(1|true|yes)$/i.test(env.NBAI_ALLOW_HTTP?.trim() ?? "");
+  const publicUrl = parseHttpsUrl(
+    env.NBAI_PUBLIC_URL?.trim() || "https://mcp.nextbillion.io",
+    "NBAI_PUBLIC_URL",
+    allowHttp
+  );
+  const issuerUrl = env.NBAI_ISSUER_URL?.trim() ? parseHttpsUrl(env.NBAI_ISSUER_URL.trim(), "NBAI_ISSUER_URL", allowHttp) : publicUrl;
+  const timeoutMs = env.NBAI_TIMEOUT_MS ? Number(env.NBAI_TIMEOUT_MS) : DEFAULT_TIMEOUT_MS;
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    throw new ConfigError(`NBAI_TIMEOUT_MS must be a positive number, got: ${env.NBAI_TIMEOUT_MS}`);
+  }
+  return {
+    port,
+    publicUrl,
+    issuerUrl,
+    baseUrl: env.NBAI_BASE_URL?.trim() || DEFAULT_BASE_URL,
+    timeoutMs
+  };
+}
+function parseHttpsUrl(value, name, allowHttp = false) {
+  let url2;
+  try {
+    url2 = new URL(value);
+  } catch {
+    throw new ConfigError(`${name} must be an absolute URL, got: ${value}`);
+  }
+  const loopback = url2.hostname === "localhost" || url2.hostname === "127.0.0.1";
+  if (url2.protocol !== "https:" && !(url2.protocol === "http:" && (loopback || allowHttp))) {
+    throw new ConfigError(
+      `${name} must use https:// (http:// is allowed for localhost, or anywhere with NBAI_ALLOW_HTTP=1), got: ${value}`
+    );
+  }
+  if (url2.search || url2.hash)
+    throw new ConfigError(`${name} must not carry a query or fragment: ${value}`);
+  url2.pathname = url2.pathname.replace(/\/+$/, "");
+  return url2;
 }
 var DEFAULT_BASE_URL, DEFAULT_TIMEOUT_MS, ConfigError;
 var init_config = __esm({
@@ -8300,9 +8342,10 @@ function declaredDialect(schema, remedy) {
   throw new Error(`JSON Schema declares an unsupported dialect ("$schema": "${schema.$schema.slice(0, 200)}"). The default validator supports JSON Schema 2020-12, 2019-09, draft-07, and draft-06; ${remedy}`);
 }
 
-// ../../node_modules/@modelcontextprotocol/core/dist/auth-CUe6YdwF.mjs
+// ../../node_modules/@modelcontextprotocol/core/dist/auth-BNDyLTqp.mjs
 init_v4();
 var LATEST_PROTOCOL_VERSION = "2025-11-25";
+var DEFAULT_NEGOTIATED_PROTOCOL_VERSION = "2025-03-26";
 var SUPPORTED_PROTOCOL_VERSIONS = [
   LATEST_PROTOCOL_VERSION,
   "2025-06-18",
@@ -9138,7 +9181,8 @@ var OAuthMetadataSchema = looseObject({
   introspection_endpoint_auth_signing_alg_values_supported: array(string2()).optional(),
   code_challenge_methods_supported: array(string2()).optional(),
   client_id_metadata_document_supported: boolean2().optional(),
-  authorization_response_iss_parameter_supported: boolean2().optional().catch(void 0)
+  authorization_response_iss_parameter_supported: boolean2().optional().catch(void 0),
+  dpop_signing_alg_values_supported: array(string2()).optional()
 });
 var OpenIdProviderMetadataSchema = looseObject({
   issuer: string2(),
@@ -9189,7 +9233,8 @@ var OAuthTokensSchema = object({
   token_type: string2(),
   expires_in: coerce_exports.number().optional(),
   scope: string2().optional(),
-  refresh_token: string2().optional()
+  refresh_token: string2().optional(),
+  issuer: string2().optional().catch(void 0)
 }).strip();
 var IdJagTokenExchangeResponseSchema = object({
   issued_token_type: literal("urn:ietf:params:oauth:token-type:id-jag"),
@@ -9227,7 +9272,8 @@ var OAuthClientInformationSchema = object({
   client_id: string2(),
   client_secret: string2().optional(),
   client_id_issued_at: number2().optional(),
-  client_secret_expires_at: number2().optional()
+  client_secret_expires_at: number2().optional(),
+  issuer: string2().optional().catch(void 0)
 }).strip();
 var OAuthClientInformationFullSchema = OAuthClientMetadataSchema.merge(OAuthClientInformationSchema);
 var OAuthClientRegistrationErrorSchema = object({
@@ -9239,7 +9285,7 @@ var OAuthTokenRevocationRequestSchema = object({
   token_type_hint: string2().optional()
 }).strip();
 
-// ../../node_modules/@modelcontextprotocol/server/dist/src-CX2iR2pK.mjs
+// ../../node_modules/@modelcontextprotocol/server/dist/src-Cqbh3MYc.mjs
 init_v4();
 var BRANDS = /* @__PURE__ */ Symbol.for("mcp.sdk.errorBrands");
 function stampErrorBrands(instance, ctor) {
@@ -9267,6 +9313,29 @@ function brandedHasInstance(cls, value) {
   }
   return Function.prototype[Symbol.hasInstance].call(cls, value);
 }
+var OAuthErrorCode = /* @__PURE__ */ (function(OAuthErrorCode$1) {
+  OAuthErrorCode$1["InvalidRequest"] = "invalid_request";
+  OAuthErrorCode$1["InvalidClient"] = "invalid_client";
+  OAuthErrorCode$1["InvalidGrant"] = "invalid_grant";
+  OAuthErrorCode$1["UnauthorizedClient"] = "unauthorized_client";
+  OAuthErrorCode$1["UnsupportedGrantType"] = "unsupported_grant_type";
+  OAuthErrorCode$1["InvalidScope"] = "invalid_scope";
+  OAuthErrorCode$1["AccessDenied"] = "access_denied";
+  OAuthErrorCode$1["ServerError"] = "server_error";
+  OAuthErrorCode$1["TemporarilyUnavailable"] = "temporarily_unavailable";
+  OAuthErrorCode$1["UnsupportedResponseType"] = "unsupported_response_type";
+  OAuthErrorCode$1["UnsupportedTokenType"] = "unsupported_token_type";
+  OAuthErrorCode$1["InvalidToken"] = "invalid_token";
+  OAuthErrorCode$1["MethodNotAllowed"] = "method_not_allowed";
+  OAuthErrorCode$1["TooManyRequests"] = "too_many_requests";
+  OAuthErrorCode$1["InvalidClientMetadata"] = "invalid_client_metadata";
+  OAuthErrorCode$1["InvalidRedirectUri"] = "invalid_redirect_uri";
+  OAuthErrorCode$1["InsufficientScope"] = "insufficient_scope";
+  OAuthErrorCode$1["InvalidTarget"] = "invalid_target";
+  OAuthErrorCode$1["InvalidDpopProof"] = "invalid_dpop_proof";
+  OAuthErrorCode$1["UseDpopNonce"] = "use_dpop_nonce";
+  return OAuthErrorCode$1;
+})({});
 var OAuthError = class OAuthError2 extends Error {
   static {
     Object.defineProperty(this, "mcpBrand", { value: "mcp.OAuthError" });
@@ -9354,8 +9423,18 @@ var SdkError = class extends Error {
     if (typeof this !== "function") throw new TypeError("isInstance must be called on the class (e.g. `SdkError.isInstance(value)`); for callbacks use `v => SdkError.isInstance(v)`");
     return brandedHasInstance(this, value);
   }
-  constructor(code, message, data) {
-    super(message);
+  /**
+  * @param code - Stable string code identifying the failure ({@linkcode SdkErrorCode}).
+  * @param message - Human-readable description.
+  * @param data - Optional structured payload (for example the HTTP status carried by
+  * {@linkcode SdkHttpError}). Opaque to the SDK: a `cause` key inside `data` is not
+  * promoted to `Error.cause`.
+  * @param options - Standard `ErrorOptions`, forwarded to `Error`. Pass the underlying
+  * failure as `{ cause }` so it is reachable through the `Error.cause` chain that
+  * loggers and error trackers walk.
+  */
+  constructor(code, message, data, options) {
+    super(message, options);
     this.code = code;
     this.data = data;
     this.name = "SdkError";
@@ -9366,8 +9445,11 @@ var SdkHttpError = class extends SdkError {
   static {
     Object.defineProperty(this, "mcpBrand", { value: "mcp.SdkHttpError" });
   }
-  constructor(code, message, data) {
-    super(code, message, data);
+  /**
+  * @param options - Standard `ErrorOptions`, forwarded to `Error` (see {@linkcode SdkError}).
+  */
+  constructor(code, message, data, options) {
+    super(code, message, data, options);
     this.name = "SdkHttpError";
   }
   get status() {
@@ -9377,6 +9459,10 @@ var SdkHttpError = class extends SdkError {
     return this.data.statusText;
   }
 };
+var REQUIRED_CLIENT_CAPABILITIES_BY_METHOD = {};
+function requiredClientCapabilitiesForRequest(method) {
+  return Object.hasOwn(REQUIRED_CLIENT_CAPABILITIES_BY_METHOD, method) ? REQUIRED_CLIENT_CAPABILITIES_BY_METHOD[method] : void 0;
+}
 function isPlainObject$7(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -10330,8 +10416,8 @@ var memo$1;
 function buildSchemas2025() {
   return memo$1 ??= build$1();
 }
-function isNonObjectJsonSchemaRoot(json) {
-  return json["type"] !== "object";
+function isNonObjectJsonSchemaRoot(json3) {
+  return json3["type"] !== "object";
 }
 var REF_REWRITE_DATA_POSITION_KEYS = /* @__PURE__ */ new Set([
   "const",
@@ -11470,7 +11556,8 @@ function build() {
     ListResourceTemplatesResultResponseSchema: wireResultResponse(ListResourceTemplatesResultSchema$1),
     ReadResourceResultResponseSchema: wireResultResponse(union([ReadResourceResultSchema$1, InputRequiredResultSchema])),
     CompleteResultResponseSchema: wireResultResponse(CompleteResultSchema$1),
-    DiscoverResultResponseSchema: wireResultResponse(DiscoverResultSchema$1)
+    DiscoverResultResponseSchema: wireResultResponse(DiscoverResultSchema$1),
+    SubscriptionsListenResultResponseSchema: wireResultResponse(SubscriptionsListenResultSchema$1)
   };
 }
 var memo;
@@ -11898,6 +11985,8 @@ var rev2026Codec = {
       const rawInputRequests = raw["inputRequests"];
       const inputRequests = isPlainObject$4(rawInputRequests) ? rawInputRequests : {};
       const requestState = raw["requestState"];
+      const metaParse = raw["_meta"] === void 0 ? void 0 : buildSchemas2026().ResultMetaSchema.safeParse(raw["_meta"]);
+      const meta2 = metaParse?.success ? metaParse.data : void 0;
       if (Object.keys(inputRequests).length === 0 && typeof requestState !== "string") return {
         kind: "invalid",
         error: new SdkError(SdkErrorCode.InvalidResult, `Invalid result for ${method}: input_required carries neither inputRequests nor requestState (every input_required result must include at least one of the two)`, {
@@ -11908,7 +11997,8 @@ var rev2026Codec = {
       return {
         kind: "input_required",
         inputRequests,
-        ...typeof requestState === "string" && { requestState }
+        ...typeof requestState === "string" && { requestState },
+        ...meta2 !== void 0 && { _meta: meta2 }
       };
     }
     if (rawResultType !== "complete") return {
@@ -11974,6 +12064,9 @@ function isSpecRequestMethod(method) {
 }
 function isSpecNotificationMethod(method) {
   return ALL_CODECS.some((codec) => codec.hasNotificationMethod(method));
+}
+function isExtensionReusedRequestMethod(method) {
+  return method === "tasks/get" || method === "tasks/cancel";
 }
 var ALL_CODECS = [rev2025Codec, rev2026Codec];
 function isPlainObject$3(value) {
@@ -12168,12 +12261,14 @@ var isJSONRPCNotification = (value) => JSONRPCNotificationSchema.safeParse(value
 var isJSONRPCResultResponse = (value) => JSONRPCResultResponseSchema.safeParse(value).success;
 var isJSONRPCErrorResponse = (value) => JSONRPCErrorResponseSchema.safeParse(value).success;
 var isInputRequiredResult = (value) => typeof value === "object" && value !== null && !Array.isArray(value) && value.resultType === "input_required";
+var isInitializeRequest = (value) => InitializeRequestSchema.safeParse(value).success;
 function assertCompleteRequestPrompt(request) {
   if (request.params.ref.type !== "ref/prompt") throw new TypeError(`Expected CompleteRequestPrompt, but got ${request.params.ref.type}`);
 }
 function assertCompleteRequestResourceTemplate(request) {
   if (request.params.ref.type !== "ref/resource") throw new TypeError(`Expected CompleteRequestResourceTemplate, but got ${request.params.ref.type}`);
 }
+var MCP_PARAM_HEADER_PREFIX = "Mcp-Param-";
 var X_MCP_HEADER_KEY = "x-mcp-header";
 var RFC9110_TOKEN = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
 var PERMITTED_X_MCP_HEADER_TYPES = /* @__PURE__ */ new Set([
@@ -12258,6 +12353,72 @@ var OBJECT_VALUED_SUBSCHEMA_KEYWORDS = /* @__PURE__ */ new Set([
 function pathName(path) {
   return path.length === 0 ? "<root>" : path.join(".");
 }
+var BASE64_SENTINEL_PREFIX = "=?base64?";
+var BASE64_SENTINEL_SUFFIX = "?=";
+var BASE64_CANONICAL = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+var CANONICAL_DECIMAL = /^-?\d+(\.\d+)?$/;
+function mcpParamPrimitiveToString(value) {
+  if (typeof value === "string") return value;
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return void 0;
+    if (Number.isInteger(value) && !Number.isSafeInteger(value)) return void 0;
+    return String(value);
+  }
+}
+function base64ToUtf8(b642) {
+  const bin = atob(b642);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.codePointAt(i);
+  return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+}
+function decodeMcpParamValue(value) {
+  if (!(value.startsWith(BASE64_SENTINEL_PREFIX) && value.endsWith(BASE64_SENTINEL_SUFFIX))) return value;
+  const b642 = value.slice(9, value.length - 2);
+  if (!BASE64_CANONICAL.test(b642)) return void 0;
+  try {
+    return base64ToUtf8(b642);
+  } catch {
+    return;
+  }
+}
+function valueAtPath(root, path) {
+  let node = root;
+  for (const key of path) {
+    if (node === null || typeof node !== "object") return void 0;
+    node = node[key];
+  }
+  return node;
+}
+function validateMcpParamHeaders(declarations, args, headers) {
+  for (const decl of declarations) {
+    const headerKey = `${MCP_PARAM_HEADER_PREFIX}${decl.headerName}`;
+    const headerValue = headers.get(headerKey);
+    const bodyRaw = valueAtPath(args, decl.path);
+    if (bodyRaw === void 0 || bodyRaw === null) continue;
+    const bodyString = mcpParamPrimitiveToString(bodyRaw);
+    if (bodyString === void 0) continue;
+    if (headerValue === null) return paramHeaderMismatchRejection("param-header-missing", headerKey, `the body carries ${pathName(decl.path)}=${JSON.stringify(bodyRaw)} but the ${headerKey} header is absent`);
+    const decoded = decodeMcpParamValue(headerValue);
+    if (decoded === void 0) return paramHeaderMismatchRejection("param-header-invalid-encoding", headerKey, `the ${headerKey} header carries an invalid Base64 sentinel value`);
+    if (!((decl.type === "integer" || decl.type === "number") && CANONICAL_DECIMAL.test(decoded) && typeof bodyRaw === "number" ? Number(decoded) === bodyRaw : decoded === bodyString)) return paramHeaderMismatchRejection("param-header-mismatch", headerKey, `the ${headerKey} header decodes to ${JSON.stringify(decoded)} but the body carries ${pathName(decl.path)}=${JSON.stringify(bodyRaw)}`);
+  }
+}
+function paramHeaderMismatchRejection(cell, header, body) {
+  return {
+    kind: "reject",
+    rung: "param-header-validation",
+    cell,
+    httpStatus: 400,
+    code: HEADER_MISMATCH_ERROR_CODE,
+    message: `Bad Request: the request headers and body disagree: ${body}`,
+    data: { mismatch: {
+      header,
+      body
+    } },
+    settled: true
+  };
+}
 var HEADER_MISMATCH_ERROR_CODE = -32020;
 var INBOUND_VALIDATION_LADDER = [
   {
@@ -12318,7 +12479,7 @@ var INBOUND_VALIDATION_LADDER = [
     evaluatedAt: "pre-dispatch",
     codes: [HEADER_MISMATCH_ERROR_CODE],
     conformance: ["http-header-validation"],
-    rationale: "SEP-2243 standard `Mcp-Method` / `Mcp-Name` headers \u2014 presence, sentinel decoding, and `Mcp-Name` \u2194 body cross-check \u2014 are validated by the HTTP entry on a modern-classified request after the supported-revision gate and before dispatch. The classifier\u2019s own header-mismatch cells (protocol-version, `Mcp-Method` mismatch) stay on the edge `era-classification` rung; this rung carries the entry-layer presence/`Mcp-Name` half. Evaluated before the capability gate, the factory call, and the `Mcp-Param-*` rung so a request that fails several rungs is answered by the standard-header rung first. The documented order (after method-registry 5 and request-params 6) is NOT the observed precedence: serveModern evaluates this rung immediately after the supported-revision gate, so a request that also fails a dispatch rung is answered here before the dispatch rungs (5\u20136) are consulted."
+    rationale: "SEP-2243 standard `MCP-Protocol-Version` / `Mcp-Method` / `Mcp-Name` headers \u2014 presence, sentinel decoding, and `Mcp-Name` \u2194 body cross-check \u2014 are validated by the HTTP entry on a modern-classified request after the supported-revision gate and before dispatch. The spec requires `MCP-Protocol-Version` and `Mcp-Method` on every modern *request* POST (`Mcp-Name` only for the methods that mirror `params.name` / `params.uri` / `params.taskId`, see `MCP_NAME_HEADER_SOURCE`) and names them in that order, so a request missing several is answered by the earliest. Notification POSTs are exempt: the presence half runs on requests only, so a modern-enveloped notification is dispatched even with no standard headers at all. The classifier\u2019s own header-mismatch cells (protocol-version, `Mcp-Method` mismatch) stay on the edge `era-classification` rung; this rung carries the entry-layer presence/`Mcp-Name` half \u2014 including the missing `MCP-Protocol-Version` cell, which cannot live on the edge rung without breaking body-primary classification. Evaluated before the capability gate, the factory call, and the `Mcp-Param-*` rung so a request that fails several rungs is answered by the standard-header rung first. The documented order (after method-registry 5 and request-params 6) is NOT the observed precedence: serveModern evaluates this rung immediately after the supported-revision gate, so a request that also fails a dispatch rung is answered here before the dispatch rungs (5\u20136) are consulted."
   },
   {
     rung: "client-capabilities",
@@ -12345,6 +12506,10 @@ var LADDER_ERROR_HTTP_STATUS = {
   [ProtocolErrorCode.MissingRequiredClientCapability]: 400,
   [HEADER_MISMATCH_ERROR_CODE]: 400
 };
+function httpStatusForErrorCode(code, origin) {
+  if (origin === "in-band") return code === ProtocolErrorCode.MissingRequiredClientCapability ? 400 : 200;
+  return LADDER_ERROR_HTTP_STATUS[code] ?? 400;
+}
 function rejection(rung, cell, httpStatus, error2, settled) {
   return {
     kind: "reject",
@@ -12357,12 +12522,195 @@ function rejection(rung, cell, httpStatus, error2, settled) {
     settled
   };
 }
+function crossCheckMismatch(cell, header, body, rung = "era-classification") {
+  return rejection(rung, cell, 400, new ProtocolError(HEADER_MISMATCH_ERROR_CODE, `Bad Request: the request headers and body disagree: ${body}`, { mismatch: {
+    header,
+    body
+  } }), true);
+}
+var MCP_NAME_HEADER_SOURCE = {
+  "tools/call": "name",
+  "prompts/get": "name",
+  "resources/read": "uri",
+  "tasks/get": "taskId",
+  "tasks/update": "taskId",
+  "tasks/cancel": "taskId"
+};
+function mcpNameSource(method, params) {
+  const field = Object.hasOwn(MCP_NAME_HEADER_SOURCE, method) ? MCP_NAME_HEADER_SOURCE[method] : void 0;
+  if (field === void 0) return;
+  const raw = isPlainObject$2(params) ? params[field] : void 0;
+  return {
+    field,
+    value: typeof raw === "string" ? raw : void 0
+  };
+}
+function stripHttpOws(value) {
+  let start = 0;
+  while (start < value.length) {
+    const code = value.codePointAt(start);
+    if (code !== 9 && code !== 32) break;
+    start += 1;
+  }
+  let end = value.length;
+  while (end > start) {
+    const code = value.codePointAt(end - 1);
+    if (code !== 9 && code !== 32) break;
+    end -= 1;
+  }
+  return start === 0 && end === value.length ? value : value.slice(start, end);
+}
+function validateStandardRequestHeaders(request, route) {
+  if (route.messageKind !== "request") return;
+  const method = route.message.method;
+  if (request.protocolVersionHeader === void 0) {
+    const claimed = route.classification.revision;
+    return crossCheckMismatch("version-header-missing", "(missing)", claimed === void 0 ? "the body carries a modern per-request envelope but the required MCP-Protocol-Version header is absent" : `the body envelope names protocol version ${claimed} but the required MCP-Protocol-Version header is absent`, "standard-header-validation");
+  }
+  if (request.mcpMethodHeader === void 0) return crossCheckMismatch("method-header-missing", "(missing)", `the body names method ${method} but the required Mcp-Method header is absent`, "standard-header-validation");
+  const source = mcpNameSource(method, route.message.params);
+  if (source === void 0) return;
+  const { field: sourceField, value: bodyValue } = source;
+  if (request.mcpNameHeader === void 0) {
+    if (bodyValue === void 0) return;
+    return crossCheckMismatch("name-header-missing", "(missing)", `the body carries params.${sourceField}="${bodyValue}" but the required Mcp-Name header is absent`, "standard-header-validation");
+  }
+  const normalizedNameHeader = stripHttpOws(request.mcpNameHeader);
+  const decoded = decodeMcpParamValue(normalizedNameHeader);
+  if (decoded === void 0) return crossCheckMismatch("name-header-invalid-encoding", normalizedNameHeader, "the Mcp-Name header carries an invalid Base64 sentinel value", "standard-header-validation");
+  if (bodyValue !== void 0 && decoded !== bodyValue) return crossCheckMismatch("name-header-mismatch", normalizedNameHeader, `the body carries params.${sourceField}="${bodyValue}" but the Mcp-Name header names "${decoded}"`, "standard-header-validation");
+}
+function isPlainObject$2(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+function classificationForClaim(claimedVersion) {
+  if (claimedVersion === void 0) return { era: "modern" };
+  return {
+    era: isModernProtocolVersion(claimedVersion) ? "modern" : "legacy",
+    revision: claimedVersion
+  };
+}
 function carriesValidModernEnvelopeClaim(params) {
   if (!hasEnvelopeClaim(params)) return false;
   const claimedVersion = envelopeClaimVersion(params);
   if (claimedVersion === void 0 || !isModernProtocolVersion(claimedVersion)) return false;
   const meta2 = requestMetaOf(params);
   return meta2 !== void 0 && validateEnvelopeMeta(meta2).length === 0;
+}
+function classifyBatch(body) {
+  if (body.length === 0) return rejection("jsonrpc-shape", "empty-batch", 400, new ProtocolError(ProtocolErrorCode.InvalidRequest, "Bad Request: empty JSON-RPC batch"), true);
+  for (const element of body) {
+    if (hasEnvelopeClaim(isPlainObject$2(element) ? element["params"] : void 0)) return rejection("jsonrpc-shape", "batch-with-modern-element", 400, new ProtocolError(ProtocolErrorCode.InvalidRequest, "Bad Request: JSON-RPC batches may not contain requests for protocol revision 2026-07-28 or later"), true);
+    if (!(isJSONRPCRequest(element) || isJSONRPCNotification(element) || isJSONRPCResultResponse(element) || isJSONRPCErrorResponse(element))) return rejection("jsonrpc-shape", "batch-with-invalid-element", 400, new ProtocolError(ProtocolErrorCode.InvalidRequest, "Bad Request: JSON-RPC batch contains an invalid message"), true);
+  }
+  return {
+    kind: "legacy",
+    reason: "batch"
+  };
+}
+function classifyRequestBody(request, body) {
+  const params = body.params;
+  const method = body.method;
+  const headerVersion = request.protocolVersionHeader;
+  const headerNamesModern = headerVersion !== void 0 && isModernProtocolVersion(headerVersion);
+  if (method === "initialize" && !carriesValidModernEnvelopeClaim(params)) {
+    if (headerNamesModern) return crossCheckMismatch("initialize-with-modern-header", headerVersion, "an initialize request (legacy handshake) was sent with a modern MCP-Protocol-Version header");
+    const requestedVersion = isPlainObject$2(params) && typeof params["protocolVersion"] === "string" ? params["protocolVersion"] : void 0;
+    return {
+      kind: "legacy",
+      reason: "initialize",
+      ...requestedVersion !== void 0 && { requestedVersion }
+    };
+  }
+  if (hasEnvelopeClaim(params)) {
+    const meta2 = requestMetaOf(params);
+    const firstIssue = (meta2 === void 0 ? [] : validateEnvelopeMeta(meta2))[0];
+    if (firstIssue !== void 0) return rejection("envelope", "envelope-invalid", 400, new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid _meta envelope for protocol revision 2026-07-28: ${firstIssue.key}: ${firstIssue.problem}`, { envelope: firstIssue }), true);
+    const claimedVersion = envelopeClaimVersion(params);
+    if (headerVersion !== void 0 && claimedVersion !== void 0 && headerVersion !== claimedVersion) return crossCheckMismatch("header-body-version-mismatch", headerVersion, `the body envelope names protocol version ${claimedVersion} but the MCP-Protocol-Version header names ${headerVersion}`);
+    if (request.mcpMethodHeader !== void 0 && request.mcpMethodHeader !== method) return crossCheckMismatch("method-header-mismatch", request.mcpMethodHeader, `the body names method ${method} but the Mcp-Method header names ${request.mcpMethodHeader}`);
+    return {
+      kind: "modern",
+      messageKind: "request",
+      message: body,
+      classification: classificationForClaim(claimedVersion)
+    };
+  }
+  if (headerNamesModern) {
+    const meta2 = requestMetaOf(params);
+    const missingFromEnvelope = validateEnvelopeMeta(meta2 ?? {}).filter((issue2) => issue2.problem === "missing").map((issue2) => issue2.key);
+    const missing = meta2 === void 0 ? ["_meta"] : missingFromEnvelope.length > 0 ? missingFromEnvelope : [PROTOCOL_VERSION_META_KEY];
+    return rejection("envelope", "modern-header-without-claim", 400, new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid params: the MCP-Protocol-Version header names protocol revision ${headerVersion}, but the request is missing the required per-request envelope key(s): ${missing.join(", ")}`, { envelope: { missing } }), true);
+  }
+  return {
+    kind: "legacy",
+    reason: "no-claim",
+    ...headerVersion !== void 0 && { requestedVersion: headerVersion }
+  };
+}
+function classifyNotificationBody(request, body) {
+  const params = body.params;
+  const method = body.method;
+  const headerVersion = request.protocolVersionHeader;
+  const headerNamesModern = headerVersion !== void 0 && isModernProtocolVersion(headerVersion);
+  if (hasEnvelopeClaim(params)) {
+    const claimedVersion = envelopeClaimVersion(params);
+    if (claimedVersion === void 0) {
+      const meta2 = requestMetaOf(params);
+      const claimIssue = (meta2 === void 0 ? [] : validateEnvelopeMeta(meta2)).find((issue2) => issue2.key === PROTOCOL_VERSION_META_KEY) ?? {
+        key: PROTOCOL_VERSION_META_KEY,
+        problem: "expected a protocol version string"
+      };
+      return rejection("envelope", "notification-envelope-invalid", 400, new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid _meta envelope for protocol revision 2026-07-28: ${claimIssue.key}: ${claimIssue.problem}`, { envelope: claimIssue }), true);
+    }
+    if (headerVersion !== void 0 && headerVersion !== claimedVersion) return crossCheckMismatch("notification-header-body-version-mismatch", headerVersion, `the notification envelope names protocol version ${claimedVersion} but the MCP-Protocol-Version header names ${headerVersion}`);
+    const classification = classificationForClaim(claimedVersion);
+    if (classification.era === "modern" && request.mcpMethodHeader !== void 0 && request.mcpMethodHeader !== method) return crossCheckMismatch("notification-method-header-mismatch", request.mcpMethodHeader, `the notification body names method ${method} but the Mcp-Method header names ${request.mcpMethodHeader}`);
+    return {
+      kind: "modern",
+      messageKind: "notification",
+      message: body,
+      classification
+    };
+  }
+  if (headerNamesModern) {
+    if (request.mcpMethodHeader !== void 0 && request.mcpMethodHeader !== method) return crossCheckMismatch("notification-method-header-mismatch", request.mcpMethodHeader, `the notification body names method ${method} but the Mcp-Method header names ${request.mcpMethodHeader}`);
+    return {
+      kind: "modern",
+      messageKind: "notification",
+      message: body,
+      classification: {
+        era: "modern",
+        revision: headerVersion
+      }
+    };
+  }
+  return {
+    kind: "legacy",
+    reason: "notification",
+    ...headerVersion !== void 0 && { requestedVersion: headerVersion }
+  };
+}
+function classifyInboundRequest(request) {
+  request = {
+    ...request,
+    ...request.protocolVersionHeader !== void 0 && { protocolVersionHeader: stripHttpOws(request.protocolVersionHeader) },
+    ...request.mcpMethodHeader !== void 0 && { mcpMethodHeader: stripHttpOws(request.mcpMethodHeader) },
+    ...request.mcpNameHeader !== void 0 && { mcpNameHeader: stripHttpOws(request.mcpNameHeader) }
+  };
+  if (request.httpMethod.toUpperCase() !== "POST") return {
+    kind: "legacy",
+    reason: "http-method"
+  };
+  const body = request.body;
+  if (Array.isArray(body)) return classifyBatch(body);
+  if (isJSONRPCResultResponse(body) || isJSONRPCErrorResponse(body)) return {
+    kind: "legacy",
+    reason: "response"
+  };
+  if (isPlainObject$2(body) && isJSONRPCRequest(body)) return classifyRequestBody(request, body);
+  if (isPlainObject$2(body) && isJSONRPCNotification(body)) return classifyNotificationBody(request, body);
+  return rejection("jsonrpc-shape", "invalid-json-rpc-body", 400, new ProtocolError(ProtocolErrorCode.InvalidRequest, "Bad Request: the request body is not a valid JSON-RPC message"), true);
 }
 function modernOnlyStrictRejection(route, supportedVersions) {
   switch (route.reason) {
@@ -12952,6 +13300,8 @@ var Protocol = class {
   _transport;
   _requestMessageId = 0;
   _requestHandlers = /* @__PURE__ */ new Map();
+  /** Methods registered with an explicit schema; the era gate in `_onrequest` reads it for the Tasks extension names. */
+  _customSchemaRequestMethods = /* @__PURE__ */ new Set();
   _requestHandlerAbortControllers = /* @__PURE__ */ new Map();
   _notificationHandlers = /* @__PURE__ */ new Map();
   _responseHandlers = /* @__PURE__ */ new Map();
@@ -13088,7 +13438,7 @@ var Protocol = class {
     return this._requestHandlers.get(method);
   }
   async _oncancel(notification) {
-    if (!notification.params.requestId) return;
+    if (notification.params.requestId === void 0) return;
     this._requestHandlerAbortControllers.get(notification.params.requestId)?.abort(notification.params.reason);
   }
   _setupTimeout(messageId, timeout, maxTotalTimeout, onTimeout, resetTimeoutOnProgress = false) {
@@ -13235,7 +13585,7 @@ var Protocol = class {
         return;
       }
     }
-    if (isSpecRequestMethod(request.method) && !codec.hasRequestMethod(request.method)) {
+    if (isSpecRequestMethod(request.method) && !codec.hasRequestMethod(request.method) && !(isExtensionReusedRequestMethod(request.method) && this._customSchemaRequestMethods.has(request.method))) {
       sendErrorResponse(ProtocolErrorCode.MethodNotFound, "Method not found");
       return;
     }
@@ -13368,8 +13718,11 @@ var Protocol = class {
   }
   request(request, schemaOrOptions, maybeOptions) {
     const codec = this._resolveOutboundCodec(request.method);
+    if (isStandardSchema(schemaOrOptions)) {
+      if (!isExtensionReusedRequestMethod(request.method)) this._assertOutboundRequestInEra(codec, request.method);
+      return this._requestWithSchemaViaCodec(codec, request, schemaOrOptions, maybeOptions);
+    }
     this._assertOutboundRequestInEra(codec, request.method);
-    if (isStandardSchema(schemaOrOptions)) return this._requestWithSchemaViaCodec(codec, request, schemaOrOptions, maybeOptions);
     const validate = codecResultValidator(codec, request.method);
     if (validate === void 0) throw new TypeError(`'${request.method}' is not a spec method; pass a result schema as the second argument to request().`);
     return this._requestWithSchemaViaCodec(codec, request, validate, schemaOrOptions);
@@ -13487,19 +13840,20 @@ var Protocol = class {
       const cancel = (reason) => {
         if (responseReceived) return;
         this._progressHandlers.delete(messageId);
-        if (requestAbort === void 0) this._transport?.send(this._envelopeOutbound({
-          jsonrpc: "2.0",
-          method: "notifications/cancelled",
-          params: {
-            requestId: messageId,
-            reason: String(reason)
-          }
-        }), {
-          relatedRequestId,
-          resumptionToken,
-          onresumptiontoken
-        }).catch((error2) => this._onerror(/* @__PURE__ */ new Error(`Failed to send cancellation: ${error2}`)));
-        else requestAbort.abort();
+        if (requestAbort === void 0) {
+          if (request.method !== "initialize") this._transport?.send(this._envelopeOutbound({
+            jsonrpc: "2.0",
+            method: "notifications/cancelled",
+            params: {
+              requestId: messageId,
+              reason: String(reason)
+            }
+          }), {
+            relatedRequestId,
+            resumptionToken,
+            onresumptiontoken
+          }).catch((error2) => this._onerror(/* @__PURE__ */ new Error(`Failed to send cancellation: ${error2}`)));
+        } else requestAbort.abort();
         reject(reason instanceof SdkError ? reason : new SdkError(SdkErrorCode.RequestTimeout, String(reason)));
       };
       this._responseHandlers.set(messageId, (response) => {
@@ -13561,7 +13915,7 @@ var Protocol = class {
   * Emits a notification, which is a one-way message that does not expect a response.
   */
   async notification(notification, options) {
-    return this._notificationViaCodec(this._resolveOutboundCodec(notification.method), notification, options);
+    return await this._notificationViaCodec(this._resolveOutboundCodec(notification.method), notification, options);
   }
   /**
   * The notification funnel proper, keyed by the resolved era codec —
@@ -13579,7 +13933,7 @@ var Protocol = class {
       jsonrpc: "2.0",
       ...notification
     });
-    if ((this._options?.debouncedNotificationMethods ?? []).includes(notification.method) && !notification.params && !options?.relatedRequestId) {
+    if ((this._options?.debouncedNotificationMethods ?? []).includes(notification.method) && !notification.params && options?.relatedRequestId === void 0) {
       if (this._pendingDebouncedNotifications.has(notification.method)) return;
       this._pendingDebouncedNotifications.add(notification.method);
       Promise.resolve().then(() => {
@@ -13612,6 +13966,8 @@ var Protocol = class {
       return maybeHandler(parsed.data, ctx);
     };
     else throw new TypeError("setRequestHandler: handler is required");
+    if (typeof schemasOrHandler === "function") this._customSchemaRequestMethods.delete(method);
+    else this._customSchemaRequestMethods.add(method);
     this._requestHandlers.set(method, this._wrapHandler(method, stored));
   }
   /**
@@ -13641,6 +13997,7 @@ var Protocol = class {
   */
   removeRequestHandler(method) {
     this._requestHandlers.delete(method);
+    this._customSchemaRequestMethods.delete(method);
   }
   /**
   * Asserts that a request handler has not already been set for the given method, in preparation for a new one being automatically installed.
@@ -13718,7 +14075,8 @@ function manualInputRequiredValue(decoded) {
   return {
     resultType: "input_required",
     inputRequests: decoded.inputRequests,
-    ...decoded.requestState !== void 0 && { requestState: decoded.requestState }
+    ...decoded.requestState !== void 0 && { requestState: decoded.requestState },
+    ...decoded._meta !== void 0 && { _meta: decoded._meta }
   };
 }
 var require_content_type = /* @__PURE__ */ __commonJSMin(((exports) => {
@@ -13767,6 +14125,20 @@ var require_content_type = /* @__PURE__ */ __commonJSMin(((exports) => {
   }
 }));
 var import_content_type = /* @__PURE__ */ __toESM(require_content_type(), 1);
+function mediaTypeEssence(header) {
+  if (!header) return;
+  try {
+    return import_content_type.parse(header).type;
+  } catch {
+    const essence = (header.split(";", 1)[0] ?? "").trim().toLowerCase();
+    if (essence === "" || header.slice(essence.length).includes(",")) return;
+    return essence;
+  }
+}
+function isJsonContentType(header) {
+  if (header === "application/json") return true;
+  return mediaTypeEssence(header) === "application/json";
+}
 var STDIO_DEFAULT_MAX_BUFFER_SIZE = 10 * 1024 * 1024;
 var ReadBuffer = class {
   _buffer;
@@ -20882,7 +21254,7 @@ var Ajv = import_ajv.Ajv;
 // ../../node_modules/@modelcontextprotocol/server/dist/shimsNode.mjs
 import process3 from "node:process";
 
-// ../../node_modules/@modelcontextprotocol/server/dist/mcp-DXXb3Vv3.mjs
+// ../../node_modules/@modelcontextprotocol/server/dist/mcp-DIH4cS6P.mjs
 var COMPLETABLE_SYMBOL = /* @__PURE__ */ Symbol.for("mcp.completable");
 function isCompletable(schema) {
   return !!schema && typeof schema === "object" && COMPLETABLE_SYMBOL in schema;
@@ -20890,7 +21262,55 @@ function isCompletable(schema) {
 function getCompleter(schema) {
   return schema[COMPLETABLE_SYMBOL]?.complete;
 }
+var DEFAULT_SSE_KEEP_ALIVE_MS = 15e3;
 var MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
+function armSseKeepAlive(intervalMs, onTick) {
+  if (!Number.isFinite(intervalMs) || intervalMs < 1) return;
+  const timer = setInterval(onTick, Math.min(intervalMs, MAX_TIMER_DELAY_MS));
+  timer.unref?.();
+  return timer;
+}
+var InMemoryServerEventBus = class {
+  _listeners = /* @__PURE__ */ new Set();
+  /**
+  * @param onerror - Optional callback for errors thrown by listeners
+  *   during dispatch.
+  */
+  constructor(onerror) {
+    this.onerror = onerror;
+  }
+  publish(event) {
+    for (const listener of this._listeners) try {
+      listener(event);
+    } catch (error2) {
+      this.onerror?.(error2 instanceof Error ? error2 : new Error(String(error2)));
+    }
+  }
+  subscribe(listener) {
+    this._listeners.add(listener);
+    let live = true;
+    return () => {
+      if (!live) return;
+      live = false;
+      this._listeners.delete(listener);
+    };
+  }
+  /** The number of currently registered listeners (test/introspection only — the routers track capacity via their own open-subscription set). */
+  get listenerCount() {
+    return this._listeners.size;
+  }
+};
+function createServerNotifier(bus) {
+  return {
+    toolsChanged: () => bus.publish({ kind: "tools_list_changed" }),
+    promptsChanged: () => bus.publish({ kind: "prompts_list_changed" }),
+    resourcesChanged: () => bus.publish({ kind: "resources_list_changed" }),
+    resourceUpdated: (uri) => bus.publish({
+      kind: "resource_updated",
+      uri
+    })
+  };
+}
 function listenFilterAccepts(filter, event) {
   switch (event.kind) {
     case "tools_list_changed":
@@ -20912,7 +21332,32 @@ function honoredSubset(requested, capabilities) {
   if (requested.resourceSubscriptions !== void 0 && requested.resourceSubscriptions.length > 0 && allow(capabilities?.resources?.subscribe)) honored.resourceSubscriptions = [...requested.resourceSubscriptions];
   return honored;
 }
+function serverEventToNotification(event) {
+  switch (event.kind) {
+    case "tools_list_changed":
+      return { method: "notifications/tools/list_changed" };
+    case "prompts_list_changed":
+      return { method: "notifications/prompts/list_changed" };
+    case "resources_list_changed":
+      return { method: "notifications/resources/list_changed" };
+    case "resource_updated":
+      return {
+        method: "notifications/resources/updated",
+        params: { uri: event.uri }
+      };
+  }
+}
 var DEFAULT_MAX_SUBSCRIPTIONS = 1024;
+function jsonRpcError(id, code, message) {
+  return Response.json({
+    jsonrpc: "2.0",
+    error: {
+      code,
+      message
+    },
+    id
+  }, { status: 200 });
+}
 function stampSubscriptionId(notification, subscriptionId) {
   return {
     method: notification.method,
@@ -20928,6 +21373,124 @@ function stampSubscriptionId(notification, subscriptionId) {
 function parseListenFilter(message) {
   const outcome = codecForVersion(MODERN_WIRE_REVISION).validateRequest("subscriptions/listen", message);
   return outcome.ok ? outcome.value.params?.notifications : void 0;
+}
+function createListenRouter(options) {
+  const { bus, onerror } = options;
+  const maxSubscriptions = options.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS;
+  const keepAliveMs = options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
+  const open = /* @__PURE__ */ new Set();
+  function serve(message, signal, capabilities, serverInfo) {
+    if (open.size >= maxSubscriptions) {
+      onerror?.(/* @__PURE__ */ new Error(`subscriptions/listen refused: subscription limit reached (${maxSubscriptions})`));
+      return jsonRpcError(message.id, -32603, "Subscription limit reached");
+    }
+    const filter = parseListenFilter(message);
+    if (filter === void 0) return jsonRpcError(message.id, -32602, "Invalid params: 'notifications' is required and must be a valid SubscriptionFilter");
+    const honored = honoredSubset(filter, capabilities);
+    const subscriptionId = message.id;
+    const encoder = new TextEncoder();
+    let controller;
+    let closed = false;
+    let unsubscribe;
+    let keepAliveTimer;
+    let abortCleanup;
+    const writeFrame = (frame) => {
+      if (closed) return;
+      try {
+        controller.enqueue(encoder.encode(frame));
+      } catch (error2) {
+        onerror?.(error2 instanceof Error ? error2 : new Error(String(error2)));
+      }
+    };
+    const writeNotification = (method, params) => {
+      writeFrame(`event: message
+data: ${JSON.stringify({
+        jsonrpc: "2.0",
+        method,
+        params
+      })}
+
+`);
+    };
+    const teardown = (graceful) => {
+      if (closed) return;
+      if (graceful) writeFrame(`event: message
+data: ${JSON.stringify({
+        jsonrpc: "2.0",
+        id: subscriptionId,
+        result: {
+          resultType: "complete",
+          _meta: {
+            [SUBSCRIPTION_ID_META_KEY]: subscriptionId,
+            [SERVER_INFO_META_KEY]: serverInfo
+          }
+        }
+      })}
+
+`);
+      closed = true;
+      try {
+        unsubscribe?.();
+      } catch (error2) {
+        onerror?.(error2 instanceof Error ? error2 : new Error(String(error2)));
+      }
+      if (keepAliveTimer !== void 0) clearInterval(keepAliveTimer);
+      abortCleanup?.();
+      open.delete(teardown);
+      try {
+        controller.close();
+      } catch {
+      }
+    };
+    const readable = new ReadableStream({
+      start(streamController) {
+        controller = streamController;
+        const ack = stampSubscriptionId({
+          method: "notifications/subscriptions/acknowledged",
+          params: { notifications: honored }
+        }, subscriptionId);
+        writeNotification(ack.method, ack.params);
+        if (Object.keys(honored).length === 0) {
+          teardown(true);
+          return;
+        }
+        unsubscribe = bus.subscribe((event) => {
+          if (closed || !listenFilterAccepts(honored, event)) return;
+          const note = stampSubscriptionId(serverEventToNotification(event), subscriptionId);
+          writeNotification(note.method, note.params);
+        });
+        keepAliveTimer = armSseKeepAlive(keepAliveMs, () => writeFrame(": keepalive\n\n"));
+        open.add(teardown);
+      },
+      cancel() {
+        teardown(false);
+      }
+    });
+    if (signal !== void 0) if (signal.aborted) teardown(false);
+    else {
+      const onAbort = () => teardown(false);
+      signal.addEventListener("abort", onAbort, { once: true });
+      abortCleanup = () => signal.removeEventListener("abort", onAbort);
+    }
+    return new Response(readable, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no"
+      }
+    });
+  }
+  return {
+    serve,
+    closeAll() {
+      for (const teardown of open) teardown(true);
+    },
+    get openCount() {
+      return open.size;
+    }
+  };
 }
 var CHANGE_NOTIFICATION_METHODS = /* @__PURE__ */ new Set([
   "notifications/tools/list_changed",
@@ -20947,7 +21510,7 @@ var StdioListenRouter = class {
   _serverCapabilities;
   /**
   * The serving instance's identity, stamped onto the graceful-close
-  * results' `_meta` (the spec's `SubscriptionsListenResultMeta` extends
+  * results' `_meta` (the spec's `SubscriptionsListenResultMetaObject` extends
   * `ResultMetaObject`). Handed over together with the capabilities.
   */
   _serverInfo;
@@ -21074,6 +21637,114 @@ function notificationToServerEvent(method, uri) {
         uri: uri ?? ""
       };
   }
+}
+function comparableResource(value) {
+  const text = String(value);
+  const hash = text.indexOf("#");
+  return (hash === -1 ? text : text.slice(0, hash)).replace(/\/$/, "");
+}
+function sameResource(reported, expected) {
+  if (!reported) return false;
+  return comparableResource(reported) === comparableResource(expected);
+}
+function headerQuotedValue(value) {
+  return value.replaceAll(/[\\"]/g, String.raw`\$&`).replaceAll(/[^\u0020-\u007E]/g, " ");
+}
+function buildWwwAuthenticateHeader(errorCode, description, requiredScopes, resourceMetadataUrl) {
+  let header = `Bearer error="${headerQuotedValue(errorCode)}", error_description="${headerQuotedValue(description)}"`;
+  if (requiredScopes.length > 0) header += `, scope="${headerQuotedValue(requiredScopes.join(" "))}"`;
+  if (resourceMetadataUrl) header += `, resource_metadata="${headerQuotedValue(resourceMetadataUrl)}"`;
+  return header;
+}
+async function verifyBearerToken(authorizationHeader, options) {
+  const { verifier, requiredScopes = [], expectedResource } = options;
+  if (!authorizationHeader) throw new OAuthError(OAuthErrorCode.InvalidToken, "Missing Authorization header");
+  const [type, token] = authorizationHeader.split(" ");
+  if (type?.toLowerCase() !== "bearer" || !token) throw new OAuthError(OAuthErrorCode.InvalidToken, "Invalid Authorization header format, expected 'Bearer TOKEN'");
+  const authInfo = await verifier.verifyAccessToken(token);
+  if (expectedResource !== void 0 && !sameResource(authInfo.resource, expectedResource)) throw new OAuthError(OAuthErrorCode.InvalidToken, "Token was not issued for this resource");
+  if (requiredScopes.length > 0) {
+    if (!requiredScopes.every((scope) => authInfo.scopes.includes(scope))) throw new OAuthError(OAuthErrorCode.InsufficientScope, "Insufficient scope");
+  }
+  if (typeof authInfo.expiresAt !== "number" || Number.isNaN(authInfo.expiresAt)) throw new OAuthError(OAuthErrorCode.InvalidToken, "Token has no expiration time");
+  else if (authInfo.expiresAt < Date.now() / 1e3) throw new OAuthError(OAuthErrorCode.InvalidToken, "Token has expired");
+  if (options.resourceMetadataUrl !== void 0 && authInfo.resourceMetadataUrl === void 0) return {
+    ...authInfo,
+    resourceMetadataUrl: options.resourceMetadataUrl
+  };
+  return authInfo;
+}
+function bearerAuthChallengeResponse(error2, options) {
+  const { requiredScopes = [], resourceMetadataUrl } = options ?? {};
+  if (!(error2 instanceof OAuthError)) {
+    const serverError = new OAuthError(OAuthErrorCode.ServerError, "Internal Server Error");
+    return Response.json(serverError.toResponseObject(), { status: 500 });
+  }
+  switch (error2.code) {
+    case OAuthErrorCode.InvalidToken: {
+      const challenge = buildWwwAuthenticateHeader(error2.code, error2.message, requiredScopes, resourceMetadataUrl);
+      return Response.json(error2.toResponseObject(), {
+        status: 401,
+        headers: { "WWW-Authenticate": challenge }
+      });
+    }
+    case OAuthErrorCode.InsufficientScope: {
+      const challenge = buildWwwAuthenticateHeader(error2.code, error2.message, requiredScopes, resourceMetadataUrl);
+      return Response.json(error2.toResponseObject(), {
+        status: 403,
+        headers: { "WWW-Authenticate": challenge }
+      });
+    }
+    case OAuthErrorCode.ServerError:
+      return Response.json(error2.toResponseObject(), { status: 500 });
+    default:
+      return Response.json(error2.toResponseObject(), { status: 400 });
+  }
+}
+function getOAuthProtectedResourceMetadataUrl(serverUrl) {
+  const metadataUrl = new URL(serverUrl);
+  metadataUrl.pathname = protectedResourceMetadataPath(serverUrl);
+  metadataUrl.hash = "";
+  return metadataUrl.href;
+}
+function protectedResourceMetadataPath(resourceServerUrl) {
+  const rsPath = stripTrailingSlash(resourceServerUrl.pathname);
+  return `/.well-known/oauth-protected-resource${rsPath === "/" ? "" : rsPath}`;
+}
+function stripTrailingSlash(path) {
+  return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
+}
+function supportsScopeChallengeResolver(transport) {
+  return typeof transport === "object" && transport !== null && "setScopeChallengeResolver" in transport && typeof transport.setScopeChallengeResolver === "function";
+}
+function assertScope(scope, location) {
+  if (typeof scope !== "string" || !/^[\u0021\u0023-\u005B\u005D-\u007E]+$/.test(scope)) throw new TypeError(`${location} must satisfy the OAuth scope-token grammar`);
+}
+function validateScopeChallenge(challenge) {
+  if (challenge === null || typeof challenge !== "object" || !Array.isArray(challenge.scopes) || challenge.scopes.length === 0) throw new TypeError("scope challenge must contain at least one scope");
+  for (const [index, scope] of challenge.scopes.entries()) assertScope(scope, `scope challenge scopes[${index}]`);
+  if (challenge.errorDescription !== void 0 && typeof challenge.errorDescription !== "string") throw new TypeError("scope challenge errorDescription must be a string");
+  if (challenge.errorDescription !== void 0 && !/^[\u0020-\u0021\u0023-\u005B\u005D-\u007E]+$/.test(challenge.errorDescription)) throw new TypeError("scope challenge errorDescription must satisfy the RFC 6750 error-description grammar");
+  return challenge;
+}
+async function findScopeChallenge(requests, authInfo, resolve) {
+  for (const request of requests) {
+    const challenge = await resolve({
+      request,
+      ...authInfo !== void 0 && { authInfo }
+    });
+    if (challenge !== void 0) return validateScopeChallenge(challenge);
+  }
+}
+function scopeChallengeResourceMetadataUrl(authInfo) {
+  if (authInfo?.resourceMetadataUrl !== void 0) return authInfo.resourceMetadataUrl;
+  if (authInfo?.resource?.protocol === "https:" || authInfo?.resource?.protocol === "http:") return getOAuthProtectedResourceMetadataUrl(authInfo.resource);
+}
+function createScopeChallengeResponse(challenge, resourceMetadataUrl) {
+  return bearerAuthChallengeResponse(new OAuthError(OAuthErrorCode.InsufficientScope, challenge.errorDescription ?? "Insufficient scope"), {
+    requiredScopes: [...challenge.scopes],
+    resourceMetadataUrl
+  });
 }
 var DEFAULT_LEGACY_SHIM_MAX_ROUNDS = 8;
 var DEFAULT_LEGACY_SHIM_ROUND_TIMEOUT_MS = 6e5;
@@ -21212,6 +21883,9 @@ var INPUT_REQUIRED_CAPABLE_METHODS = /* @__PURE__ */ new Set([
 var writeClientIdentity;
 var installDiscoverHandler;
 var readServerIdentity;
+function seedClientIdentityFromEnvelope(server, identity) {
+  writeClientIdentity(server, identity);
+}
 function installModernOnlyHandlers(server, servedModernVersions) {
   installDiscoverHandler(server, servedModernVersions);
 }
@@ -21275,6 +21949,11 @@ var Server = class extends Protocol {
     this.setNotificationHandler("notifications/initialized", () => this.oninitialized?.());
     if (modernProtocolVersions(this._supportedProtocolVersions).length > 0) this.setRequestHandler("server/discover", () => this._ondiscover());
     if (this._capabilities.logging) this._registerLoggingHandler();
+  }
+  /** Attaches to the given transport; rejects while this instance is connected to another one. */
+  async connect(transport) {
+    if (this.transport !== void 0) throw new SdkError(SdkErrorCode.AlreadyConnected, "Use a separate Server instance per connection: this instance is already connected to a transport. To connect it to a new transport, call close() first.");
+    await super.connect(transport);
   }
   /**
   * Registers the built-in `logging/setLevel` request handler.
@@ -21829,21 +22508,41 @@ var Server = class extends Protocol {
 function discoverAdvertisedCapabilities(capabilities) {
   return { ...capabilities };
 }
+function toolInputElementCount(value, max) {
+  let count = 0;
+  const stack = [value];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (node === null || typeof node !== "object") continue;
+    if (Array.isArray(node)) for (const child of node) {
+      if (++count > max) return count;
+      if (child !== null && typeof child === "object") stack.push(child);
+    }
+    else for (const key in node) {
+      if (!Object.prototype.hasOwnProperty.call(node, key)) continue;
+      if (++count > max) return count;
+      const child = node[key];
+      if (child !== null && typeof child === "object") stack.push(child);
+    }
+  }
+  return count;
+}
+function resolveMaxToolInputElements(value) {
+  if (value === void 0 || value === Infinity) return void 0;
+  if (typeof value !== "number" || Number.isNaN(value) || value < 1) throw new RangeError(`maxToolInputElements must be a number of at least 1, or Infinity, got ${String(value)}`);
+  return value;
+}
 var McpServer = class {
   /**
   * The underlying {@linkcode Server} instance, useful for advanced operations like sending notifications.
   */
   server;
+  _maxToolInputElements;
   _registeredResources = {};
   _registeredResourceTemplates = {};
   _registeredTools = {};
   _registeredPrompts = {};
-  /**
-  * Per-tool JSON-converted `inputSchema`, memoized so the SEP-2243
-  * registration-time scan and the pre-dispatch validation step share one
-  * conversion instead of paying it twice per request under the
-  * per-request-factory `createMcpHandler` model.
-  */
+  /** Per-tool JSON-converted `inputSchema`, filled on first use by `toolInputSchemaJson()`. */
   _toolInputSchemaJson = {};
   /**
   * The JSON-serialized `inputSchema` of a registered tool, or `undefined`
@@ -21859,15 +22558,16 @@ var McpServer = class {
     if (Object.hasOwn(this._toolInputSchemaJson, name)) return this._toolInputSchemaJson[name];
     if (tool.inputSchema === void 0) return EMPTY_OBJECT_JSON_SCHEMA;
     try {
-      const json = standardSchemaToJsonSchema(tool.inputSchema, "input");
-      this._toolInputSchemaJson[name] = json;
-      return json;
+      const json3 = standardSchemaToJsonSchema(tool.inputSchema, "input");
+      this._toolInputSchemaJson[name] = json3;
+      return json3;
     } catch {
       return;
     }
   }
   constructor(serverInfo, options) {
     this.server = new Server(serverInfo, options);
+    this._maxToolInputElements = resolveMaxToolInputElements(options?.maxToolInputElements);
     if (options?.capabilities?.tools) this.setToolRequestHandlers();
     if (options?.capabilities?.resources) this.setResourceRequestHandlers();
     if (options?.capabilities?.prompts) this.setPromptRequestHandlers();
@@ -21885,6 +22585,7 @@ var McpServer = class {
   * ```
   */
   async connect(transport) {
+    if (supportsScopeChallengeResolver(transport)) transport.setScopeChallengeResolver((context) => this.resolveScopeChallenge(context));
     return await this.server.connect(transport);
   }
   /**
@@ -21893,6 +22594,41 @@ var McpServer = class {
   async close() {
     await this.server.close();
   }
+  /** @internal */
+  resolveScopeChallenge = (context) => {
+    switch (context.request.method) {
+      case "tools/call": {
+        const toolName = context.request.params?.name;
+        if (typeof toolName !== "string") return;
+        const tool = this._registeredTools[toolName];
+        if (tool === void 0 || !tool.enabled) return;
+        return tool.scopeChallenge?.(context);
+      }
+      case "resources/read": {
+        const resourceUri = context.request.params?.uri;
+        if (typeof resourceUri !== "string") return;
+        let uri;
+        try {
+          uri = new URL(resourceUri);
+        } catch {
+          return;
+        }
+        const resource = this._registeredResources[uri.toString()];
+        if (resource !== void 0) return resource.enabled ? resource.scopeChallenge?.(context) : void 0;
+        for (const template of Object.values(this._registeredResourceTemplates)) if (template.resourceTemplate.uriTemplate.match(uri.toString())) return template.enabled ? template.scopeChallenge?.(context) : void 0;
+        return;
+      }
+      case "prompts/get": {
+        const promptName = context.request.params?.name;
+        if (typeof promptName !== "string") return;
+        const prompt = this._registeredPrompts[promptName];
+        if (prompt === void 0 || !prompt.enabled) return;
+        return prompt.scopeChallenge?.(context);
+      }
+      default:
+        return;
+    }
+  };
   _toolHandlersInitialized = false;
   setToolRequestHandlers() {
     if (this._toolHandlersInitialized) return;
@@ -21904,7 +22640,7 @@ var McpServer = class {
         name,
         title: tool.title,
         description: tool.description,
-        inputSchema: tool.inputSchema ? standardSchemaToJsonSchema(tool.inputSchema, "input") : EMPTY_OBJECT_JSON_SCHEMA,
+        inputSchema: tool.inputSchema ? convertListedInputSchema(name, tool.inputSchema) : EMPTY_OBJECT_JSON_SCHEMA,
         annotations: tool.annotations,
         icons: tool.icons,
         execution: tool.execution,
@@ -21949,6 +22685,7 @@ var McpServer = class {
   * Validates tool input arguments against the tool's input schema.
   */
   async validateToolInput(tool, args, toolName) {
+    if (this._maxToolInputElements !== void 0 && toolInputElementCount(args, this._maxToolInputElements) > this._maxToolInputElements) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid arguments for tool ${toolName}: arguments contain more than the maximum of ${this._maxToolInputElements} elements`);
     if (!tool.inputSchema) return;
     const parseResult = await validateStandardSchema(tool.inputSchema, args ?? {});
     if (!parseResult.success) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Input validation error: Invalid arguments for tool ${toolName}: ${parseResult.error}`);
@@ -22059,7 +22796,10 @@ var McpServer = class {
       }
       for (const template of Object.values(this._registeredResourceTemplates)) {
         const variables = template.resourceTemplate.uriTemplate.match(uri.toString());
-        if (variables) return attachCacheHintFallback(await template.readCallback(uri, variables, ctx), template.cacheHint);
+        if (variables) {
+          if (!template.enabled) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Resource template ${template.resourceTemplate.uriTemplate} disabled`);
+          return attachCacheHintFallback(await template.readCallback(uri, variables, ctx), template.cacheHint);
+        }
       }
       throw new ResourceNotFoundError(request.params.uri);
     });
@@ -22090,36 +22830,32 @@ var McpServer = class {
     this._promptHandlersInitialized = true;
   }
   registerResource(name, uriOrTemplate, config2, readCallback) {
-    const cacheHint = config2.cacheHint;
-    let metadata = config2;
-    if (cacheHint !== void 0) {
-      assertValidCacheHint(cacheHint, `resource ${name}`);
-      const rest = { ...config2 };
-      delete rest.cacheHint;
-      metadata = rest;
-    }
+    const { cacheHint, scopeChallenge, ...resourceMetadata } = config2;
+    const metadata = resourceMetadata;
+    if (cacheHint !== void 0) assertValidCacheHint(cacheHint, `resource ${name}`);
     if (typeof uriOrTemplate === "string") {
       if (this._registeredResources[uriOrTemplate]) throw new Error(`Resource ${uriOrTemplate} is already registered`);
-      const registeredResource = this._createRegisteredResource(name, config2.title, uriOrTemplate, metadata, readCallback);
+      const registeredResource = this._createRegisteredResource(name, config2.title, uriOrTemplate, metadata, scopeChallenge, readCallback);
       if (cacheHint !== void 0) registeredResource.cacheHint = cacheHint;
       this.setResourceRequestHandlers();
       this.sendResourceListChanged();
       return registeredResource;
     } else {
       if (this._registeredResourceTemplates[name]) throw new Error(`Resource template ${name} is already registered`);
-      const registeredResourceTemplate = this._createRegisteredResourceTemplate(name, config2.title, uriOrTemplate, metadata, readCallback);
+      const registeredResourceTemplate = this._createRegisteredResourceTemplate(name, config2.title, uriOrTemplate, metadata, scopeChallenge, readCallback);
       if (cacheHint !== void 0) registeredResourceTemplate.cacheHint = cacheHint;
       this.setResourceRequestHandlers();
       this.sendResourceListChanged();
       return registeredResourceTemplate;
     }
   }
-  _createRegisteredResource(name, title, uri, metadata, readCallback) {
+  _createRegisteredResource(name, title, uri, metadata, scopeChallenge, readCallback) {
     const registeredResource = {
       name,
       title,
       metadata,
       readCallback,
+      scopeChallenge,
       enabled: true,
       disable: () => registeredResource.update({ enabled: false }),
       enable: () => registeredResource.update({ enabled: true }),
@@ -22133,6 +22869,7 @@ var McpServer = class {
         if (updates.title !== void 0) registeredResource.title = updates.title;
         if (updates.metadata !== void 0) registeredResource.metadata = updates.metadata;
         if (updates.callback !== void 0) registeredResource.readCallback = updates.callback;
+        if (updates.scopeChallenge !== void 0) registeredResource.scopeChallenge = updates.scopeChallenge === null ? void 0 : updates.scopeChallenge;
         if (updates.enabled !== void 0) registeredResource.enabled = updates.enabled;
         this.sendResourceListChanged();
       }
@@ -22140,12 +22877,13 @@ var McpServer = class {
     this._registeredResources[uri] = registeredResource;
     return registeredResource;
   }
-  _createRegisteredResourceTemplate(name, title, template, metadata, readCallback) {
+  _createRegisteredResourceTemplate(name, title, template, metadata, scopeChallenge, readCallback) {
     const registeredResourceTemplate = {
       resourceTemplate: template,
       title,
       metadata,
       readCallback,
+      scopeChallenge,
       enabled: true,
       disable: () => registeredResourceTemplate.update({ enabled: false }),
       enable: () => registeredResourceTemplate.update({ enabled: true }),
@@ -22159,6 +22897,7 @@ var McpServer = class {
         if (updates.template !== void 0) registeredResourceTemplate.resourceTemplate = updates.template;
         if (updates.metadata !== void 0) registeredResourceTemplate.metadata = updates.metadata;
         if (updates.callback !== void 0) registeredResourceTemplate.readCallback = updates.callback;
+        if (updates.scopeChallenge !== void 0) registeredResourceTemplate.scopeChallenge = updates.scopeChallenge === null ? void 0 : updates.scopeChallenge;
         if (updates.enabled !== void 0) registeredResourceTemplate.enabled = updates.enabled;
         this.sendResourceListChanged();
       }
@@ -22168,7 +22907,7 @@ var McpServer = class {
     if (Array.isArray(variableNames) && variableNames.some((v) => !!template.completeCallback(v))) this.setCompletionRequestHandler();
     return registeredResourceTemplate;
   }
-  _createRegisteredPrompt(name, title, description, argsSchema, callback, icons, _meta) {
+  _createRegisteredPrompt(name, title, description, argsSchema, callback, icons, scopeChallenge, _meta) {
     let currentArgsSchema = argsSchema;
     let currentCallback = callback;
     const registeredPrompt = {
@@ -22176,6 +22915,7 @@ var McpServer = class {
       description,
       argsSchema,
       icons,
+      scopeChallenge,
       _meta,
       handler: createPromptHandler(name, argsSchema, callback),
       enabled: true,
@@ -22190,6 +22930,7 @@ var McpServer = class {
         if (updates.title !== void 0) registeredPrompt.title = updates.title;
         if (updates.description !== void 0) registeredPrompt.description = updates.description;
         if (updates.icons !== void 0) registeredPrompt.icons = updates.icons;
+        if (updates.scopeChallenge !== void 0) registeredPrompt.scopeChallenge = updates.scopeChallenge === null ? void 0 : updates.scopeChallenge;
         if (updates._meta !== void 0) registeredPrompt._meta = updates._meta;
         let needsHandlerRegen = false;
         if (updates.argsSchema !== void 0) {
@@ -22217,25 +22958,25 @@ var McpServer = class {
     }
     return registeredPrompt;
   }
-  _createRegisteredTool(name, title, description, inputSchema, outputSchema, annotations, icons, execution, _meta, handler) {
+  _createRegisteredTool(name, title, description, inputSchema, outputSchema, annotations, icons, execution, scopeChallenge, _meta, handler) {
     validateAndWarnToolName(name);
-    if (inputSchema !== void 0) try {
-      const json = standardSchemaToJsonSchema(inputSchema, "input");
-      this._toolInputSchemaJson[name] = json;
-      const scan = scanXMcpHeaderDeclarations(json);
-      if (!scan.valid) console.warn(`[mcp-sdk] tool '${name}' carries an invalid x-mcp-header declaration and will be excluded by conforming Streamable HTTP clients: ${scan.reason}`);
-    } catch {
-    }
     let currentHandler = handler;
+    let outputSchemaJson;
     const registeredTool = {
       title,
       description,
       inputSchema,
       outputSchema,
-      outputSchemaJson: convertOutputSchemaJson(outputSchema),
+      get outputSchemaJson() {
+        return outputSchemaJson ??= convertOutputSchemaJson(registeredTool.outputSchema);
+      },
+      set outputSchemaJson(value) {
+        outputSchemaJson = value;
+      },
       annotations,
       icons,
       execution,
+      scopeChallenge,
       _meta,
       handler,
       executor: createToolExecutor(inputSchema, handler),
@@ -22274,6 +23015,7 @@ var McpServer = class {
         }
         if (updates.annotations !== void 0) registeredTool.annotations = updates.annotations;
         if (updates.icons !== void 0) registeredTool.icons = updates.icons;
+        if (updates.scopeChallenge !== void 0) registeredTool.scopeChallenge = updates.scopeChallenge === null ? void 0 : updates.scopeChallenge;
         if (updates._meta !== void 0) registeredTool._meta = updates._meta;
         if (updates.enabled !== void 0) registeredTool.enabled = updates.enabled;
         this.sendToolListChanged();
@@ -22286,13 +23028,13 @@ var McpServer = class {
   }
   registerTool(name, config2, cb) {
     if (this._registeredTools[name]) throw new Error(`Tool ${name} is already registered`);
-    const { title, description, inputSchema, outputSchema, annotations, icons, _meta } = config2;
-    return this._createRegisteredTool(name, title, description, normalizeRawShapeSchema(inputSchema), normalizeRawShapeSchema(outputSchema), annotations, icons, void 0, _meta, cb);
+    const { title, description, inputSchema, outputSchema, annotations, icons, scopeChallenge, _meta } = config2;
+    return this._createRegisteredTool(name, title, description, normalizeRawShapeSchema(inputSchema), normalizeRawShapeSchema(outputSchema), annotations, icons, void 0, scopeChallenge, _meta, cb);
   }
   registerPrompt(name, config2, cb) {
     if (this._registeredPrompts[name]) throw new Error(`Prompt ${name} is already registered`);
-    const { title, description, argsSchema, icons, _meta } = config2;
-    const registeredPrompt = this._createRegisteredPrompt(name, title, description, normalizeRawShapeSchema(argsSchema), cb, icons, _meta);
+    const { title, description, argsSchema, icons, scopeChallenge, _meta } = config2;
+    const registeredPrompt = this._createRegisteredPrompt(name, title, description, normalizeRawShapeSchema(argsSchema), cb, icons, scopeChallenge, _meta);
     this.setPromptRequestHandlers();
     this.sendPromptListChanged();
     return registeredPrompt;
@@ -22357,6 +23099,12 @@ var EMPTY_OBJECT_JSON_SCHEMA = {
   type: "object",
   properties: {}
 };
+function convertListedInputSchema(name, inputSchema) {
+  const json3 = standardSchemaToJsonSchema(inputSchema, "input");
+  const scan = scanXMcpHeaderDeclarations(json3);
+  if (!scan.valid) console.warn(`[mcp-sdk] tool '${name}' carries an invalid x-mcp-header declaration and will be excluded by conforming Streamable HTTP clients: ${scan.reason}`);
+  return json3;
+}
 function convertOutputSchemaJson(outputSchema) {
   if (outputSchema === void 0) return void 0;
   try {
@@ -22369,7 +23117,7 @@ function createPromptHandler(name, argsSchema, callback) {
   if (argsSchema) {
     const typedCallback = callback;
     return async (args, ctx) => {
-      const parseResult = await validateStandardSchema(argsSchema, args);
+      const parseResult = await validateStandardSchema(argsSchema, args ?? {});
       if (!parseResult.success) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid arguments for prompt ${name}: ${parseResult.error}`);
       return typedCallback(parseResult.data, ctx);
     };
@@ -22404,6 +23152,7 @@ function unwrapOptionalSchema(schema) {
 }
 
 // ../../node_modules/@modelcontextprotocol/server/dist/stdio.mjs
+var swallowsErrorsAfterClose = /* @__PURE__ */ Symbol("swallowsErrorsAfterClose");
 var StdioServerTransport = class {
   _readBuffer;
   _started = false;
@@ -22430,7 +23179,12 @@ var StdioServerTransport = class {
     this.onerror?.(error2);
   };
   _onstdouterror = (error2) => {
+    if (this._closed) return;
     this.onerror?.(error2);
+    this.close().catch(() => {
+    });
+  };
+  _onstdinclose = () => {
     this.close().catch(() => {
     });
   };
@@ -22440,8 +23194,12 @@ var StdioServerTransport = class {
   async start() {
     if (this._started) throw new Error("StdioServerTransport already started! If using Server class, note that connect() calls start() automatically.");
     this._started = true;
+    for (const listener of this._stdout.listeners("error")) if (listener[swallowsErrorsAfterClose]) this._stdout.off("error", listener);
+    if (this._stdin.readableEnded || this._stdin.destroyed) setImmediate(this._onstdinclose);
     this._stdin.on("data", this._ondata);
     this._stdin.on("error", this._onerror);
+    this._stdin.on("end", this._onstdinclose);
+    this._stdin.on("close", this._onstdinclose);
     this._stdout.on("error", this._onstdouterror);
   }
   processReadBuffer() {
@@ -22458,7 +23216,9 @@ var StdioServerTransport = class {
     this._closed = true;
     this._stdin.off("data", this._ondata);
     this._stdin.off("error", this._onerror);
-    this._stdout.off("error", this._onstdouterror);
+    this._stdin.off("end", this._onstdinclose);
+    this._stdin.off("close", this._onstdinclose);
+    this._onstdouterror[swallowsErrorsAfterClose] = true;
     if (this._stdin.listenerCount("data") === 0) this._stdin.pause();
     this._readBuffer.clear();
     this.onclose?.();
@@ -22466,7 +23226,7 @@ var StdioServerTransport = class {
   send(message) {
     if (this._closed) return Promise.reject(/* @__PURE__ */ new Error("StdioServerTransport is closed"));
     return new Promise((resolve, reject) => {
-      const json = serializeMessage(message);
+      const json3 = serializeMessage(message);
       let settled = false;
       const onError = (error2) => {
         if (settled) return;
@@ -22483,7 +23243,7 @@ var StdioServerTransport = class {
         resolve();
       };
       this._stdout.once("error", onError);
-      if (this._stdout.write(json)) {
+      if (this._stdout.write(json3)) {
         if (settled) return;
         settled = true;
         this._stdout.off("error", onError);
@@ -22735,6 +23495,7 @@ function serveStdio(factory, options = {}) {
         return;
       }
       if (state.era === "modern" && await tryServeListen(message)) return;
+      if (isTornDown()) return;
       state.instance.channel.deliver(message);
       return;
     }
@@ -22801,6 +23562,7 @@ function serveStdio(factory, options = {}) {
           };
         }
         if (await tryServeListen(message)) return;
+        if (isTornDown()) return;
         state.instance.channel.deliver(message, { classification: opening.classification });
         return;
       case "legacy": {
@@ -22889,6 +23651,1273 @@ function toError(value) {
 
 // src/index.ts
 init_config();
+
+// ../../node_modules/@modelcontextprotocol/server/dist/index.mjs
+var PerRequestHTTPServerTransport = class {
+  onclose;
+  onerror;
+  onmessage;
+  _classification;
+  _responseMode;
+  _started = false;
+  _used = false;
+  _closed = false;
+  _terminalDelivered = false;
+  /**
+  * `true` only while the inbound message is being delivered synchronously
+  * to the connected protocol layer. The pre-handler gates (the era
+  * registry gate, the edge→instance handoff check, the missing-handler
+  * rejection) answer inside this window; request handlers always run
+  * after it (the protocol layer defers them to a microtask). An error
+  * sent inside the window is therefore ladder-originated, and an error
+  * sent after it is handler-produced.
+  */
+  _dispatchWindowOpen = false;
+  _requestId;
+  _deferredResponse;
+  _sse;
+  _abortCleanup;
+  _keepAliveMs;
+  constructor(options) {
+    this._classification = options.classification;
+    this._responseMode = options.responseMode ?? "auto";
+    this._keepAliveMs = options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
+  }
+  async start() {
+    if (this._started) throw new Error("PerRequestHTTPServerTransport is already started");
+    this._started = true;
+  }
+  /**
+  * Serves the single exchange: delivers the classified message to the
+  * connected server instance and resolves with the HTTP response.
+  *
+  * Throws when called a second time (the transport is strictly
+  * single-use), or before a server has been connected to the transport.
+  * The returned promise rejects with a connection-closed error when the
+  * transport is closed before a response was produced (for example because
+  * the client disconnected).
+  */
+  async handleMessage(message, extra) {
+    if (this._used) throw new Error("PerRequestHTTPServerTransport serves exactly one exchange; construct a new transport per request");
+    if (!this._started || this.onmessage === void 0) throw new Error("PerRequestHTTPServerTransport is not connected: connect a server to this transport before handling a message");
+    if (this._closed) throw new Error("PerRequestHTTPServerTransport is closed");
+    this._used = true;
+    const signal = extra?.request?.signal;
+    if (signal?.aborted) {
+      await this.close();
+      throw new SdkError(SdkErrorCode.ConnectionClosed, "The request was aborted before it could be handled");
+    }
+    const messageExtra = {
+      classification: this._classification,
+      ...extra?.request !== void 0 && { request: extra.request },
+      ...extra?.authInfo !== void 0 && { authInfo: extra.authInfo }
+    };
+    if (isJSONRPCRequest(message)) {
+      this._requestId = message.id;
+      let resolve;
+      let reject;
+      const promise = new Promise((promiseResolve, promiseReject) => {
+        resolve = promiseResolve;
+        reject = promiseReject;
+      });
+      this._deferredResponse = {
+        promise,
+        resolve,
+        reject,
+        settled: false
+      };
+      if (signal !== void 0) {
+        const onAbort = () => void this.close();
+        signal.addEventListener("abort", onAbort, { once: true });
+        this._abortCleanup = () => signal.removeEventListener("abort", onAbort);
+      }
+      this._dispatchWindowOpen = true;
+      try {
+        this.onmessage(message, messageExtra);
+      } finally {
+        this._dispatchWindowOpen = false;
+      }
+      if (this._responseMode === "sse" && !this._closed && !this._deferredResponse.settled) this.upgradeToSse();
+      return promise;
+    }
+    this.onmessage(message, messageExtra);
+    return new Response(null, { status: 202 });
+  }
+  async send(message, options) {
+    if (this._closed) return;
+    const isResponse = isJSONRPCResultResponse(message) || isJSONRPCErrorResponse(message);
+    const relatedId = isResponse ? message.id : options?.relatedRequestId;
+    if (this._requestId === void 0 || relatedId === void 0 || relatedId !== this._requestId) {
+      if (isResponse) this.onerror?.(/* @__PURE__ */ new Error(`Received a response for an unknown request id: ${String(message.id)}`));
+      return;
+    }
+    if (isResponse) {
+      if (this._terminalDelivered) return;
+      this._terminalDelivered = true;
+      const errorCode = isJSONRPCErrorResponse(message) ? message.error.code : void 0;
+      const ladderStatus = errorCode !== void 0 && (this._dispatchWindowOpen || errorCode === ProtocolErrorCode.MissingRequiredClientCapability) ? LADDER_ERROR_HTTP_STATUS[errorCode] : void 0;
+      if (ladderStatus !== void 0 && this._sse === void 0) {
+        this.settleResponse(Response.json(message, {
+          status: ladderStatus,
+          headers: { "Content-Type": "application/json" }
+        }));
+        queueMicrotask(() => void this.close());
+        return;
+      }
+      if (this._sse !== void 0 || this._responseMode === "sse") {
+        if (this._sse === void 0) this.upgradeToSse();
+        this.writeMessageFrame(message);
+        this.finalizeStream();
+        return;
+      }
+      this.settleResponse(Response.json(message, {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      }));
+      queueMicrotask(() => void this.close());
+      return;
+    }
+    if (this._responseMode === "json") return;
+    if (this._sse === void 0) this.upgradeToSse();
+    this.writeMessageFrame(message);
+  }
+  /**
+  * Writes an SSE comment frame (a keep-alive heartbeat). Dropped when the
+  * exchange is not currently streaming.
+  */
+  writeCommentFrame(comment) {
+    if (this._closed || this._sse === void 0 || this._sse.closed) return;
+    const frame = comment.split("\n").map((line) => `: ${line}`).join("\n");
+    this.writeFrame(`${frame}
+
+`);
+  }
+  async close() {
+    if (this._closed) return;
+    this._closed = true;
+    this._abortCleanup?.();
+    this._abortCleanup = void 0;
+    if (this._sse?.keepAliveTimer !== void 0) clearInterval(this._sse.keepAliveTimer);
+    if (this._sse !== void 0 && !this._sse.closed) {
+      this._sse.closed = true;
+      try {
+        this._sse.controller.close();
+      } catch {
+      }
+    }
+    if (this._deferredResponse !== void 0 && !this._deferredResponse.settled) {
+      this._deferredResponse.settled = true;
+      this._deferredResponse.reject(new SdkError(SdkErrorCode.ConnectionClosed, "Connection closed before a response was produced"));
+    }
+    this.onclose?.();
+  }
+  settleResponse(response) {
+    if (this._deferredResponse === void 0 || this._deferredResponse.settled) return;
+    this._deferredResponse.settled = true;
+    this._deferredResponse.resolve(response);
+  }
+  upgradeToSse() {
+    let controller;
+    const readable = new ReadableStream({
+      start: (streamController) => {
+        controller = streamController;
+      },
+      cancel: () => {
+        this.close();
+      }
+    });
+    this._sse = {
+      controller,
+      encoder: new TextEncoder(),
+      closed: false
+    };
+    this._sse.keepAliveTimer = armSseKeepAlive(this._keepAliveMs, () => this.writeCommentFrame("keepalive"));
+    this.settleResponse(new Response(readable, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no"
+      }
+    }));
+  }
+  finalizeStream() {
+    if (this._sse?.keepAliveTimer !== void 0) clearInterval(this._sse.keepAliveTimer);
+    if (this._sse !== void 0 && !this._sse.closed) {
+      this._sse.closed = true;
+      try {
+        this._sse.controller.close();
+      } catch {
+      }
+    }
+    queueMicrotask(() => void this.close());
+  }
+  writeMessageFrame(message) {
+    this.writeFrame(`event: message
+data: ${JSON.stringify(message)}
+
+`);
+  }
+  writeFrame(frame) {
+    if (this._sse === void 0 || this._sse.closed) return;
+    try {
+      this._sse.controller.enqueue(this._sse.encoder.encode(frame));
+    } catch (error2) {
+      this.onerror?.(/* @__PURE__ */ new Error(`Failed to write to the response stream: ${error2}`));
+    }
+  }
+};
+async function invoke(server, message, ctx) {
+  const transport = new PerRequestHTTPServerTransport({
+    classification: ctx.classification,
+    ...ctx.responseMode !== void 0 && { responseMode: ctx.responseMode },
+    ...ctx.keepAliveMs !== void 0 && { keepAliveMs: ctx.keepAliveMs }
+  });
+  await server.connect(transport);
+  return transport.handleMessage(message, {
+    ...ctx.request !== void 0 && { request: ctx.request },
+    ...ctx.authInfo !== void 0 && { authInfo: ctx.authInfo }
+  });
+}
+var DEFAULT_MAX_REQUEST_BODY_SIZE = 4 * 1024 * 1024;
+var MAX_BATCH_SIZE = 100;
+function requestBodyTooLargeMessage(maxBytes) {
+  return `Payload Too Large: Request body must not exceed ${maxBytes} bytes`;
+}
+function resolveMaxRequestBodySize(value) {
+  if (value === void 0) return DEFAULT_MAX_REQUEST_BODY_SIZE;
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) throw new RangeError(`maxRequestBodySize must be a positive number of bytes, got ${String(value)}`);
+  return value;
+}
+async function readRequestBody(request, maxBytes = DEFAULT_MAX_REQUEST_BODY_SIZE) {
+  if (Number(request.headers.get("content-length")) > maxBytes) return { tooLarge: true };
+  if (request.body === null) return {
+    tooLarge: false,
+    text: ""
+  };
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder();
+  let received = 0;
+  let text = "";
+  try {
+    for (; ; ) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      received += value.byteLength;
+      if (received > maxBytes) return { tooLarge: true };
+      text += decoder.decode(value, { stream: true });
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return {
+    tooLarge: false,
+    text: text + decoder.decode()
+  };
+}
+var WebStandardStreamableHTTPServerTransport = class {
+  sessionIdGenerator;
+  _started = false;
+  _hasHandledRequest = false;
+  _closed = false;
+  _streamMapping = /* @__PURE__ */ new Map();
+  _requestToStreamMapping = /* @__PURE__ */ new Map();
+  _requestResponseMap = /* @__PURE__ */ new Map();
+  _initialized = false;
+  _enableJsonResponse = false;
+  _standaloneSseStreamId = "_GET_stream";
+  _eventStore;
+  _onsessioninitialized;
+  _onsessionclosed;
+  _allowedHosts;
+  _allowedOrigins;
+  _enableDnsRebindingProtection;
+  _retryInterval;
+  _supportedProtocolVersions;
+  _keepAliveMs;
+  _maxRequestBodySize;
+  _scopeChallengeResolver;
+  sessionId;
+  onclose;
+  onerror;
+  onmessage;
+  constructor(options = {}) {
+    this.sessionIdGenerator = options.sessionIdGenerator;
+    this._enableJsonResponse = options.enableJsonResponse ?? false;
+    this._eventStore = options.eventStore;
+    this._onsessioninitialized = options.onsessioninitialized;
+    this._onsessionclosed = options.onsessionclosed;
+    this._allowedHosts = options.allowedHosts;
+    this._allowedOrigins = options.allowedOrigins;
+    this._enableDnsRebindingProtection = options.enableDnsRebindingProtection ?? false;
+    this._retryInterval = options.retryInterval;
+    this._supportedProtocolVersions = options.supportedProtocolVersions ?? SUPPORTED_PROTOCOL_VERSIONS;
+    this._keepAliveMs = options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
+    this._maxRequestBodySize = resolveMaxRequestBodySize(options.maxRequestBodySize);
+  }
+  startKeepAlive(controller, encoder) {
+    if (this._closed) return void 0;
+    const timer = armSseKeepAlive(this._keepAliveMs, () => {
+      try {
+        controller.enqueue(encoder.encode(": keepalive\n\n"));
+      } catch {
+        if (timer !== void 0) clearInterval(timer);
+      }
+    });
+    return timer;
+  }
+  /** Sets the scope challenge resolver for parsed JSON-RPC requests. */
+  setScopeChallengeResolver(resolver) {
+    this._scopeChallengeResolver = resolver;
+  }
+  /**
+  * Starts the transport. This is required by the {@linkcode Transport} interface but is a no-op
+  * for the Streamable HTTP transport as connections are managed per-request.
+  */
+  async start() {
+    if (this._started) throw new Error("Transport already started");
+    this._started = true;
+  }
+  /**
+  * Sets the supported protocol versions for header validation.
+  * Called by the server during {@linkcode server/server.Server.connect | connect()} to pass its supported versions.
+  */
+  setSupportedProtocolVersions(versions) {
+    this._supportedProtocolVersions = versions;
+  }
+  /**
+  * Helper to create a JSON error response
+  */
+  createJsonErrorResponse(status, code, message, options) {
+    const error2 = {
+      code,
+      message
+    };
+    if (options?.data !== void 0) error2.data = options.data;
+    return Response.json({
+      jsonrpc: "2.0",
+      error: error2,
+      id: null
+    }, {
+      status,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers
+      }
+    });
+  }
+  async _checkScopeChallenge(messages, authInfo) {
+    if (!this._scopeChallengeResolver) return;
+    const challenge = await findScopeChallenge(messages.filter((message) => isJSONRPCRequest(message)), authInfo, this._scopeChallengeResolver);
+    return challenge === void 0 ? void 0 : createScopeChallengeResponse(challenge, scopeChallengeResourceMetadataUrl(authInfo));
+  }
+  /**
+  * Validates request headers for DNS rebinding protection.
+  * @returns Error response if validation fails, `undefined` if validation passes.
+  */
+  validateRequestHeaders(req) {
+    if (!this._enableDnsRebindingProtection) return;
+    if (this._allowedHosts && this._allowedHosts.length > 0) {
+      const hostHeader = req.headers.get("host");
+      if (!hostHeader || !this._allowedHosts.includes(hostHeader)) {
+        const error2 = `Invalid Host header: ${hostHeader}`;
+        this.onerror?.(new Error(error2));
+        return this.createJsonErrorResponse(403, -32e3, error2);
+      }
+    }
+    if (this._allowedOrigins && this._allowedOrigins.length > 0) {
+      const originHeader = req.headers.get("origin");
+      if (originHeader && !this._allowedOrigins.includes(originHeader)) {
+        const error2 = `Invalid Origin header: ${originHeader}`;
+        this.onerror?.(new Error(error2));
+        return this.createJsonErrorResponse(403, -32e3, error2);
+      }
+    }
+  }
+  /**
+  * Handles an incoming HTTP request, whether `GET`, `POST`, or `DELETE`
+  * Returns a `Response` object (Web Standard)
+  */
+  async handleRequest(req, options) {
+    if (this._closed) return this.createJsonErrorResponse(404, -32001, "Session not found");
+    if (!this.sessionIdGenerator && this._hasHandledRequest) throw new Error("Stateless transport cannot be reused across requests. Create a new transport per request.");
+    this._hasHandledRequest = true;
+    const validationError = this.validateRequestHeaders(req);
+    if (validationError) return validationError;
+    switch (req.method) {
+      case "POST":
+        return this.handlePostRequest(req, options);
+      case "GET":
+        return this.handleGetRequest(req);
+      case "DELETE":
+        return this.handleDeleteRequest(req);
+      default:
+        return this.handleUnsupportedRequest();
+    }
+  }
+  /**
+  * Returns true if the client's protocol version supports empty SSE data in
+  * priming events (the fix shipped with protocol version `2025-11-25`).
+  *
+  * The version is checked for membership in this transport instance's
+  * supported protocol versions rather than with an open-ended
+  * `>= '2025-11-25'` comparison: the value may come from an `initialize`
+  * request body, which (unlike the `MCP-Protocol-Version` header) is not
+  * validated against `supportedProtocolVersions` before reaching this
+  * check. An unknown future version string must not silently enable
+  * behavior reserved for versions this transport actually supports.
+  */
+  supportsEmptySSEData(protocolVersion) {
+    return this._supportedProtocolVersions.includes(protocolVersion) && protocolVersion >= "2025-11-25";
+  }
+  /**
+  * Writes a priming event to establish resumption capability.
+  * Only sends if `eventStore` is configured (opt-in for resumability) and
+  * the client's protocol version supports empty SSE data (a supported
+  * version that is >= `2025-11-25`).
+  */
+  async writePrimingEvent(controller, encoder, streamId, protocolVersion) {
+    if (!this._eventStore) return;
+    if (!this.supportsEmptySSEData(protocolVersion)) return;
+    const primingEventId = await this._eventStore.storeEvent(streamId, {});
+    let primingEvent = `id: ${primingEventId}
+data: 
+
+`;
+    if (this._retryInterval !== void 0) primingEvent = `id: ${primingEventId}
+retry: ${this._retryInterval}
+data: 
+
+`;
+    controller.enqueue(encoder.encode(primingEvent));
+  }
+  /**
+  * Handles `GET` requests for SSE stream
+  */
+  async handleGetRequest(req) {
+    if (!req.headers.get("accept")?.includes("text/event-stream")) {
+      this.onerror?.(/* @__PURE__ */ new Error("Not Acceptable: Client must accept text/event-stream"));
+      return this.createJsonErrorResponse(406, -32e3, "Not Acceptable: Client must accept text/event-stream");
+    }
+    const sessionError = this.validateSession(req);
+    if (sessionError) return sessionError;
+    const protocolError = this.validateProtocolVersion(req);
+    if (protocolError) return protocolError;
+    if (this._eventStore) {
+      const lastEventId = req.headers.get("last-event-id");
+      if (lastEventId) return this.replayEvents(lastEventId);
+    }
+    if (this._streamMapping.get(this._standaloneSseStreamId) !== void 0) {
+      this.onerror?.(/* @__PURE__ */ new Error("Conflict: Only one SSE stream is allowed per session"));
+      return this.createJsonErrorResponse(409, -32e3, "Conflict: Only one SSE stream is allowed per session");
+    }
+    const encoder = new TextEncoder();
+    let streamController;
+    let keepAliveTimer;
+    const readable = new ReadableStream({
+      start: (controller) => {
+        streamController = controller;
+      },
+      cancel: () => {
+        if (keepAliveTimer !== void 0) clearInterval(keepAliveTimer);
+        if (this._streamMapping.get(this._standaloneSseStreamId)?.controller === streamController) this._streamMapping.delete(this._standaloneSseStreamId);
+      }
+    });
+    const headers = {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no"
+    };
+    if (this.sessionId !== void 0) headers["mcp-session-id"] = this.sessionId;
+    this._streamMapping.set(this._standaloneSseStreamId, {
+      controller: streamController,
+      encoder,
+      cleanup: () => {
+        if (keepAliveTimer !== void 0) clearInterval(keepAliveTimer);
+        this._streamMapping.delete(this._standaloneSseStreamId);
+        try {
+          streamController.close();
+        } catch {
+        }
+      }
+    });
+    keepAliveTimer = this.startKeepAlive(streamController, encoder);
+    return new Response(readable, { headers });
+  }
+  /**
+  * Replays events that would have been sent after the specified event ID
+  * Only used when resumability is enabled
+  */
+  async replayEvents(lastEventId) {
+    if (!this._eventStore) {
+      this.onerror?.(/* @__PURE__ */ new Error("Event store not configured"));
+      return this.createJsonErrorResponse(400, -32e3, "Event store not configured");
+    }
+    try {
+      let streamId;
+      if (this._eventStore.getStreamIdForEventId) {
+        streamId = await this._eventStore.getStreamIdForEventId(lastEventId);
+        if (!streamId) {
+          this.onerror?.(/* @__PURE__ */ new Error("Invalid event ID format"));
+          return this.createJsonErrorResponse(400, -32e3, "Invalid event ID format");
+        }
+        if (this._streamMapping.get(streamId) !== void 0) {
+          this.onerror?.(/* @__PURE__ */ new Error("Conflict: Stream already has an active connection"));
+          return this.createJsonErrorResponse(409, -32e3, "Conflict: Stream already has an active connection");
+        }
+      }
+      const headers = {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no"
+      };
+      if (this.sessionId !== void 0) headers["mcp-session-id"] = this.sessionId;
+      const encoder = new TextEncoder();
+      let streamController;
+      let keepAliveTimer;
+      let cancelled = false;
+      let replayedStreamId;
+      const readable = new ReadableStream({
+        start: (controller) => {
+          streamController = controller;
+        },
+        cancel: () => {
+          cancelled = true;
+          if (keepAliveTimer !== void 0) clearInterval(keepAliveTimer);
+          if (replayedStreamId !== void 0 && this._streamMapping.get(replayedStreamId)?.controller === streamController) this._streamMapping.delete(replayedStreamId);
+        }
+      });
+      const replayedEventIds = /* @__PURE__ */ new Set();
+      replayedStreamId = await this._eventStore.replayEventsAfter(lastEventId, { send: async (eventId, message) => {
+        replayedEventIds.add(eventId);
+        if (!this.writeSSEEvent(streamController, encoder, message, eventId)) try {
+          streamController.close();
+        } catch {
+        }
+      } });
+      if (this._closed || cancelled) {
+        try {
+          streamController.close();
+        } catch {
+        }
+        return this.createJsonErrorResponse(404, -32001, "Session not found");
+      }
+      this._streamMapping.get(replayedStreamId)?.cleanup();
+      this._streamMapping.set(replayedStreamId, {
+        controller: streamController,
+        encoder,
+        replayedEventIds,
+        cleanup: () => {
+          if (keepAliveTimer !== void 0) clearInterval(keepAliveTimer);
+          this._streamMapping.delete(replayedStreamId);
+          try {
+            streamController.close();
+          } catch {
+          }
+        }
+      });
+      if (replayedStreamId !== this._standaloneSseStreamId) {
+        if (![...this._requestToStreamMapping.values()].includes(replayedStreamId)) {
+          this._streamMapping.delete(replayedStreamId);
+          try {
+            streamController.close();
+          } catch {
+          }
+        }
+      }
+      if (this._streamMapping.get(replayedStreamId)?.controller === streamController) keepAliveTimer = this.startKeepAlive(streamController, encoder);
+      return new Response(readable, { headers });
+    } catch (error2) {
+      this.onerror?.(error2);
+      return this.createJsonErrorResponse(500, -32e3, "Error replaying events");
+    }
+  }
+  /**
+  * Writes an event to an SSE stream via controller with proper formatting
+  */
+  writeSSEEvent(controller, encoder, message, eventId) {
+    try {
+      let eventData = `event: message
+`;
+      if (eventId) eventData += `id: ${eventId}
+`;
+      eventData += `data: ${JSON.stringify(message)}
+
+`;
+      controller.enqueue(encoder.encode(eventData));
+      return true;
+    } catch (error2) {
+      this.onerror?.(error2);
+      return false;
+    }
+  }
+  /**
+  * Handles unsupported requests (`PUT`, `PATCH`, etc.)
+  */
+  handleUnsupportedRequest() {
+    this.onerror?.(/* @__PURE__ */ new Error("Method not allowed."));
+    return Response.json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32e3,
+        message: "Method not allowed."
+      },
+      id: null
+    }, {
+      status: 405,
+      headers: {
+        Allow: "GET, POST, DELETE",
+        "Content-Type": "application/json"
+      }
+    });
+  }
+  /**
+  * Handles `POST` requests containing JSON-RPC messages
+  */
+  async handlePostRequest(req, options) {
+    try {
+      const acceptHeader = req.headers.get("accept");
+      if (!acceptHeader?.includes("application/json") || !acceptHeader.includes("text/event-stream")) {
+        this.onerror?.(/* @__PURE__ */ new Error("Not Acceptable: Client must accept both application/json and text/event-stream"));
+        return this.createJsonErrorResponse(406, -32e3, "Not Acceptable: Client must accept both application/json and text/event-stream");
+      }
+      if (!isJsonContentType(req.headers.get("content-type"))) {
+        this.onerror?.(/* @__PURE__ */ new Error("Unsupported Media Type: Content-Type must be application/json"));
+        return this.createJsonErrorResponse(415, -32e3, "Unsupported Media Type: Content-Type must be application/json");
+      }
+      const request = req;
+      let rawMessage;
+      if (options?.parsedBody === void 0) try {
+        const body = await readRequestBody(req, this._maxRequestBodySize);
+        if (body.tooLarge) {
+          const message = requestBodyTooLargeMessage(this._maxRequestBodySize);
+          this.onerror?.(new Error(message));
+          return this.createJsonErrorResponse(413, -32e3, message);
+        }
+        rawMessage = JSON.parse(body.text);
+      } catch (error2) {
+        this.onerror?.(error2);
+        return this.createJsonErrorResponse(400, -32700, "Parse error: Invalid JSON");
+      }
+      else rawMessage = options.parsedBody;
+      if (Array.isArray(rawMessage) && rawMessage.length > MAX_BATCH_SIZE) {
+        this.onerror?.(/* @__PURE__ */ new Error(`Invalid Request: Batch must not exceed ${MAX_BATCH_SIZE} messages`));
+        return this.createJsonErrorResponse(400, -32600, `Invalid Request: Batch must not exceed ${MAX_BATCH_SIZE} messages`);
+      }
+      let messages;
+      try {
+        messages = Array.isArray(rawMessage) ? rawMessage.map((msg) => JSONRPCMessageSchema.parse(msg)) : [JSONRPCMessageSchema.parse(rawMessage)];
+      } catch (error2) {
+        this.onerror?.(error2);
+        return this.createJsonErrorResponse(400, -32700, "Parse error: Invalid JSON-RPC message");
+      }
+      if (this._closed) return this.createJsonErrorResponse(404, -32001, "Session not found");
+      const isInitializationRequest = messages.some((element) => isInitializeRequest(element));
+      if (isInitializationRequest) {
+        if (this._initialized && this.sessionId !== void 0) {
+          this.onerror?.(/* @__PURE__ */ new Error("Invalid Request: Server already initialized"));
+          return this.createJsonErrorResponse(400, -32600, "Invalid Request: Server already initialized");
+        }
+        if (messages.length > 1) {
+          this.onerror?.(/* @__PURE__ */ new Error("Invalid Request: Only one initialization request is allowed"));
+          return this.createJsonErrorResponse(400, -32600, "Invalid Request: Only one initialization request is allowed");
+        }
+        this.sessionId = this.sessionIdGenerator?.();
+        this._initialized = true;
+        if (this.sessionId && this._onsessioninitialized) await Promise.resolve(this._onsessioninitialized(this.sessionId));
+      }
+      if (!isInitializationRequest) {
+        const sessionError = this.validateSession(req);
+        if (sessionError) return sessionError;
+        const protocolError = this.validateProtocolVersion(req);
+        if (protocolError) return protocolError;
+      }
+      if (this._closed) return this.createJsonErrorResponse(404, -32001, "Session not found");
+      let scopeChallengeResponse;
+      try {
+        scopeChallengeResponse = await this._checkScopeChallenge(messages, options?.authInfo);
+      } catch (error2) {
+        this.onerror?.(error2);
+        return this.createJsonErrorResponse(500, -32603, "Internal server error");
+      }
+      if (scopeChallengeResponse) return scopeChallengeResponse;
+      if (!messages.some((element) => isJSONRPCRequest(element))) {
+        for (const message of messages) this.onmessage?.(message, {
+          authInfo: options?.authInfo,
+          request
+        });
+        return new Response(null, { status: 202 });
+      }
+      const streamId = crypto.randomUUID();
+      const initRequest = messages.find((m) => isInitializeRequest(m));
+      const clientProtocolVersion = initRequest ? initRequest.params.protocolVersion : req.headers.get("mcp-protocol-version") ?? DEFAULT_NEGOTIATED_PROTOCOL_VERSION;
+      if (this._enableJsonResponse) return new Promise((resolve) => {
+        this._streamMapping.set(streamId, {
+          resolveJson: resolve,
+          cleanup: () => {
+            this._streamMapping.delete(streamId);
+          }
+        });
+        for (const message of messages) if (isJSONRPCRequest(message)) this._requestToStreamMapping.set(message.id, streamId);
+        for (const message of messages) this.onmessage?.(message, {
+          authInfo: options?.authInfo,
+          request
+        });
+      });
+      const encoder = new TextEncoder();
+      let streamController;
+      let keepAliveTimer;
+      const readable = new ReadableStream({
+        start: (controller) => {
+          streamController = controller;
+        },
+        cancel: () => {
+          if (keepAliveTimer !== void 0) clearInterval(keepAliveTimer);
+          if (this._streamMapping.get(streamId)?.controller === streamController) this._streamMapping.delete(streamId);
+        }
+      });
+      const headers = {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no"
+      };
+      if (this.sessionId !== void 0) headers["mcp-session-id"] = this.sessionId;
+      for (const message of messages) if (isJSONRPCRequest(message)) {
+        this._streamMapping.set(streamId, {
+          controller: streamController,
+          encoder,
+          cleanup: () => {
+            if (keepAliveTimer !== void 0) clearInterval(keepAliveTimer);
+            this._streamMapping.delete(streamId);
+            try {
+              streamController.close();
+            } catch {
+            }
+          }
+        });
+        this._requestToStreamMapping.set(message.id, streamId);
+      }
+      await this.writePrimingEvent(streamController, encoder, streamId, clientProtocolVersion);
+      for (const message of messages) {
+        let closeSSEStream;
+        let closeStandaloneSSEStream;
+        if (isJSONRPCRequest(message) && this._eventStore && this.supportsEmptySSEData(clientProtocolVersion)) {
+          closeSSEStream = () => {
+            this.closeSSEStream(message.id);
+          };
+          closeStandaloneSSEStream = () => {
+            this.closeStandaloneSSEStream();
+          };
+        }
+        this.onmessage?.(message, {
+          authInfo: options?.authInfo,
+          request,
+          closeSSEStream,
+          closeStandaloneSSEStream
+        });
+      }
+      if (this._streamMapping.get(streamId)?.controller === streamController) keepAliveTimer = this.startKeepAlive(streamController, encoder);
+      return new Response(readable, {
+        status: 200,
+        headers
+      });
+    } catch (error2) {
+      this.onerror?.(error2);
+      return this.createJsonErrorResponse(400, -32700, "Parse error", { data: String(error2) });
+    }
+  }
+  /**
+  * Handles `DELETE` requests to terminate sessions
+  */
+  async handleDeleteRequest(req) {
+    const sessionError = this.validateSession(req);
+    if (sessionError) return sessionError;
+    const protocolError = this.validateProtocolVersion(req);
+    if (protocolError) return protocolError;
+    try {
+      await Promise.resolve(this._onsessionclosed?.(this.sessionId));
+      return new Response(null, { status: 200 });
+    } finally {
+      await this.close();
+    }
+  }
+  /**
+  * Validates session ID for non-initialization requests.
+  * Returns `Response` error if invalid, `undefined` otherwise
+  */
+  validateSession(req) {
+    if (this.sessionIdGenerator === void 0) return;
+    if (!this._initialized) {
+      this.onerror?.(/* @__PURE__ */ new Error("Bad Request: Server not initialized"));
+      return this.createJsonErrorResponse(400, -32e3, "Bad Request: Server not initialized");
+    }
+    const sessionId = req.headers.get("mcp-session-id");
+    if (!sessionId) {
+      this.onerror?.(/* @__PURE__ */ new Error("Bad Request: Mcp-Session-Id header is required"));
+      return this.createJsonErrorResponse(400, -32e3, "Bad Request: Mcp-Session-Id header is required");
+    }
+    if (sessionId !== this.sessionId) {
+      this.onerror?.(/* @__PURE__ */ new Error("Session not found"));
+      return this.createJsonErrorResponse(404, -32001, "Session not found");
+    }
+  }
+  /**
+  * Validates the `MCP-Protocol-Version` header on incoming requests.
+  *
+  * For initialization: Version negotiation handles unknown versions gracefully
+  * (server responds with its supported version).
+  *
+  * For subsequent requests with `MCP-Protocol-Version` header:
+  * - Accept if in supported list
+  * - 400 if unsupported
+  *
+  * For HTTP requests without the `MCP-Protocol-Version` header:
+  * - Accept and default to the version negotiated at initialization
+  */
+  validateProtocolVersion(req) {
+    const protocolVersion = req.headers.get("mcp-protocol-version");
+    if (protocolVersion !== null && !this._supportedProtocolVersions.includes(protocolVersion)) {
+      const error2 = `Bad Request: Unsupported protocol version: ${protocolVersion} (supported versions: ${this._supportedProtocolVersions.join(", ")})`;
+      this.onerror?.(new Error(error2));
+      return this.createJsonErrorResponse(400, -32e3, error2);
+    }
+  }
+  async close() {
+    if (this._closed) return;
+    this._closed = true;
+    for (const { cleanup } of this._streamMapping.values()) cleanup();
+    this._streamMapping.clear();
+    this._requestResponseMap.clear();
+    this.onclose?.();
+  }
+  /**
+  * Close an SSE stream for a specific request, triggering client reconnection.
+  * Use this to implement polling behavior during long-running operations -
+  * client will reconnect after the retry interval specified in the priming event.
+  */
+  closeSSEStream(requestId) {
+    const streamId = this._requestToStreamMapping.get(requestId);
+    if (!streamId) return;
+    const stream = this._streamMapping.get(streamId);
+    if (stream) stream.cleanup();
+  }
+  /**
+  * Close the standalone `GET` SSE stream, triggering client reconnection.
+  * Use this to implement polling behavior for server-initiated notifications.
+  */
+  closeStandaloneSSEStream() {
+    const stream = this._streamMapping.get(this._standaloneSseStreamId);
+    if (stream) stream.cleanup();
+  }
+  async send(message, options) {
+    let requestId = options?.relatedRequestId;
+    if (isJSONRPCResultResponse(message) || isJSONRPCErrorResponse(message)) requestId = message.id;
+    if (requestId === void 0) {
+      if (isJSONRPCResultResponse(message) || isJSONRPCErrorResponse(message)) throw new Error("Cannot send a response on a standalone SSE stream unless resuming a previous client request");
+      let eventId;
+      if (this._eventStore) eventId = await this._eventStore.storeEvent(this._standaloneSseStreamId, message);
+      const standaloneSse = this._streamMapping.get(this._standaloneSseStreamId);
+      if (standaloneSse === void 0) return;
+      if (standaloneSse.controller && standaloneSse.encoder && (eventId === void 0 || !standaloneSse.replayedEventIds?.has(eventId))) this.writeSSEEvent(standaloneSse.controller, standaloneSse.encoder, message, eventId);
+      return;
+    }
+    const streamId = this._requestToStreamMapping.get(requestId);
+    if (!streamId) throw new Error(`No connection established for request ID: ${String(requestId)}`);
+    let stream = this._streamMapping.get(streamId);
+    if (!this._enableJsonResponse) {
+      let eventId;
+      if (this._eventStore) {
+        eventId = await this._eventStore.storeEvent(streamId, message);
+        stream = this._streamMapping.get(streamId);
+      }
+      if (stream?.controller && stream?.encoder && (eventId === void 0 || !stream.replayedEventIds?.has(eventId))) this.writeSSEEvent(stream.controller, stream.encoder, message, eventId);
+    }
+    if (isJSONRPCResultResponse(message) || isJSONRPCErrorResponse(message)) {
+      this._requestResponseMap.set(requestId, message);
+      const relatedIds = [...this._requestToStreamMapping.entries()].filter(([_, sid]) => sid === streamId).map(([id]) => id);
+      if (relatedIds.every((id) => this._requestResponseMap.has(id))) {
+        if (!stream) {
+          if (this._enableJsonResponse) throw new Error(`No connection established for request ID: ${String(requestId)}`);
+          if (!this._eventStore) {
+            this.onerror?.(/* @__PURE__ */ new Error(`Response for request ID ${String(requestId)} is undeliverable: per-request stream is disconnected and no eventStore is configured`));
+            for (const id of relatedIds) {
+              this._requestResponseMap.delete(id);
+              this._requestToStreamMapping.delete(id);
+            }
+            return;
+          }
+          for (const id of relatedIds) {
+            this._requestResponseMap.delete(id);
+            this._requestToStreamMapping.delete(id);
+          }
+          return;
+        }
+        if (this._enableJsonResponse && stream.resolveJson) {
+          const headers = { "Content-Type": "application/json" };
+          if (this.sessionId !== void 0) headers["mcp-session-id"] = this.sessionId;
+          const responses = relatedIds.map((id) => this._requestResponseMap.get(id));
+          if (responses.length === 1) stream.resolveJson(Response.json(responses[0], {
+            status: 200,
+            headers
+          }));
+          else stream.resolveJson(Response.json(responses, {
+            status: 200,
+            headers
+          }));
+          stream.cleanup();
+        } else stream.cleanup();
+        for (const id of relatedIds) {
+          this._requestResponseMap.delete(id);
+          this._requestToStreamMapping.delete(id);
+        }
+      }
+    }
+  }
+};
+function echoableRequestId(body) {
+  if (body === null || typeof body !== "object" || Array.isArray(body)) return null;
+  const { method, id } = body;
+  if (typeof method !== "string") return null;
+  return typeof id === "string" || typeof id === "number" ? id : null;
+}
+function jsonRpcErrorResponse(httpStatus, code, message, data, id = null) {
+  return Response.json({
+    jsonrpc: "2.0",
+    error: {
+      code,
+      message,
+      ...data !== void 0 && { data }
+    },
+    id
+  }, { status: httpStatus });
+}
+function rejectionResponse(rejection2, id = null) {
+  return jsonRpcErrorResponse(rejection2.httpStatus, rejection2.code, rejection2.message, rejection2.data, id);
+}
+function toError2(value) {
+  return value instanceof Error ? value : new Error(String(value));
+}
+function internalServerErrorResponse(id = null) {
+  return jsonRpcErrorResponse(500, -32603, "Internal server error", void 0, id);
+}
+function assertNotServing(server) {
+  if (server.transport !== void 0) throw new Error("The factory returned an instance that is still serving another request. Return a new instance for each request.");
+}
+function createLegacyStatelessFallback(factory, onerror, keepAliveMs, maxRequestBodySize) {
+  return async (request, options) => {
+    if (request.method.toUpperCase() !== "POST") return jsonRpcErrorResponse(405, -32e3, "Method not allowed.");
+    try {
+      const product = await factory({
+        era: "legacy",
+        ...options?.authInfo !== void 0 && { authInfo: options.authInfo },
+        requestInfo: request
+      });
+      const transport = new WebStandardStreamableHTTPServerTransport({
+        sessionIdGenerator: void 0,
+        ...keepAliveMs !== void 0 && { keepAliveMs },
+        ...maxRequestBodySize !== void 0 && { maxRequestBodySize }
+      });
+      await product.connect(transport);
+      const teardown = () => {
+        transport.close().catch(() => {
+        });
+        product.close().catch(() => {
+        });
+      };
+      request.signal?.addEventListener("abort", teardown, { once: true });
+      const response = await transport.handleRequest(request, {
+        ...options?.authInfo !== void 0 && { authInfo: options.authInfo },
+        ...options?.parsedBody !== void 0 && { parsedBody: options.parsedBody }
+      });
+      if (response.body === null || mediaTypeEssence(response.headers.get("content-type")) !== "text/event-stream") {
+        teardown();
+        return response;
+      }
+      const reader = response.body.getReader();
+      let toreDown = false;
+      const completeExchange = () => {
+        if (!toreDown) {
+          toreDown = true;
+          teardown();
+        }
+      };
+      const monitoredBody = new ReadableStream({
+        pull: async (controller) => {
+          try {
+            const { done, value } = await reader.read();
+            if (done) {
+              completeExchange();
+              controller.close();
+              return;
+            }
+            if (value !== void 0) controller.enqueue(value);
+          } catch (error2) {
+            completeExchange();
+            controller.error(error2);
+          }
+        },
+        cancel: (reason) => {
+          completeExchange();
+          return reader.cancel(reason).catch(() => {
+          });
+        }
+      });
+      return new Response(monitoredBody, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers
+      });
+    } catch (error2) {
+      try {
+        onerror?.(toError2(error2));
+      } catch {
+      }
+      return internalServerErrorResponse(echoableRequestId(options?.parsedBody));
+    }
+  };
+}
+function standardHeadersOf(request) {
+  return {
+    protocolVersionHeader: request.headers.get("mcp-protocol-version") ?? void 0,
+    mcpMethodHeader: request.headers.get("mcp-method") ?? void 0,
+    mcpNameHeader: request.headers.get("mcp-name") ?? void 0
+  };
+}
+async function classifyEntryRequest(request, providedParsedBody, needsForward = true, maxRequestBodySize = DEFAULT_MAX_REQUEST_BODY_SIZE) {
+  const httpMethod = request.method.toUpperCase();
+  let body;
+  let parsedBody = providedParsedBody;
+  let forwardRequest = request;
+  let unparseable = false;
+  if (httpMethod === "POST") {
+    if (parsedBody === void 0) {
+      if (needsForward) forwardRequest = request.clone();
+      let bodyText;
+      try {
+        const read = await readRequestBody(request, maxRequestBodySize);
+        if (read.tooLarge) return { step: "body-too-large" };
+        bodyText = read.text;
+      } catch {
+        return { step: "unreadable-body" };
+      }
+      try {
+        body = bodyText.length === 0 ? void 0 : JSON.parse(bodyText);
+      } catch {
+        unparseable = true;
+      }
+      if (!unparseable && body !== void 0) parsedBody = body;
+    } else body = parsedBody;
+    if (unparseable || body === void 0) return {
+      step: "no-json-body",
+      forwardRequest
+    };
+  }
+  return {
+    step: "classified",
+    outcome: classifyInboundRequest({
+      httpMethod,
+      ...standardHeadersOf(request),
+      ...body !== void 0 && { body }
+    }),
+    body,
+    parsedBody,
+    forwardRequest
+  };
+}
+function createMcpHandler(factory, options = {}) {
+  const { legacy, onerror, responseMode } = options;
+  const maxRequestBodySize = resolveMaxRequestBodySize(options.maxRequestBodySize);
+  if (typeof legacy === "function") throw new TypeError("The 'legacy' option only accepts 'stateless' or 'reject', not a handler function. To serve 2025-era traffic with your own handler, route in user land with the exported isLegacyRequest(request) predicate in front of a strict (legacy: 'reject') handler.");
+  const inflight = /* @__PURE__ */ new Set();
+  let closed = false;
+  const reportError = (error2) => {
+    try {
+      onerror?.(error2);
+    } catch {
+    }
+  };
+  const bus = options.bus ?? new InMemoryServerEventBus(reportError);
+  const notify = createServerNotifier(bus);
+  const listenRouter = createListenRouter({
+    bus,
+    maxSubscriptions: options.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS,
+    keepAliveMs: options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS,
+    onerror: reportError
+  });
+  if (responseMode === "json") console.warn("responseMode: 'json' drops mid-call notifications. subscriptions/listen streams are always served over SSE regardless; other notifications emitted before a result are dropped.");
+  const legacyHandler = legacy === "reject" ? void 0 : createLegacyStatelessFallback(factory, reportError, options.keepAliveMs, maxRequestBodySize);
+  async function serveModern(route, request, authInfo) {
+    const claimedRevision = route.classification.revision;
+    if (claimedRevision === void 0 || !SUPPORTED_MODERN_PROTOCOL_VERSIONS.includes(claimedRevision)) {
+      const error2 = new UnsupportedProtocolVersionError({
+        supported: [...SUPPORTED_MODERN_PROTOCOL_VERSIONS],
+        requested: claimedRevision ?? "unknown"
+      });
+      reportError(error2);
+      return jsonRpcErrorResponse(400, error2.code, error2.message, error2.data, echoableRequestId(route.message));
+    }
+    const stdHeaderRejection = validateStandardRequestHeaders({
+      httpMethod: request.method,
+      ...standardHeadersOf(request)
+    }, route);
+    if (stdHeaderRejection !== void 0) {
+      reportError(/* @__PURE__ */ new Error(`Rejected inbound request (${stdHeaderRejection.cell}): ${stdHeaderRejection.message}`));
+      return rejectionResponse(stdHeaderRejection, echoableRequestId(route.message));
+    }
+    const meta2 = route.messageKind === "request" ? requestMetaOf(route.message.params) : void 0;
+    const declaredClientCapabilities = meta2?.[CLIENT_CAPABILITIES_META_KEY];
+    if (route.messageKind === "request") {
+      const required2 = requiredClientCapabilitiesForRequest(route.message.method);
+      if (required2 !== void 0) {
+        const missing = missingClientCapabilities(required2, declaredClientCapabilities);
+        if (missing !== void 0) {
+          const error2 = new MissingRequiredClientCapabilityError({ requiredCapabilities: missing });
+          reportError(error2);
+          return jsonRpcErrorResponse(httpStatusForErrorCode(error2.code, "ladder"), error2.code, error2.message, error2.data, route.message.id);
+        }
+      }
+    }
+    const product = await factory({
+      era: "modern",
+      ...authInfo !== void 0 && { authInfo },
+      requestInfo: request
+    });
+    const server = product instanceof McpServer ? product.server : product;
+    assertNotServing(server);
+    if (route.messageKind === "request" && route.message.method === "subscriptions/listen") {
+      const capabilities = server.getCapabilities();
+      const serverInfo = serverIdentityOf(server);
+      product.close().catch(reportError);
+      return listenRouter.serve(route.message, request.signal, capabilities, serverInfo);
+    }
+    if (route.messageKind === "request" && route.message.method === "tools/call" && product instanceof McpServer) {
+      const callParams = route.message.params;
+      const toolName = typeof callParams?.name === "string" ? callParams.name : void 0;
+      const inputSchema = toolName === void 0 ? void 0 : product.toolInputSchemaJson(toolName);
+      if (inputSchema !== void 0) {
+        const scan = scanXMcpHeaderDeclarations(inputSchema);
+        if (scan.valid && scan.declarations.length > 0) {
+          const rejection2 = validateMcpParamHeaders(scan.declarations, callParams?.arguments, request.headers);
+          if (rejection2 !== void 0) {
+            product.close().catch(reportError);
+            reportError(/* @__PURE__ */ new Error(`Rejected inbound request (${rejection2.cell}): ${rejection2.message}`));
+            return rejectionResponse(rejection2, route.message.id);
+          }
+        }
+      }
+    }
+    if (route.messageKind === "request" && product instanceof McpServer) try {
+      const challenge = await findScopeChallenge([route.message], authInfo, (context) => product.resolveScopeChallenge(context));
+      if (challenge !== void 0) {
+        product.close().catch(reportError);
+        return createScopeChallengeResponse(challenge, scopeChallengeResourceMetadataUrl(authInfo));
+      }
+    } catch (error2) {
+      product.close().catch(reportError);
+      reportError(toError2(error2));
+      return internalServerErrorResponse(route.message.id);
+    }
+    assertNotServing(server);
+    setNegotiatedProtocolVersion(server, claimedRevision);
+    installModernOnlyHandlers(server, SUPPORTED_MODERN_PROTOCOL_VERSIONS);
+    if (meta2 !== void 0) seedClientIdentityFromEnvelope(server, {
+      clientInfo: meta2[CLIENT_INFO_META_KEY],
+      clientCapabilities: declaredClientCapabilities
+    });
+    const previousOnClose = server.onclose;
+    inflight.add(server);
+    const onExchangeClose = () => {
+      inflight.delete(server);
+      if (server.onclose === onExchangeClose) server.onclose = previousOnClose;
+      previousOnClose?.();
+    };
+    server.onclose = onExchangeClose;
+    try {
+      const response = await invoke(product, route.message, {
+        classification: route.classification,
+        request,
+        ...authInfo !== void 0 && { authInfo },
+        ...responseMode !== void 0 && { responseMode },
+        ...options.keepAliveMs !== void 0 && { keepAliveMs: options.keepAliveMs }
+      });
+      if (route.messageKind === "notification") queueMicrotask(() => void server.close().catch(() => {
+      }));
+      return response;
+    } catch (error2) {
+      if (error2 instanceof SdkError && error2.code === SdkErrorCode.ConnectionClosed) return new Response(null, { status: 499 });
+      await server.close().catch(() => {
+      });
+      inflight.delete(server);
+      reportError(toError2(error2));
+      return internalServerErrorResponse(echoableRequestId(route.message));
+    }
+  }
+  async function serveLegacyRoute(route, forwardRequest, authInfo, parsedBody) {
+    if (legacyHandler !== void 0) return legacyHandler(forwardRequest, {
+      ...authInfo !== void 0 && { authInfo },
+      ...parsedBody !== void 0 && { parsedBody }
+    });
+    const strict = modernOnlyStrictRejection(route, SUPPORTED_MODERN_PROTOCOL_VERSIONS);
+    if (strict === void 0) return new Response(null, { status: 202 });
+    reportError(/* @__PURE__ */ new Error(`Rejected 2025-era request on a modern-only endpoint (${strict.cell}): ${strict.message}`));
+    return rejectionResponse(strict, echoableRequestId(parsedBody));
+  }
+  async function handle2(request, requestOptions) {
+    const authInfo = requestOptions?.authInfo;
+    if (request.method.toUpperCase() === "POST" && !isJsonContentType(request.headers.get("content-type"))) {
+      reportError(/* @__PURE__ */ new Error("Unsupported Media Type: Content-Type must be application/json"));
+      return jsonRpcErrorResponse(415, -32e3, "Unsupported Media Type: Content-Type must be application/json");
+    }
+    const classified = await classifyEntryRequest(request, requestOptions?.parsedBody, true, maxRequestBodySize);
+    if (classified.step === "unreadable-body") return jsonRpcErrorResponse(400, -32700, "Parse error: the request body could not be read");
+    if (classified.step === "body-too-large") return jsonRpcErrorResponse(413, -32e3, requestBodyTooLargeMessage(maxRequestBodySize));
+    if (classified.step === "no-json-body") {
+      if (legacyHandler !== void 0) return legacyHandler(classified.forwardRequest, { ...authInfo !== void 0 && { authInfo } });
+      return jsonRpcErrorResponse(400, -32700, "Parse error: the request body is not valid JSON");
+    }
+    const { outcome, body, parsedBody, forwardRequest } = classified;
+    try {
+      switch (outcome.kind) {
+        case "reject":
+          reportError(/* @__PURE__ */ new Error(`Rejected inbound request (${outcome.cell}): ${outcome.message}`));
+          return rejectionResponse(outcome, echoableRequestId(body));
+        case "modern":
+          return await serveModern(outcome, request, authInfo);
+        case "legacy":
+          return await serveLegacyRoute(outcome, forwardRequest, authInfo, parsedBody);
+      }
+    } catch (error2) {
+      reportError(toError2(error2));
+      return internalServerErrorResponse(echoableRequestId(body));
+    }
+  }
+  const fetchFace = async (request, requestOptions) => {
+    if (closed) throw new Error("This MCP handler has been closed");
+    try {
+      return await handle2(request, requestOptions);
+    } catch (error2) {
+      reportError(toError2(error2));
+      return internalServerErrorResponse(echoableRequestId(requestOptions?.parsedBody));
+    }
+  };
+  return {
+    fetch: fetchFace,
+    notify,
+    bus,
+    close: async () => {
+      closed = true;
+      listenRouter.closeAll();
+      const closing = [...inflight].map((server) => server.close().catch(() => {
+      }));
+      inflight.clear();
+      await Promise.all(closing);
+    }
+  };
+}
 
 // src/nbclient/errors.ts
 function redactKey(text) {
@@ -22979,9 +25008,6 @@ function toToolError(toolName, error2) {
     isError: true
   };
 }
-
-// src/index.ts
-init_log();
 
 // src/nbclient/client.ts
 var RETRIABLE_STATUSES = /* @__PURE__ */ new Set([429, 502, 503, 504]);
@@ -23093,8 +25119,962 @@ function extractApiMessage(bodyText) {
   }
 }
 
+// src/nbclient/unauthenticated.ts
+var MESSAGE = "This tool calls the NextBillion.ai API and needs an API key. The request carried no Authorization header: sign in to the connector, or send `Authorization: Bearer <NBAI_API_KEY>`.";
+var UnauthenticatedNbClient = class extends NbClient {
+  constructor() {
+    super({ apiKey: "" });
+  }
+  getJson(_path, _query) {
+    return Promise.reject(new NbApiError({ url: "", message: MESSAGE }));
+  }
+  postJson(_path, _query, _body) {
+    return Promise.reject(new NbApiError({ url: "", message: MESSAGE }));
+  }
+  getBinary(_path, _query) {
+    return Promise.reject(new NbApiError({ url: "", message: MESSAGE }));
+  }
+};
+
+// src/http/app.ts
+init_tools();
+
+// src/http/auth.ts
+var API_SCOPE = "nextbillion.api";
+var ApiKeyVerifier = class _ApiKeyVerifier {
+  static PATTERN = /^[A-Za-z0-9._~+/=-]{16,128}$/;
+  /** Tokens are re-presented on every call, so the expiry only has to satisfy the SDK. */
+  static TTL_SECONDS = 3600;
+  verifyAccessToken(token) {
+    if (!_ApiKeyVerifier.PATTERN.test(token)) {
+      return Promise.reject(
+        new OAuthError(
+          OAuthErrorCode.InvalidToken,
+          "The bearer token is not a NextBillion.ai API key. Send `Authorization: Bearer <your API key>`."
+        )
+      );
+    }
+    return Promise.resolve({
+      token,
+      clientId: "api-key",
+      scopes: [API_SCOPE],
+      expiresAt: Math.floor(Date.now() / 1e3) + _ApiKeyVerifier.TTL_SECONDS,
+      extra: { apiKey: token, kind: "api_key" }
+    });
+  }
+};
+function apiKeyFromAuth(auth) {
+  const key = auth?.extra?.apiKey;
+  return typeof key === "string" && key.length > 0 ? key : void 0;
+}
+function protectedToolNames(tools) {
+  return new Set(tools.filter((t) => t.annotations?.openWorldHint === true).map((t) => t.name));
+}
+function callsProtectedTool(call, protectedTools) {
+  if (call.mcpMethod === "tools/call") {
+    return typeof call.mcpName === "string" && protectedTools.has(call.mcpName);
+  }
+  const messages = Array.isArray(call.body) ? call.body : [call.body];
+  for (const message of messages) {
+    if (!message || typeof message !== "object") continue;
+    const { method, params } = message;
+    if (method === "tools/call" && typeof params?.name === "string" && protectedTools.has(params.name)) {
+      return true;
+    }
+  }
+  return false;
+}
+function authenticationRequired(resourceMetadataUrl, description) {
+  return bearerAuthChallengeResponse(new OAuthError(OAuthErrorCode.InvalidToken, description), {
+    resourceMetadataUrl,
+    requiredScopes: [API_SCOPE]
+  });
+}
+
+// src/http/oauth/clients.ts
+var ClientError = class extends Error {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+  code;
+};
+var DCR_PREFIX = "dcr.";
+var CIMD_TIMEOUT_MS = 5e3;
+var ClientResolver = class {
+  constructor(options) {
+    this.options = options;
+    this.fetchFn = options.fetchFn ?? fetch;
+    this.cacheTtlMs = options.cacheTtlMs ?? 3e5;
+    this.now = options.now ?? Date.now;
+  }
+  options;
+  cache = /* @__PURE__ */ new Map();
+  fetchFn;
+  cacheTtlMs;
+  now;
+  /** RFC 7591 registration; returns the client information document to answer with. */
+  register(metadata) {
+    const m = metadata ?? {};
+    const redirectUris = m.redirect_uris;
+    if (!Array.isArray(redirectUris) || redirectUris.length === 0 || !redirectUris.every(isHttpUrl)) {
+      throw new ClientError(
+        "invalid_client_metadata",
+        "redirect_uris must be a non-empty array of URLs"
+      );
+    }
+    const authMethod = m.token_endpoint_auth_method ?? "none";
+    if (authMethod !== "none") {
+      throw new ClientError(
+        "invalid_client_metadata",
+        'only public clients are supported: token_endpoint_auth_method must be "none"'
+      );
+    }
+    const clientName = typeof m.client_name === "string" ? m.client_name.slice(0, 100) : void 0;
+    const sealed = this.options.keyRing.seal("client", { ru: redirectUris, cn: clientName });
+    return {
+      client_id: DCR_PREFIX + sealed,
+      client_id_issued_at: Math.floor(this.now() / 1e3),
+      redirect_uris: redirectUris,
+      token_endpoint_auth_method: "none",
+      grant_types: ["authorization_code", "refresh_token"],
+      response_types: ["code"],
+      ...clientName ? { client_name: clientName } : {}
+    };
+  }
+  async resolve(clientId) {
+    if (clientId.startsWith(DCR_PREFIX)) {
+      const payload = this.options.keyRing.open("client", clientId.slice(DCR_PREFIX.length));
+      if (!payload || !Array.isArray(payload.ru)) {
+        throw new ClientError("invalid_client", "unknown client_id");
+      }
+      return {
+        clientId,
+        kind: "dcr",
+        redirectUris: payload.ru,
+        clientName: typeof payload.cn === "string" ? payload.cn : void 0,
+        displayHost: typeof payload.cn === "string" ? payload.cn : "a registered application"
+      };
+    }
+    if (!/^https:\/\//.test(clientId)) {
+      throw new ClientError(
+        "invalid_client",
+        "client_id must be an https:// metadata URL or a registered id"
+      );
+    }
+    const cached3 = this.cache.get(clientId);
+    if (cached3 && cached3.until > this.now()) return cached3.client;
+    const client = await this.fetchCimd(clientId);
+    this.cache.set(clientId, { until: this.now() + this.cacheTtlMs, client });
+    return client;
+  }
+  async fetchCimd(clientId) {
+    let url2;
+    try {
+      url2 = new URL(clientId);
+    } catch {
+      throw new ClientError("invalid_client", "client_id is not a valid URL");
+    }
+    let doc;
+    try {
+      const response = await this.fetchFn(url2, {
+        headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(CIMD_TIMEOUT_MS),
+        redirect: "error"
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      doc = await response.json();
+    } catch (error2) {
+      throw new ClientError(
+        "invalid_client",
+        `could not fetch the client metadata document: ${error2 instanceof Error ? error2.message : String(error2)}`
+      );
+    }
+    if (doc.client_id !== clientId) {
+      throw new ClientError(
+        "invalid_client",
+        "client metadata document does not name itself as client_id"
+      );
+    }
+    const redirectUris = doc.redirect_uris;
+    if (!Array.isArray(redirectUris) || !redirectUris.every(isHttpUrl)) {
+      throw new ClientError(
+        "invalid_client",
+        "client metadata document has no valid redirect_uris"
+      );
+    }
+    return {
+      clientId,
+      kind: "cimd",
+      redirectUris,
+      clientName: typeof doc.client_name === "string" ? doc.client_name : void 0,
+      // The document is self-asserted; the host of its URL is what the user can trust.
+      displayHost: url2.host
+    };
+  }
+};
+function isHttpUrl(value) {
+  if (typeof value !== "string") return false;
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" || u.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+function redirectUriAllowed(requested, registered) {
+  let req;
+  try {
+    req = new URL(requested);
+  } catch {
+    return false;
+  }
+  if (req.hash) return false;
+  for (const candidate of registered) {
+    if (candidate === requested) return true;
+    let reg;
+    try {
+      reg = new URL(candidate);
+    } catch {
+      continue;
+    }
+    if (isLoopbackHost(reg.hostname) && reg.hostname === req.hostname && reg.protocol === req.protocol && reg.pathname === req.pathname && reg.search === req.search) {
+      return true;
+    }
+  }
+  return false;
+}
+function isLoopbackHost(hostname) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]" || hostname === "::1";
+}
+
+// src/http/oauth/crypto.ts
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash as createHash2,
+  randomBytes,
+  timingSafeEqual
+} from "node:crypto";
+var KeyRing = class _KeyRing {
+  keys;
+  constructor(keys) {
+    if (keys.length === 0) throw new Error("KeyRing needs at least one key");
+    this.keys = keys.map((key) => {
+      if (key.length !== 32) throw new Error("token keys must be 32 bytes (AES-256)");
+      return { kid: createHash2("sha256").update(key).digest("base64url").slice(0, 8), key };
+    });
+  }
+  /**
+   * Parses NBAI_TOKEN_KEY: one or more base64/base64url 32-byte keys separated by commas,
+   * current key first. Without the variable a random key is generated, which is fine for
+   * local runs but means tokens die with the process (and are unreadable by other instances).
+   */
+  static fromEnv(value) {
+    const parts = (value ?? "").split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length === 0) return { ring: new _KeyRing([randomBytes(32)]), ephemeral: true };
+    return {
+      ring: new _KeyRing(
+        parts.map((p, i) => {
+          const key = Buffer.from(p, "base64");
+          if (key.length !== 32) {
+            throw new Error(
+              `NBAI_TOKEN_KEY entry ${i + 1} must decode to 32 bytes (got ${key.length})`
+            );
+          }
+          return key;
+        })
+      ),
+      ephemeral: false
+    };
+  }
+  seal(kind, payload, ttlSeconds, now = nowSeconds()) {
+    const { kid, key } = this.keys[0];
+    const body = { ...payload, iat: now };
+    if (ttlSeconds !== void 0) body.exp = now + ttlSeconds;
+    const iv = randomBytes(12);
+    const cipher = createCipheriv("aes-256-gcm", key, iv);
+    cipher.setAAD(Buffer.from(`${kind}.${kid}`));
+    const ciphertext = Buffer.concat([cipher.update(JSON.stringify(body), "utf8"), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return ["v1", kid, b64(iv), b64(ciphertext), b64(tag)].join(".");
+  }
+  /** Returns the payload, or undefined when the token is malformed, tampered, of another kind, or expired. */
+  open(kind, token, now = nowSeconds()) {
+    const parts = token.split(".");
+    if (parts.length !== 5 || parts[0] !== "v1") return void 0;
+    const [, kid, ivB, ctB, tagB] = parts;
+    const entry = this.keys.find((k) => k.kid === kid);
+    if (!entry) return void 0;
+    try {
+      const decipher = createDecipheriv("aes-256-gcm", entry.key, Buffer.from(ivB, "base64url"));
+      decipher.setAAD(Buffer.from(`${kind}.${kid}`));
+      decipher.setAuthTag(Buffer.from(tagB, "base64url"));
+      const plain = Buffer.concat([
+        decipher.update(Buffer.from(ctB, "base64url")),
+        decipher.final()
+      ]);
+      const payload = JSON.parse(plain.toString("utf8"));
+      if (typeof payload.exp === "number" && payload.exp <= now) return void 0;
+      return payload;
+    } catch {
+      return void 0;
+    }
+  }
+};
+function nowSeconds() {
+  return Math.floor(Date.now() / 1e3);
+}
+function b64(bytes) {
+  return Buffer.from(bytes).toString("base64url");
+}
+function verifyPkceS256(codeVerifier, codeChallenge) {
+  if (codeVerifier.length < 43 || codeVerifier.length > 128) return false;
+  const digest = Buffer.from(
+    createHash2("sha256").update(codeVerifier, "ascii").digest("base64url")
+  );
+  const expected = Buffer.from(codeChallenge);
+  return digest.length === expected.length && timingSafeEqual(digest, expected);
+}
+
+// src/http/oauth/page.ts
+function escapeHtml(value) {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
+var STYLE = `
+  body { font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: #1a1a1a; background: #f6f7f9; margin: 0; }
+  main { max-width: 34rem; margin: 6vh auto; background: #fff; border: 1px solid #e3e5e8; border-radius: 12px; padding: 2rem; }
+  h1 { font-size: 1.35rem; margin: 0 0 0.5rem; }
+  p { margin: 0.5rem 0; }
+  .muted { color: #5c6470; font-size: 0.92rem; }
+  .app { background: #f0f3ff; border-radius: 8px; padding: 0.75rem 1rem; margin: 1rem 0; }
+  label { display: block; font-weight: 600; margin-top: 1rem; }
+  input[type=password] { width: 100%; box-sizing: border-box; font: inherit; padding: 0.6rem 0.7rem; border: 1px solid #c8ccd2; border-radius: 8px; margin-top: 0.35rem; }
+  button { font: inherit; font-weight: 600; margin-top: 1.25rem; padding: 0.65rem 1.2rem; border: 0; border-radius: 8px; background: #1f5eff; color: #fff; cursor: pointer; }
+  .error { background: #fff1f0; color: #a8071a; border: 1px solid #ffccc7; border-radius: 8px; padding: 0.6rem 0.9rem; margin-top: 1rem; }
+  code { background: #f0f1f3; padding: 0.1rem 0.3rem; border-radius: 4px; }
+`;
+function renderSignInPage(o) {
+  const app = o.appName ? `${escapeHtml(o.appName)} (${escapeHtml(o.appHost)})` : escapeHtml(o.appHost);
+  const loopbackNote = o.redirectIsLoopback ? `<p class="muted">The redirect goes to an application on your own computer (<code>${escapeHtml(o.redirectHost)}</code>). Continue only if you started this sign-in yourself.</p>` : `<p class="muted">After sign-in your browser returns to <code>${escapeHtml(o.redirectHost)}</code>.</p>`;
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Connect NextBillion.ai</title><style>${STYLE}</style></head>
+<body><main>
+<h1>Connect NextBillion.ai</h1>
+<div class="app">Application asking for access: <strong>${app}</strong></div>
+${loopbackNote}
+<p>Paste your NextBillion.ai API key. It is checked once with the API (a request that returns no result and is not billed), sealed into the token handed back to the application, and <strong>never stored</strong> by this server. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
+${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ""}
+<form method="post" action="" autocomplete="off">
+<input type="hidden" name="request" value="${escapeHtml(o.requestToken)}">
+<label for="api_key">API key</label>
+<input id="api_key" name="api_key" type="password" required minlength="16" maxlength="128" autocomplete="off" spellcheck="false" autofocus>
+<button type="submit">Connect</button>
+</form>
+<p class="muted">Don't have a key? Get one at <a href="https://console.nextbillion.ai" rel="noopener">console.nextbillion.ai</a> or email support@nextbillion.ai.</p>
+</main></body></html>`;
+}
+function renderErrorPage(title, detail) {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>${escapeHtml(title)}</title><style>${STYLE}</style></head>
+<body><main><h1>${escapeHtml(title)}</h1><p>${escapeHtml(detail)}</p>
+<p class="muted">Close this window and start the connection again from your application.</p></main></body></html>`;
+}
+
+// src/http/oauth/server.ts
+var DEFAULT_TTL = {
+  /** The sign-in page may stay open this long before the form must be reloaded. */
+  request: 15 * 60,
+  code: 2 * 60,
+  access: 60 * 60,
+  refresh: 30 * 24 * 60 * 60
+};
+var OAUTH_PATHS = {
+  metadata: "/.well-known/oauth-authorization-server",
+  authorize: "/oauth/authorize",
+  token: "/oauth/token",
+  register: "/oauth/register"
+};
+var NO_STORE = { "cache-control": "no-store", pragma: "no-cache" };
+var AuthorizationServer = class {
+  constructor(options) {
+    this.options = options;
+    this.issuer = options.issuerUrl.href.replace(/\/$/, "");
+    this.resource = options.resourceUrl.href.replace(/\/$/, "");
+    this.ttl = { ...DEFAULT_TTL, ...options.ttl };
+    this.now = options.now ?? nowSeconds;
+    this.clients = new ClientResolver({ keyRing: options.keyRing, fetchFn: options.fetchFn });
+    this.verifier = { verifyAccessToken: (token) => this.verifyAccessToken(token) };
+  }
+  options;
+  issuer;
+  resource;
+  clients;
+  verifier;
+  ttl;
+  now;
+  bareKeys = new ApiKeyVerifier();
+  /** RFC 8414 document. */
+  metadata() {
+    return {
+      issuer: this.issuer,
+      authorization_endpoint: this.issuer + OAUTH_PATHS.authorize,
+      token_endpoint: this.issuer + OAUTH_PATHS.token,
+      registration_endpoint: this.issuer + OAUTH_PATHS.register,
+      scopes_supported: [API_SCOPE],
+      response_types_supported: ["code"],
+      response_modes_supported: ["query"],
+      grant_types_supported: ["authorization_code", "refresh_token"],
+      token_endpoint_auth_methods_supported: ["none"],
+      code_challenge_methods_supported: ["S256"],
+      client_id_metadata_document_supported: true,
+      authorization_response_iss_parameter_supported: true,
+      service_documentation: "https://github.com/nextbillion-ai/nextbillion-mcp#readme"
+    };
+  }
+  /** Routes the request if it is one of ours; `undefined` means "not an OAuth route". */
+  async handle(request) {
+    const path = new URL(request.url).pathname.replace(/\/+$/, "");
+    switch (path) {
+      case OAUTH_PATHS.metadata:
+        return this.handleMetadata(request);
+      case OAUTH_PATHS.register:
+        return this.handleRegister(request);
+      case OAUTH_PATHS.authorize:
+        return request.method === "POST" ? this.handleAuthorizeSubmit(request) : this.handleAuthorize(request);
+      case OAUTH_PATHS.token:
+        return this.handleToken(request);
+      default:
+        return void 0;
+    }
+  }
+  // ── access tokens ────────────────────────────────────────────────────────────
+  async verifyAccessToken(token) {
+    const payload = this.options.keyRing.open("access", token, this.now());
+    if (payload && typeof payload.k === "string") {
+      return {
+        token,
+        clientId: typeof payload.c === "string" ? payload.c : "unknown",
+        scopes: [API_SCOPE],
+        expiresAt: payload.exp,
+        resource: new URL(this.resource),
+        extra: { apiKey: payload.k, kind: "oauth" }
+      };
+    }
+    if (token.startsWith("v1.")) {
+      throw new OAuthError(
+        OAuthErrorCode.InvalidToken,
+        "The access token is invalid or has expired"
+      );
+    }
+    return this.bareKeys.verifyAccessToken(token);
+  }
+  // ── discovery & registration ────────────────────────────────────────────────
+  handleMetadata(request) {
+    const cors = corsHeaders();
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return new Response(null, { status: 405, headers: { ...cors, allow: "GET, OPTIONS" } });
+    }
+    return json(this.metadata(), 200, { ...cors, "cache-control": "public, max-age=300" });
+  }
+  async handleRegister(request) {
+    const cors = corsHeaders();
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (request.method !== "POST") {
+      return new Response(null, { status: 405, headers: { ...cors, allow: "POST, OPTIONS" } });
+    }
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return oauthError("invalid_client_metadata", "Request body must be JSON", 400, cors);
+    }
+    try {
+      return json(this.clients.register(body), 201, { ...cors, ...NO_STORE });
+    } catch (error2) {
+      if (error2 instanceof ClientError) return oauthError(error2.code, error2.message, 400, cors);
+      throw error2;
+    }
+  }
+  // ── authorization endpoint ──────────────────────────────────────────────────
+  async handleAuthorize(request) {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return new Response(null, { status: 405, headers: { allow: "GET, POST" } });
+    }
+    const q = new URL(request.url).searchParams;
+    const get = (name) => q.get(name) ?? void 0;
+    const clientId = get("client_id");
+    const redirectUri = get("redirect_uri");
+    if (!clientId || !redirectUri) {
+      return html(
+        renderErrorPage("Invalid request", "client_id and redirect_uri are required."),
+        400
+      );
+    }
+    let client;
+    try {
+      client = await this.clients.resolve(clientId);
+    } catch (error2) {
+      const message = error2 instanceof ClientError ? error2.message : "unknown client";
+      return html(renderErrorPage("Unknown application", message), 400);
+    }
+    if (!redirectUriAllowed(redirectUri, client.redirectUris)) {
+      return html(
+        renderErrorPage("Invalid request", "redirect_uri is not registered for this application."),
+        400
+      );
+    }
+    const redirectError = (code, description) => redirect(
+      withParams(redirectUri, {
+        error: code,
+        error_description: description,
+        state: get("state"),
+        iss: this.issuer
+      })
+    );
+    if (get("response_type") !== "code")
+      return redirectError("unsupported_response_type", "response_type must be code");
+    const challenge = get("code_challenge");
+    if (!challenge || get("code_challenge_method") !== "S256") {
+      return redirectError("invalid_request", "PKCE with code_challenge_method=S256 is required");
+    }
+    const resource = get("resource");
+    if (resource && resource.replace(/\/$/, "") !== this.resource) {
+      return redirectError("invalid_target", `resource must be ${this.resource}`);
+    }
+    const scope = get("scope");
+    if (scope && scope.split(" ").some((s) => s && s !== API_SCOPE && s !== "offline_access")) {
+      return redirectError("invalid_scope", `supported scopes: ${API_SCOPE}`);
+    }
+    const requestToken = this.options.keyRing.seal(
+      "code",
+      { st: "req", c: client.clientId, ru: redirectUri, ch: challenge, s: get("state") },
+      this.ttl.request,
+      this.now()
+    );
+    return html(
+      renderSignInPage({
+        appHost: client.displayHost,
+        appName: client.clientName,
+        redirectHost: new URL(redirectUri).host,
+        redirectIsLoopback: isLoopbackHost(new URL(redirectUri).hostname),
+        requestToken
+      })
+    );
+  }
+  async handleAuthorizeSubmit(request) {
+    const form = await readForm(request);
+    if (!form) return html(renderErrorPage("Invalid request", "Expected a form submission."), 400);
+    const req = this.options.keyRing.open("code", form.get("request") ?? "", this.now());
+    if (!req || req.st !== "req" || typeof req.ru !== "string" || typeof req.c !== "string" || typeof req.ch !== "string") {
+      return html(renderErrorPage("Sign-in expired", "This sign-in page is no longer valid."), 400);
+    }
+    const redirectUri = req.ru;
+    const state = typeof req.s === "string" ? req.s : void 0;
+    const apiKey = (form.get("api_key") ?? "").trim();
+    const again = async (error2) => {
+      let client;
+      try {
+        client = await this.clients.resolve(req.c);
+      } catch {
+        return html(
+          renderErrorPage("Unknown application", "The application could not be verified."),
+          400
+        );
+      }
+      return html(
+        renderSignInPage({
+          appHost: client.displayHost,
+          appName: client.clientName,
+          redirectHost: new URL(redirectUri).host,
+          redirectIsLoopback: isLoopbackHost(new URL(redirectUri).hostname),
+          requestToken: form.get("request") ?? "",
+          error: error2
+        }),
+        400
+      );
+    };
+    if (!ApiKeyVerifier.PATTERN.test(apiKey))
+      return again("That does not look like a NextBillion.ai API key.");
+    if (this.options.probeApiKey) {
+      const probe = await this.options.probeApiKey(apiKey);
+      if (probe === "invalid") {
+        return again(
+          "NextBillion.ai does not recognise this key. Check it in the console and try again."
+        );
+      }
+      if (probe === "restricted") {
+        return again(
+          "This key has IP or origin restrictions that reject requests from the hosted server. Add the server address shown in the documentation to the key's allowlist, or use the local version."
+        );
+      }
+      if (probe === "unavailable") {
+        return again(
+          "Could not reach NextBillion.ai to check the key. Please try again in a moment."
+        );
+      }
+    }
+    const code = this.options.keyRing.seal(
+      "code",
+      { st: "code", c: req.c, ru: redirectUri, ch: req.ch, k: apiKey },
+      this.ttl.code,
+      this.now()
+    );
+    return redirect(withParams(redirectUri, { code, state, iss: this.issuer }));
+  }
+  // ── token endpoint ──────────────────────────────────────────────────────────
+  async handleToken(request) {
+    const cors = corsHeaders();
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (request.method !== "POST") {
+      return new Response(null, { status: 405, headers: { ...cors, allow: "POST, OPTIONS" } });
+    }
+    const form = await readForm(request);
+    if (!form) {
+      return oauthError(
+        "invalid_request",
+        "Body must be application/x-www-form-urlencoded",
+        400,
+        cors
+      );
+    }
+    const grant = form.get("grant_type");
+    const now = this.now();
+    if (grant === "authorization_code") {
+      const code = this.options.keyRing.open("code", form.get("code") ?? "", now);
+      if (!code || code.st !== "code" || typeof code.k !== "string") {
+        return oauthError(
+          "invalid_grant",
+          "The authorization code is invalid or has expired",
+          400,
+          cors
+        );
+      }
+      const clientId = form.get("client_id");
+      if (clientId && clientId !== code.c)
+        return oauthError("invalid_grant", "client_id does not match the code", 400, cors);
+      const redirectUri = form.get("redirect_uri");
+      if (redirectUri && redirectUri !== code.ru)
+        return oauthError("invalid_grant", "redirect_uri does not match the code", 400, cors);
+      const verifier = form.get("code_verifier");
+      if (!verifier || !verifyPkceS256(verifier, code.ch)) {
+        return oauthError("invalid_grant", "PKCE code_verifier does not match", 400, cors);
+      }
+      return json(this.issueTokens(code.k, code.c, now), 200, { ...cors, ...NO_STORE });
+    }
+    if (grant === "refresh_token") {
+      const refresh = this.options.keyRing.open("refresh", form.get("refresh_token") ?? "", now);
+      if (!refresh || typeof refresh.k !== "string") {
+        return oauthError(
+          "invalid_grant",
+          "The refresh token is invalid or has expired",
+          400,
+          cors
+        );
+      }
+      const clientId = form.get("client_id");
+      if (clientId && clientId !== refresh.c)
+        return oauthError("invalid_grant", "client_id does not match the token", 400, cors);
+      return json(this.issueTokens(refresh.k, refresh.c, now), 200, {
+        ...cors,
+        ...NO_STORE
+      });
+    }
+    return oauthError(
+      "unsupported_grant_type",
+      "grant_type must be authorization_code or refresh_token",
+      400,
+      cors
+    );
+  }
+  issueTokens(apiKey, clientId, now) {
+    return {
+      access_token: this.options.keyRing.seal(
+        "access",
+        { k: apiKey, c: clientId, r: this.resource },
+        this.ttl.access,
+        now
+      ),
+      token_type: "Bearer",
+      expires_in: this.ttl.access,
+      scope: API_SCOPE,
+      refresh_token: this.options.keyRing.seal(
+        "refresh",
+        { k: apiKey, c: clientId },
+        this.ttl.refresh,
+        now
+      )
+    };
+  }
+};
+function corsHeaders() {
+  return {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET, POST, OPTIONS",
+    "access-control-allow-headers": "content-type, mcp-protocol-version"
+  };
+}
+function json(body, status = 200, headers = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json", ...headers }
+  });
+}
+function html(body, status = 200) {
+  return new Response(body, {
+    status,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      ...NO_STORE,
+      "referrer-policy": "no-referrer",
+      "x-frame-options": "DENY",
+      "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'"
+    }
+  });
+}
+function oauthError(code, description, status, headers) {
+  return json({ error: code, error_description: description }, status, { ...headers, ...NO_STORE });
+}
+function redirect(location) {
+  return new Response(null, { status: 302, headers: { location, ...NO_STORE } });
+}
+function withParams(base, params) {
+  const url2 = new URL(base);
+  for (const [k, v] of Object.entries(params)) if (v !== void 0) url2.searchParams.set(k, v);
+  return url2.toString();
+}
+async function readForm(request) {
+  const type = request.headers.get("content-type") ?? "";
+  if (!type.startsWith("application/x-www-form-urlencoded")) return void 0;
+  return new URLSearchParams(await request.text());
+}
+
+// src/http/app.ts
+var DOCS_URL = "https://github.com/nextbillion-ai/nextbillion-mcp#readme";
+var JSON_HEADERS = { "content-type": "application/json", "cache-control": "no-store" };
+function createHttpApp(options) {
+  const authServer = options.oauth ? new AuthorizationServer({
+    issuerUrl: options.issuerUrl,
+    resourceUrl: options.publicUrl,
+    keyRing: options.oauth.keyRing,
+    probeApiKey: options.oauth.probeApiKey,
+    fetchFn: options.oauth.fetchFn
+  }) : void 0;
+  const verifier = options.verifier ?? authServer?.verifier ?? new ApiKeyVerifier();
+  const mcpPath = options.publicUrl.pathname || "/";
+  const resource = options.publicUrl.href.replace(/\/$/, "");
+  const resourceMetadataUrl = getOAuthProtectedResourceMetadataUrl(options.publicUrl);
+  const protectedTools = protectedToolNames(ALL_TOOLS);
+  const protectedResourceMetadata = {
+    resource,
+    authorization_servers: [options.issuerUrl.href.replace(/\/$/, "")],
+    bearer_methods_supported: ["header"],
+    scopes_supported: [API_SCOPE],
+    resource_name: "NextBillion.ai MCP",
+    resource_documentation: DOCS_URL
+  };
+  const handler = createMcpHandler((ctx) => {
+    const apiKey = apiKeyFromAuth(ctx.authInfo);
+    const nb = apiKey ? options.nbClientFactory(apiKey) : new UnauthenticatedNbClient();
+    return buildServer(nb, options.version);
+  });
+  return {
+    async fetch(request) {
+      const url2 = new URL(request.url);
+      const path = url2.pathname.replace(/\/+$/, "") || "/";
+      if (path === "/healthz") {
+        return json2({ status: "ok", name: "nextbillion-mcp", version: options.version });
+      }
+      if (path === "/.well-known/oauth-protected-resource") {
+        return wellKnown(request, protectedResourceMetadata);
+      }
+      if (authServer) {
+        const handled = await authServer.handle(request);
+        if (handled) return handled;
+      }
+      if (path !== mcpPath) {
+        return json2({ error: "not_found", mcp_endpoint: resource }, 404);
+      }
+      if (request.method === "GET" && (request.headers.get("accept") ?? "").includes("text/html")) {
+        return new Response(
+          `nextbillion-mcp ${options.version}
+
+This is an MCP server endpoint, not a web page. Add ${resource} to your MCP host (Claude, Claude Code, Cursor, Codex).
+Docs: ${DOCS_URL}
+`,
+          { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } }
+        );
+      }
+      const authorization = request.headers.get("authorization");
+      let authInfo;
+      if (authorization) {
+        try {
+          authInfo = await verifyBearerToken(authorization, { verifier, resourceMetadataUrl });
+        } catch (error2) {
+          return bearerAuthChallengeResponse(error2, { resourceMetadataUrl });
+        }
+      }
+      let parsedBody;
+      let forwarded = request;
+      if (request.method === "POST") {
+        const text = await request.text();
+        if (text.length > 0) {
+          try {
+            parsedBody = JSON.parse(text);
+          } catch {
+            return json2({ error: "invalid_request", error_description: "Body is not JSON" }, 400);
+          }
+        }
+        forwarded = new Request(request.url, {
+          method: "POST",
+          headers: request.headers,
+          body: text
+        });
+        if (!authInfo) {
+          const call = {
+            mcpMethod: request.headers.get("mcp-method"),
+            mcpName: request.headers.get("mcp-name"),
+            body: parsedBody
+          };
+          if (callsProtectedTool(call, protectedTools)) {
+            return authenticationRequired(
+              resourceMetadataUrl,
+              "This tool calls the NextBillion.ai API; sign in or send your API key as a bearer token."
+            );
+          }
+        }
+      }
+      return handler.fetch(forwarded, { authInfo, parsedBody });
+    },
+    close: () => handler.close()
+  };
+}
+function json2(body, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
+}
+function wellKnown(request, document) {
+  const cors = {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET, OPTIONS",
+    "access-control-allow-headers": "mcp-protocol-version, content-type"
+  };
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return new Response(null, { status: 405, headers: { ...cors, allow: "GET, OPTIONS" } });
+  }
+  return new Response(JSON.stringify(document), {
+    status: 200,
+    headers: {
+      ...cors,
+      "content-type": "application/json",
+      "cache-control": "public, max-age=300"
+    }
+  });
+}
+
+// src/http/node-server.ts
+init_log();
+import { createServer } from "node:http";
+import { Readable } from "node:stream";
+function startHttpServer(app, port) {
+  const server = createServer((req, res) => {
+    void handle(app, req, res);
+  });
+  server.keepAliveTimeout = 65e3;
+  server.headersTimeout = 7e4;
+  server.requestTimeout = 3e5;
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, () => {
+      server.off("error", reject);
+      resolve(server);
+    });
+  });
+}
+async function handle(app, req, res) {
+  const started = Date.now();
+  const method = req.method ?? "GET";
+  const path = req.url ?? "/";
+  try {
+    const response = await app.fetch(toWebRequest(req));
+    res.statusCode = response.status;
+    response.headers.forEach((value, name) => res.setHeader(name, value));
+    if (response.body) {
+      Readable.fromWeb(response.body).pipe(res);
+      res.on("close", () => {
+        logRequest(method, path, response.status, started);
+      });
+    } else {
+      res.end();
+      logRequest(method, path, response.status, started);
+    }
+  } catch (error2) {
+    logError(`${method} ${path} failed`, error2);
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ error: "server_error" }));
+    } else {
+      res.destroy();
+    }
+  }
+}
+function toWebRequest(req) {
+  const host = req.headers.host ?? "localhost";
+  const proto = firstValue(req.headers["x-forwarded-proto"]) ?? "http";
+  const url2 = new URL(req.url ?? "/", `${proto}://${host}`);
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (value === void 0) continue;
+    if (Array.isArray(value)) for (const v of value) headers.append(name, v);
+    else headers.set(name, value);
+  }
+  const method = req.method ?? "GET";
+  const hasBody = method !== "GET" && method !== "HEAD";
+  return new Request(url2, {
+    method,
+    headers,
+    body: hasBody ? Readable.toWeb(req) : void 0,
+    // Required by undici when the body is a stream.
+    ...hasBody ? { duplex: "half" } : {}
+  });
+}
+function firstValue(value) {
+  return Array.isArray(value) ? value[0] : value;
+}
+function logRequest(method, path, status, started) {
+  logInfo(`${method} ${path.split("?")[0]} ${status} ${Date.now() - started}ms`);
+}
+
+// src/http/oauth/probe.ts
+var DEFAULT_KEY_CHECK_PATH = "/h/geocode";
+var RESTRICTION_MESSAGES = [/ip not allowed/i, /restricted sources/i, /mobile app not allowed/i];
+async function probeApiKey(checkUrl, apiKey, fetchFn = fetch, timeoutMs = 8e3) {
+  const url2 = new URL(checkUrl);
+  url2.searchParams.set("key", apiKey);
+  try {
+    const response = await fetchFn(url2, { method: "GET", signal: AbortSignal.timeout(timeoutMs) });
+    if (response.status === 401) return "invalid";
+    if (response.status === 403) {
+      const body = await response.text().catch(() => "");
+      return RESTRICTION_MESSAGES.some((re) => re.test(body)) ? "restricted" : "valid";
+    }
+    if (response.status >= 500) return "unavailable";
+    return "valid";
+  } catch {
+    return "unavailable";
+  }
+}
+function defaultKeyCheckUrl(baseUrl) {
+  return new URL(DEFAULT_KEY_CHECK_PATH, baseUrl.replace(/\/+$/, "") + "/").toString();
+}
+
 // src/index.ts
-var pkg = true ? { version: "0.3.2" } : createRequire(import.meta.url)("../package.json");
+init_log();
+var pkg = true ? { version: "0.4.0" } : createRequire(import.meta.url)("../package.json");
 function main() {
   const args = process.argv.slice(2);
   if (args.includes("--version") || args.includes("-v")) {
@@ -23106,16 +26086,31 @@ function main() {
       `${SERVER_NAME} ${pkg.version} \u2014 MCP server for NextBillion.ai location APIs
 
 Runs as an MCP stdio server; configure it in your MCP client, not by hand.
+With --http it serves Streamable HTTP instead (hosted mode): callers authenticate per
+request with \`Authorization: Bearer <API key>\`; NBAI_API_KEY is ignored.
 
-Environment variables:
+Environment variables (stdio mode):
   NBAI_API_KEY      (required) NextBillion.ai API key
   NBAI_BASE_URL     (optional) API base URL, default https://api.nextbillion.io
   NBAI_TIMEOUT_MS   (optional) per-request timeout, default 30000
   NBAI_IMAGE_DIR    (optional) also save rendered maps to this absolute directory, or
                     "tmp" for the OS temp dir; unset = nothing is written to disk
   NBAI_DOCS_INDEX   (optional) path to an alternative documentation index file
+Environment variables (--http mode):
+  PORT              (optional) TCP port, default 8080
+  NBAI_PUBLIC_URL   (optional) URL users enter, default https://mcp.nextbillion.io
+  NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL
+  NBAI_KEY_CHECK_URL (optional) gateway URL used to check pasted keys at sign-in,
+                    default <NBAI_BASE_URL>/h/geocode (an unbilled request)
+  NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;
+                    comma-separated, current first, to rotate
+  NBAI_BASE_URL, NBAI_TIMEOUT_MS as above
 `
     );
+    return;
+  }
+  if (args.includes("--http")) {
+    void serveHttp();
     return;
   }
   let config2;
@@ -23137,10 +26132,65 @@ Environment variables:
   const imageDir = resolveImageDir();
   if (imageDir.warning) logError(imageDir.warning);
   else if (imageDir.dir) logInfo(`rendered map images will also be saved to ${imageDir.dir}`);
-  const handle = serveStdio(() => buildServer(nb, pkg.version));
+  const handle2 = serveStdio(() => buildServer(nb, pkg.version));
   logInfo(`${SERVER_NAME} ${pkg.version} listening on stdio`);
   const shutdown = () => {
-    void handle.close().finally(() => process.exit(0));
+    void handle2.close().finally(() => process.exit(0));
+  };
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+}
+async function serveHttp() {
+  let config2;
+  try {
+    config2 = loadHttpConfig();
+  } catch (error2) {
+    if (error2 instanceof ConfigError) {
+      logError(error2.message);
+      process.exitCode = 1;
+      return;
+    }
+    throw error2;
+  }
+  if (process.env.NBAI_API_KEY) {
+    logError("NBAI_API_KEY is ignored in --http mode: callers send their own key per request");
+  }
+  if (process.env.NBAI_IMAGE_DIR) {
+    logError("NBAI_IMAGE_DIR is ignored in --http mode: a hosted server writes nothing to disk");
+    delete process.env.NBAI_IMAGE_DIR;
+  }
+  let keys;
+  try {
+    keys = KeyRing.fromEnv(process.env.NBAI_TOKEN_KEY);
+  } catch (error2) {
+    logError(error2 instanceof Error ? error2.message : String(error2));
+    process.exitCode = 1;
+    return;
+  }
+  if (keys.ephemeral) {
+    logError(
+      "NBAI_TOKEN_KEY is not set: using a random key, so tokens will not survive a restart and other instances cannot read them. Set a 32-byte base64 key for any real deployment."
+    );
+  }
+  const app = createHttpApp({
+    version: pkg.version,
+    publicUrl: config2.publicUrl,
+    issuerUrl: config2.issuerUrl,
+    nbClientFactory: (apiKey) => new NbClient({ apiKey, baseUrl: config2.baseUrl, timeoutMs: config2.timeoutMs }),
+    oauth: {
+      keyRing: keys.ring,
+      // Pasted keys are checked with an unbilled gateway request (see oauth/probe.ts);
+      // NBAI_KEY_CHECK_URL overrides the endpoint.
+      probeApiKey: (apiKey) => probeApiKey(process.env.NBAI_KEY_CHECK_URL || defaultKeyCheckUrl(config2.baseUrl), apiKey)
+    }
+  });
+  const server = await startHttpServer(app, config2.port);
+  logInfo(
+    `${SERVER_NAME} ${pkg.version} listening on http://0.0.0.0:${config2.port}${config2.publicUrl.pathname || "/"} (public URL ${config2.publicUrl.href})`
+  );
+  const shutdown = () => {
+    server.close();
+    void app.close().finally(() => process.exit(0));
   };
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
@@ -23148,7 +26198,7 @@ Environment variables:
 main();
 /*! Bundled license information:
 
-@modelcontextprotocol/server/dist/src-CX2iR2pK.mjs:
+@modelcontextprotocol/server/dist/src-Cqbh3MYc.mjs:
   (*!
   * content-type
   * Copyright(c) 2015 Douglas Christopher Wilson
