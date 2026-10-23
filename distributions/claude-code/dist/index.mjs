@@ -25464,7 +25464,7 @@ function renderSignInPage(o) {
 <h1>Connect NextBillion.ai</h1>
 <div class="app">Application asking for access: <strong>${app}</strong></div>
 ${loopbackNote}
-<p>Paste your NextBillion.ai API key. It is sealed into the token handed back to the application and <strong>never stored</strong> by this server; an invalid key shows up as an error on the first request. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
+<p>Paste your NextBillion.ai API key. It is checked once with the API (a request that returns no result and is not billed), sealed into the token handed back to the application, and <strong>never stored</strong> by this server. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
 ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ""}
 <form method="post" action="" autocomplete="off">
 <input type="hidden" name="request" value="${escapeHtml(o.requestToken)}">
@@ -26050,18 +26050,26 @@ function logRequest(method, path, status, started) {
 }
 
 // src/http/oauth/probe.ts
+var DEFAULT_KEY_CHECK_PATH = "/h/geocode";
+var RESTRICTION_MESSAGES = [/ip not allowed/i, /restricted sources/i, /mobile app not allowed/i];
 async function probeApiKey(checkUrl, apiKey, fetchFn = fetch, timeoutMs = 8e3) {
   const url2 = new URL(checkUrl);
   url2.searchParams.set("key", apiKey);
   try {
     const response = await fetchFn(url2, { method: "GET", signal: AbortSignal.timeout(timeoutMs) });
     if (response.status === 401) return "invalid";
-    if (response.status === 403) return "restricted";
+    if (response.status === 403) {
+      const body = await response.text().catch(() => "");
+      return RESTRICTION_MESSAGES.some((re) => re.test(body)) ? "restricted" : "valid";
+    }
     if (response.status >= 500) return "unavailable";
     return "valid";
   } catch {
     return "unavailable";
   }
+}
+function defaultKeyCheckUrl(baseUrl) {
+  return new URL(DEFAULT_KEY_CHECK_PATH, baseUrl.replace(/\/+$/, "") + "/").toString();
 }
 
 // src/index.ts
@@ -26092,7 +26100,8 @@ Environment variables (--http mode):
   PORT              (optional) TCP port, default 8080
   NBAI_PUBLIC_URL   (optional) URL users enter, default https://mcp.nextbillion.io
   NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL
-  NBAI_KEY_CHECK_URL (optional) auth-only gateway URL used to check pasted keys at sign-in
+  NBAI_KEY_CHECK_URL (optional) gateway URL used to check pasted keys at sign-in,
+                    default <NBAI_BASE_URL>/h/geocode (an unbilled request)
   NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;
                     comma-separated, current first, to rotate
   NBAI_BASE_URL, NBAI_TIMEOUT_MS as above
@@ -26170,9 +26179,9 @@ async function serveHttp() {
     nbClientFactory: (apiKey) => new NbClient({ apiKey, baseUrl: config2.baseUrl, timeoutMs: config2.timeoutMs }),
     oauth: {
       keyRing: keys.ring,
-      // Pre-check pasted keys only against a dedicated auth-only gateway endpoint; ordinary
-      // API calls are billed and SKU-gated, so there is no probe without this variable.
-      probeApiKey: process.env.NBAI_KEY_CHECK_URL ? (apiKey) => probeApiKey(process.env.NBAI_KEY_CHECK_URL, apiKey) : void 0
+      // Pasted keys are checked with an unbilled gateway request (see oauth/probe.ts);
+      // NBAI_KEY_CHECK_URL overrides the endpoint.
+      probeApiKey: (apiKey) => probeApiKey(process.env.NBAI_KEY_CHECK_URL || defaultKeyCheckUrl(config2.baseUrl), apiKey)
     }
   });
   const server = await startHttpServer(app, config2.port);

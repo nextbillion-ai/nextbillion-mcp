@@ -10,9 +10,10 @@ Stdio mode, tools and schemas are unchanged.
 
 - **Built-in OAuth 2.1 authorization server** at `/oauth/authorize`, `/oauth/token`,
   `/oauth/register` plus `/.well-known/oauth-authorization-server`. Sign-in is a page where the
-  user pastes their NextBillion.ai API key once; the key is checked against the API (a
-  request the gateway rejects after authentication, so nothing is billed) and sealed into the
-  tokens. Hosts such as Claude, Claude Code, Cursor and Codex can now connect to the hosted
+  user pastes their NextBillion.ai API key once; the key is checked with an unbilled gateway
+  request (`GET /h/geocode` without a query: 401 means an unknown key regardless of the
+  customer's SKUs; a 403 naming IP/origin restrictions is reported as such) and sealed into
+  the tokens. Hosts such as Claude, Claude Code, Cursor and Codex can now connect to the hosted
   server with a browser sign-in and no local configuration.
 - **Stateless by design.** Authorization codes, access tokens (1 h), refresh tokens (30 d) and
   dynamically registered client ids are all encrypted payloads (AES-256-GCM, key from

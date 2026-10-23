@@ -1,14 +1,18 @@
 /**
- * Optional check of an API key at sign-in against a gateway endpoint that only
- * authenticates (no SKU, no billing, no forwarding): the gateway answers 204 for a valid key,
- * 401 for an unknown one and 403 when the key's IP allowlist or origin restrictions reject
- * the caller. The URL comes from NBAI_KEY_CHECK_URL; without it, sign-in accepts any
- * well-formed key and the first tool call surfaces an invalid key as a clear error instead.
+ * Checks a pasted API key against the NextBillion.ai gateway before a token is issued.
  *
- * Why not an ordinary API call: every documented endpoint is billed and gated by the
- * customer's SKUs, so a probe would cost money and fail for customers without that SKU.
+ * The probe is `GET /h/geocode?key=…` with no query: the gateway authenticates the key
+ * before it validates parameters or SKUs, so an unknown key gets 401 whatever the customer's
+ * subscription, while a known key fails later (400 missing parameter, or 403 "Service not
+ * enabled" when the customer lacks the geocoding SKU). Failed requests are not billed and
+ * serve no result. A 403 whose message names the key's IP or origin restrictions means the
+ * key is real but refuses requests from this server's address.
  */
 export type ApiKeyProbeResult = 'valid' | 'invalid' | 'restricted' | 'unavailable';
+
+export const DEFAULT_KEY_CHECK_PATH = '/h/geocode';
+
+const RESTRICTION_MESSAGES = [/ip not allowed/i, /restricted sources/i, /mobile app not allowed/i];
 
 export async function probeApiKey(
   checkUrl: string,
@@ -21,10 +25,17 @@ export async function probeApiKey(
   try {
     const response = await fetchFn(url, { method: 'GET', signal: AbortSignal.timeout(timeoutMs) });
     if (response.status === 401) return 'invalid';
-    if (response.status === 403) return 'restricted';
+    if (response.status === 403) {
+      const body = await response.text().catch(() => '');
+      return RESTRICTION_MESSAGES.some((re) => re.test(body)) ? 'restricted' : 'valid';
+    }
     if (response.status >= 500) return 'unavailable';
     return 'valid';
   } catch {
     return 'unavailable';
   }
+}
+
+export function defaultKeyCheckUrl(baseUrl: string): string {
+  return new URL(DEFAULT_KEY_CHECK_PATH, baseUrl.replace(/\/+$/, '') + '/').toString();
 }

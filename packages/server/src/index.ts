@@ -6,7 +6,7 @@ import { buildServer, SERVER_NAME } from './core/server.js';
 import { createHttpApp } from './http/app.js';
 import { startHttpServer } from './http/node-server.js';
 import { KeyRing } from './http/oauth/crypto.js';
-import { probeApiKey } from './http/oauth/probe.js';
+import { defaultKeyCheckUrl, probeApiKey } from './http/oauth/probe.js';
 import { logError, logInfo } from './log.js';
 import { NbClient } from './nbclient/client.js';
 
@@ -45,7 +45,8 @@ function main(): void {
         '  PORT              (optional) TCP port, default 8080\n' +
         '  NBAI_PUBLIC_URL   (optional) URL users enter, default https://mcp.nextbillion.io\n' +
         '  NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL\n' +
-        '  NBAI_KEY_CHECK_URL (optional) auth-only gateway URL used to check pasted keys at sign-in\n' +
+        '  NBAI_KEY_CHECK_URL (optional) gateway URL used to check pasted keys at sign-in,\n' +
+        '                    default <NBAI_BASE_URL>/h/geocode (an unbilled request)\n' +
         '  NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;\n' +
         '                    comma-separated, current first, to rotate\n' +
         '  NBAI_BASE_URL, NBAI_TIMEOUT_MS as above\n',
@@ -137,11 +138,10 @@ async function serveHttp(): Promise<void> {
       new NbClient({ apiKey, baseUrl: config.baseUrl, timeoutMs: config.timeoutMs }),
     oauth: {
       keyRing: keys.ring,
-      // Pre-check pasted keys only against a dedicated auth-only gateway endpoint; ordinary
-      // API calls are billed and SKU-gated, so there is no probe without this variable.
-      probeApiKey: process.env.NBAI_KEY_CHECK_URL
-        ? (apiKey) => probeApiKey(process.env.NBAI_KEY_CHECK_URL!, apiKey)
-        : undefined,
+      // Pasted keys are checked with an unbilled gateway request (see oauth/probe.ts);
+      // NBAI_KEY_CHECK_URL overrides the endpoint.
+      probeApiKey: (apiKey) =>
+        probeApiKey(process.env.NBAI_KEY_CHECK_URL || defaultKeyCheckUrl(config.baseUrl), apiKey),
     },
   });
   const server = await startHttpServer(app, config.port);

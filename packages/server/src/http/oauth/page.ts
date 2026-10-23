@@ -49,7 +49,7 @@ export function renderSignInPage(o: SignInPageOptions): string {
 <h1>Connect NextBillion.ai</h1>
 <div class="app">Application asking for access: <strong>${app}</strong></div>
 ${loopbackNote}
-<p>Paste your NextBillion.ai API key. It is sealed into the token handed back to the application and <strong>never stored</strong> by this server; an invalid key shows up as an error on the first request. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
+<p>Paste your NextBillion.ai API key. It is checked once with the API (a request that returns no result and is not billed), sealed into the token handed back to the application, and <strong>never stored</strong> by this server. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
 ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ''}
 <form method="post" action="" autocomplete="off">
 <input type="hidden" name="request" value="${escapeHtml(o.requestToken)}">
