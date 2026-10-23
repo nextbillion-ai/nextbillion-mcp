@@ -67,7 +67,7 @@ underlying API's coordinate-order conventions internally.
 
 Four tools answer questions about the APIs and SDKs from the official documentation without a network call: `search_documentation` returns ranked excerpts with a `source_url` to cite and the name of the tool that performs the operation, `get_documentation` returns one page or one section, `get_api_parameters` returns the request parameters of a REST endpoint as structured records (units only when the docs state them), and `list_documentation_topics` lists what is covered. The index (342 pages of docs.nextbillion.ai) ships inside the package and is rebuilt when the docs change; see `packages/server/docs/README.md`. Pages that exist on the site but not in the docs repository (solutions, apps, help, the Web Maps SDK v1) are not covered.
 
-## Hosted mode (preview, 0.4.0)
+## Hosted mode
 
 The same server can run as a remote MCP server over Streamable HTTP, so hosts connect to a
 URL instead of launching a local process:
@@ -117,6 +117,16 @@ returns the API's response to your client unchanged. The server does not collect
 transmit anything else: no conversation content beyond the tool arguments, no files, no
 device or usage information. The server does not query your client's memory, chat history
 or files.
+
+**Hosted mode (mcp.nextbillion.io).** When you use the hosted server instead of a local one,
+your API key is sent to it once at sign-in, checked against the NextBillion.ai API, and
+returned to your MCP host sealed inside encrypted tokens. On every tool call the server
+decrypts the token in memory, calls `api.nextbillion.io` with your key, and returns the
+response; it keeps no database, writes nothing to disk, and logs only method, path, status
+and duration (never headers, bodies, keys or tokens). Calls to the API come from the
+server's fixed address (published in the release notes) rather than from your machine, which
+matters only if your key has an IP allowlist. Revoke the hosted server's access at any time
+by resetting the key in the console.
 
 **Documentation tools.** The four documentation tools (`search_documentation`,
 `get_documentation`, `get_api_parameters` and `list_documentation_topics`) run fully

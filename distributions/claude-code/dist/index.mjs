@@ -26054,7 +26054,7 @@ async function probeApiKey(baseUrl, apiKey, fetchFn = fetch, timeoutMs = 8e3) {
 
 // src/index.ts
 init_log();
-var pkg = true ? { version: "0.3.2" } : createRequire(import.meta.url)("../package.json");
+var pkg = true ? { version: "0.4.0" } : createRequire(import.meta.url)("../package.json");
 function main() {
   const args = process.argv.slice(2);
   if (args.includes("--version") || args.includes("-v")) {

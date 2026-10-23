@@ -58,7 +58,22 @@ jobs:
           [ "$tag" = "$GITHUB_REF" ] && tag="sha-${GITHUB_SHA::7}"
           export DOCKER_CONFIG="$(mktemp -d)"
           NIP_TARGETS=asia-southeast1 nip -t "nextbillion-mcp:${tag}" .
-          echo "pushed asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp:${tag}"
+          image="asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp:${tag}"
+          echo "pushed ${image}"
+          echo "image=${image}" >> "$GITHUB_OUTPUT"
+        id: push
+      # Rolls the new image out to the hosted service (infrastructure is Terraform-managed in
+      # nextbillion-ai/nextbillion-infra; the image field there is ignored so this step owns it).
+      # Only release tags deploy; manual dispatch builds and pushes without deploying.
+      - name: Deploy to Cloud Run
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          gcloud run deploy nextbillion-mcp \
+            --project nextbillion-controlled --region asia-southeast1 \
+            --image "${{ steps.push.outputs.image }}" --quiet
+          url=$(gcloud run services describe nextbillion-mcp --project nextbillion-controlled --region asia-southeast1 --format 'value(status.url)')
+          for i in $(seq 1 30); do curl -fsS "$url/healthz" && break || sleep 2; done
+          curl -fsS https://mcp.nextbillion.io/healthz
 
   e2e:
     # Live-API smoke tests; needs the NBAI_API_KEY secret (sandbox key).

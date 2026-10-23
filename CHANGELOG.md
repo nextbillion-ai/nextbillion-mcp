@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased — 0.4.0 (hosted mode, part 2: sign-in)
+## 0.4.0 — 2026-10-24
+
+Hosted mode: the same server runs at https://mcp.nextbillion.io with a browser sign-in, so
+Claude, Claude Code, Cursor and Codex connect to a URL instead of launching a local process.
+Stdio mode, tools and schemas are unchanged.
+
+### Sign-in (OAuth authorization server)
 
 - **Built-in OAuth 2.1 authorization server** at `/oauth/authorize`, `/oauth/token`,
   `/oauth/register` plus `/.well-known/oauth-authorization-server`. Sign-in is a page where the
@@ -20,7 +26,7 @@
 - Access tokens from this server and bare API keys are both accepted as bearer tokens.
 - MCP SDK 2.0 → 2.3.1 (additive release; no behaviour change).
 
-## Unreleased — 0.4.0 (hosted mode, part 1)
+### Streamable HTTP server
 
 - **`--http` mode (Streamable HTTP).** The same server can run hosted: `nextbillion-mcp --http`
   listens on `PORT` (default 8080) and serves the MCP endpoint at the root of `NBAI_PUBLIC_URL`
