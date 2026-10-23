@@ -16,8 +16,11 @@ export interface AuthorizationServerOptions {
   /** The MCP server this authorization server protects (RFC 8707 `resource`). */
   resourceUrl: URL;
   keyRing: KeyRing;
-  /** Confirms an API key with the NextBillion.ai API before a token is issued for it. */
-  probeApiKey: (apiKey: string) => Promise<ApiKeyProbeResult>;
+  /**
+   * Optional check of the pasted key before a token is issued (see probe.ts). When absent,
+   * any well-formed key is accepted and an invalid one fails on the first API tool call.
+   */
+  probeApiKey?: (apiKey: string) => Promise<ApiKeyProbeResult>;
   fetchFn?: typeof fetch;
   now?: () => number;
   /** Lifetimes in seconds. */
@@ -279,15 +282,25 @@ export class AuthorizationServer {
 
     if (!ApiKeyVerifier.PATTERN.test(apiKey))
       return again('That does not look like a NextBillion.ai API key.');
-    const probe = await this.options.probeApiKey(apiKey);
-    if (probe === 'invalid')
-      return again(
-        'The NextBillion.ai API rejected this key. Check it in the console and try again.',
-      );
-    if (probe === 'unavailable')
-      return again(
-        'Could not reach the NextBillion.ai API to check the key. Please try again in a moment.',
-      );
+    if (this.options.probeApiKey) {
+      const probe = await this.options.probeApiKey(apiKey);
+      if (probe === 'invalid') {
+        return again(
+          'NextBillion.ai does not recognise this key. Check it in the console and try again.',
+        );
+      }
+      if (probe === 'restricted') {
+        return again(
+          'This key has IP or origin restrictions that reject requests from the hosted server. ' +
+            "Add the server address shown in the documentation to the key's allowlist, or use the local version.",
+        );
+      }
+      if (probe === 'unavailable') {
+        return again(
+          'Could not reach NextBillion.ai to check the key. Please try again in a moment.',
+        );
+      }
+    }
 
     const code = this.options.keyRing.seal(
       'code',

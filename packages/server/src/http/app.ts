@@ -38,7 +38,7 @@ export interface HttpAppOptions {
    */
   oauth?: {
     keyRing: KeyRing;
-    probeApiKey: (apiKey: string) => Promise<ApiKeyProbeResult>;
+    probeApiKey?: (apiKey: string) => Promise<ApiKeyProbeResult>;
     fetchFn?: typeof fetch;
   };
 }

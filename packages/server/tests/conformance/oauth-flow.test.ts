@@ -40,7 +40,7 @@ interface Harness {
   probes: string[];
 }
 
-function makeHarness(): Harness {
+function makeHarness(opts: { probe?: boolean } = {}): Harness {
   const keysUsed: string[] = [];
   const probes: string[] = [];
   const cimdFetch = (async (input: string | URL | Request) => {
@@ -59,10 +59,13 @@ function makeHarness(): Harness {
     },
     oauth: {
       keyRing: new KeyRing([randomBytes(32)]),
-      probeApiKey: async (key) => {
-        probes.push(key);
-        return key === GOOD_KEY ? 'valid' : 'invalid';
-      },
+      probeApiKey:
+        opts.probe === false
+          ? undefined
+          : async (key) => {
+              probes.push(key);
+              return key === GOOD_KEY ? 'valid' : 'invalid';
+            },
       fetchFn: cimdFetch,
     },
   });
@@ -140,7 +143,7 @@ describe('OAuth sign-in flow', () => {
       }),
     );
     expect(bad.status).toBe(400);
-    expect(await bad.text()).toContain('rejected this key');
+    expect(await bad.text()).toContain('does not recognise this key');
 
     const callback = await signInInBrowser(h, authorizationUrl, GOOD_KEY);
     expect(callback.origin + callback.pathname).toBe(redirectUrl);
@@ -257,6 +260,27 @@ describe('OAuth sign-in flow', () => {
       fetchFn: h.fetchFn,
     });
     expect(tokens.access_token).toBeTruthy();
+  });
+
+  it('accepts any well-formed key when no key check is configured', async () => {
+    const h = makeHarness({ probe: false });
+    open.push(h.app);
+    const metadata = await discoverAuthorizationServerMetadata('https://mcp.test', {
+      fetchFn: h.fetchFn,
+    });
+    const { authorizationUrl } = await startAuthorization('https://mcp.test', {
+      metadata,
+      clientInformation: { client_id: CLAUDE_CODE },
+      redirectUrl: 'http://localhost:31180/callback',
+      resource: PUBLIC_URL,
+    });
+    const callback = await signInInBrowser(
+      h,
+      authorizationUrl,
+      'some-other-well-formed-key-123456',
+    );
+    expect(callback.searchParams.get('code')).toBeTruthy();
+    expect(h.probes).toEqual([]);
   });
 
   it('never redirects to an unregistered redirect_uri', async () => {

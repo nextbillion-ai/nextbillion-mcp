@@ -25464,7 +25464,7 @@ function renderSignInPage(o) {
 <h1>Connect NextBillion.ai</h1>
 <div class="app">Application asking for access: <strong>${app}</strong></div>
 ${loopbackNote}
-<p>Paste your NextBillion.ai API key. The key is checked once with the API, sealed into the token handed back to the application, and <strong>never stored</strong> by this server. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
+<p>Paste your NextBillion.ai API key. It is sealed into the token handed back to the application and <strong>never stored</strong> by this server; an invalid key shows up as an error on the first request. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
 ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ""}
 <form method="post" action="" autocomplete="off">
 <input type="hidden" name="request" value="${escapeHtml(o.requestToken)}">
@@ -25699,15 +25699,24 @@ var AuthorizationServer = class {
     };
     if (!ApiKeyVerifier.PATTERN.test(apiKey))
       return again("That does not look like a NextBillion.ai API key.");
-    const probe = await this.options.probeApiKey(apiKey);
-    if (probe === "invalid")
-      return again(
-        "The NextBillion.ai API rejected this key. Check it in the console and try again."
-      );
-    if (probe === "unavailable")
-      return again(
-        "Could not reach the NextBillion.ai API to check the key. Please try again in a moment."
-      );
+    if (this.options.probeApiKey) {
+      const probe = await this.options.probeApiKey(apiKey);
+      if (probe === "invalid") {
+        return again(
+          "NextBillion.ai does not recognise this key. Check it in the console and try again."
+        );
+      }
+      if (probe === "restricted") {
+        return again(
+          "This key has IP or origin restrictions that reject requests from the hosted server. Add the server address shown in the documentation to the key's allowlist, or use the local version."
+        );
+      }
+      if (probe === "unavailable") {
+        return again(
+          "Could not reach NextBillion.ai to check the key. Please try again in a moment."
+        );
+      }
+    }
     const code = this.options.keyRing.seal(
       "code",
       { st: "code", c: req.c, ru: redirectUri, ch: req.ch, k: apiKey },
@@ -26041,12 +26050,13 @@ function logRequest(method, path, status, started) {
 }
 
 // src/http/oauth/probe.ts
-async function probeApiKey(baseUrl, apiKey, fetchFn = fetch, timeoutMs = 8e3) {
-  const url2 = new URL("/h/geocode", baseUrl.replace(/\/+$/, "") + "/");
+async function probeApiKey(checkUrl, apiKey, fetchFn = fetch, timeoutMs = 8e3) {
+  const url2 = new URL(checkUrl);
   url2.searchParams.set("key", apiKey);
   try {
     const response = await fetchFn(url2, { method: "GET", signal: AbortSignal.timeout(timeoutMs) });
-    if (response.status === 401 || response.status === 403) return "invalid";
+    if (response.status === 401) return "invalid";
+    if (response.status === 403) return "restricted";
     if (response.status >= 500) return "unavailable";
     return "valid";
   } catch {
@@ -26082,6 +26092,7 @@ Environment variables (--http mode):
   PORT              (optional) TCP port, default 8080
   NBAI_PUBLIC_URL   (optional) URL users enter, default https://mcp.nextbillion.io
   NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL
+  NBAI_KEY_CHECK_URL (optional) auth-only gateway URL used to check pasted keys at sign-in
   NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;
                     comma-separated, current first, to rotate
   NBAI_BASE_URL, NBAI_TIMEOUT_MS as above
@@ -26159,7 +26170,9 @@ async function serveHttp() {
     nbClientFactory: (apiKey) => new NbClient({ apiKey, baseUrl: config2.baseUrl, timeoutMs: config2.timeoutMs }),
     oauth: {
       keyRing: keys.ring,
-      probeApiKey: (apiKey) => probeApiKey(config2.baseUrl, apiKey)
+      // Pre-check pasted keys only against a dedicated auth-only gateway endpoint; ordinary
+      // API calls are billed and SKU-gated, so there is no probe without this variable.
+      probeApiKey: process.env.NBAI_KEY_CHECK_URL ? (apiKey) => probeApiKey(process.env.NBAI_KEY_CHECK_URL, apiKey) : void 0
     }
   });
   const server = await startHttpServer(app, config2.port);

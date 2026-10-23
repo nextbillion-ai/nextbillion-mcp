@@ -45,6 +45,7 @@ function main(): void {
         '  PORT              (optional) TCP port, default 8080\n' +
         '  NBAI_PUBLIC_URL   (optional) URL users enter, default https://mcp.nextbillion.io\n' +
         '  NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL\n' +
+        '  NBAI_KEY_CHECK_URL (optional) auth-only gateway URL used to check pasted keys at sign-in\n' +
         '  NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;\n' +
         '                    comma-separated, current first, to rotate\n' +
         '  NBAI_BASE_URL, NBAI_TIMEOUT_MS as above\n',
@@ -136,7 +137,11 @@ async function serveHttp(): Promise<void> {
       new NbClient({ apiKey, baseUrl: config.baseUrl, timeoutMs: config.timeoutMs }),
     oauth: {
       keyRing: keys.ring,
-      probeApiKey: (apiKey) => probeApiKey(config.baseUrl, apiKey),
+      // Pre-check pasted keys only against a dedicated auth-only gateway endpoint; ordinary
+      // API calls are billed and SKU-gated, so there is no probe without this variable.
+      probeApiKey: process.env.NBAI_KEY_CHECK_URL
+        ? (apiKey) => probeApiKey(process.env.NBAI_KEY_CHECK_URL!, apiKey)
+        : undefined,
     },
   });
   const server = await startHttpServer(app, config.port);
