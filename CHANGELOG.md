@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.3.3 — 2026-10-23
+
+Prepares the Claude Code plugin folder (`distributions/claude-code`) for Anthropic's plugin
+directory, whose validator now reads plugins straight from the GitHub repository and no
+longer accepts Desktop extensions (`.mcpb`). No tool or schema changes; same documentation
+snapshot as 0.3.2.
+
+- **Documentation index split into parts.** `data/docs-index.json` (7.5 MB) is now the
+  directory `data/docs-index/`: `manifest.json` plus `pages.json`, `parameters.json` and
+  chunk parts of at most 900 KiB, because the directory rejects any plugin file over 5 MiB.
+  The server reads the directory (or a legacy single file via `NBAI_DOCS_INDEX`) and
+  rebuilds the same in-memory index; `npm run docs:build-index` writes the new layout and
+  the plugin sync and `.mcpb` build copy the directory.
+- **Plugin folder gains a README and a LICENSE** (both required for listing), and
+  `plugin.json` gains `license`, `repository`, `keywords` and the directory listing URLs.
+- **API key via plugin user configuration.** The plugin now declares `nbai_api_key` in
+  `userConfig` (sensitive, required) and passes it as `${user_config.nbai_api_key}`; Claude
+  Code prompts for it when the plugin is enabled and keeps it in its credential store.
+  Reading `NBAI_API_KEY` from the user's environment is held for review by the directory.
+  Hosts that do not substitute `${user_config.*}` get a clear start-up error instead of an
+  invalid key.
+
 ## 0.3.2 — 2026-10-22
 
 Documentation tools: six fixes found while reproducing the knowledge-base evaluation runs

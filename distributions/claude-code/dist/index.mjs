@@ -5996,6 +5996,11 @@ function loadConfig(env = process.env) {
       "NBAI_API_KEY is not set. Get an API key at https://console.nextbillion.ai and expose it to the server, e.g. NBAI_API_KEY=<your key> npx nextbillion-mcp"
     );
   }
+  if (/^\$\{[^}]*\}$/.test(apiKey)) {
+    throw new ConfigError(
+      `NBAI_API_KEY holds the unexpanded placeholder ${apiKey}: this MCP host does not fill in plugin user configuration. Set NBAI_API_KEY to your key in the server configuration instead.`
+    );
+  }
   const timeoutMs = env.NBAI_TIMEOUT_MS ? Number(env.NBAI_TIMEOUT_MS) : DEFAULT_TIMEOUT_MS;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
     throw new ConfigError(`NBAI_TIMEOUT_MS must be a positive number, got: ${env.NBAI_TIMEOUT_MS}`);
@@ -7323,16 +7328,42 @@ var init_tokenizer = __esm({
 });
 
 // src/docs/store.ts
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { join as join3 } from "node:path";
 import { fileURLToPath } from "node:url";
 function defaultIndexPath() {
   const override = process.env.NBAI_DOCS_INDEX?.trim();
   if (override) return override;
-  for (const relative of ["../data/docs-index.json", "../../data/docs-index.json"]) {
+  for (const relative of [
+    "../data/docs-index",
+    "../../data/docs-index",
+    "../data/docs-index.json",
+    "../../data/docs-index.json"
+  ]) {
     const candidate = fileURLToPath(new URL(relative, import.meta.url));
     if (existsSync(candidate)) return candidate;
   }
-  throw new Error("documentation index data/docs-index.json not found next to the server");
+  throw new Error("documentation index data/docs-index not found next to the server");
+}
+function readDocsIndexFile(path) {
+  const manifestPath = statSync(path).isDirectory() ? join3(path, "manifest.json") : path;
+  const dir = statSync(path).isDirectory() ? path : join3(path, "..");
+  const parsed = readJson(manifestPath);
+  if ("layout" in parsed) {
+    if (parsed.layout !== "split-v1" || parsed.meta?.format !== 2) {
+      throw new Error(`unsupported documentation index layout in ${manifestPath}`);
+    }
+    return {
+      meta: parsed.meta,
+      pages: readJson(join3(dir, parsed.parts.pages)),
+      parameters: readJson(join3(dir, parsed.parts.parameters)),
+      chunks: parsed.parts.chunks.flatMap((part) => readJson(join3(dir, part)))
+    };
+  }
+  if (parsed.meta?.format !== 2) {
+    throw new Error(`unsupported documentation index format in ${manifestPath}`);
+  }
+  return parsed;
 }
 function buildDocsIndex(file) {
   const pages = new Map(file.pages.map((p) => [p.doc_id, p]));
@@ -7360,20 +7391,19 @@ function buildDocsIndex(file) {
   };
 }
 function loadDocsIndex(path = defaultIndexPath()) {
-  const file = JSON.parse(readFileSync(path, "utf8"));
-  if (file.meta?.format !== 2) throw new Error(`unsupported documentation index format in ${path}`);
-  return buildDocsIndex(file);
+  return buildDocsIndex(readDocsIndexFile(path));
 }
 function getDocsIndex() {
   cached2 ??= loadDocsIndex();
   return cached2;
 }
-var cached2;
+var readJson, cached2;
 var init_store = __esm({
   "src/docs/store.ts"() {
     "use strict";
     init_bm25();
     init_tokenizer();
+    readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
   }
 });
 
@@ -23094,7 +23124,7 @@ function extractApiMessage(bodyText) {
 }
 
 // src/index.ts
-var pkg = true ? { version: "0.3.2" } : createRequire(import.meta.url)("../package.json");
+var pkg = true ? { version: "0.3.3" } : createRequire(import.meta.url)("../package.json");
 function main() {
   const args = process.argv.slice(2);
   if (args.includes("--version") || args.includes("-v")) {
@@ -23113,7 +23143,7 @@ Environment variables:
   NBAI_TIMEOUT_MS   (optional) per-request timeout, default 30000
   NBAI_IMAGE_DIR    (optional) also save rendered maps to this absolute directory, or
                     "tmp" for the OS temp dir; unset = nothing is written to disk
-  NBAI_DOCS_INDEX   (optional) path to an alternative documentation index file
+  NBAI_DOCS_INDEX   (optional) path to an alternative documentation index directory
 `
     );
     return;

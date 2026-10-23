@@ -53,6 +53,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
         'expose it to the server, e.g. NBAI_API_KEY=<your key> npx nextbillion-mcp',
     );
   }
+  // Plugin configs reference the key as `${user_config.nbai_api_key}`; a host that does not
+  // substitute such references would pass the template through as the key itself.
+  if (/^\$\{[^}]*\}$/.test(apiKey)) {
+    throw new ConfigError(
+      `NBAI_API_KEY holds the unexpanded placeholder ${apiKey}: this MCP host does not fill in ` +
+        'plugin user configuration. Set NBAI_API_KEY to your key in the server configuration instead.',
+    );
+  }
   const timeoutMs = env.NBAI_TIMEOUT_MS ? Number(env.NBAI_TIMEOUT_MS) : DEFAULT_TIMEOUT_MS;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
     throw new ConfigError(`NBAI_TIMEOUT_MS must be a positive number, got: ${env.NBAI_TIMEOUT_MS}`);

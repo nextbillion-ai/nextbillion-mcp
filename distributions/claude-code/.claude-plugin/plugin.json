@@ -2,10 +2,26 @@
   "name": "nextbillion-mcp",
   "displayName": "NextBillion.ai",
   "description": "NextBillion.ai location APIs as MCP tools: geocoding, place search and browse, routing, distance matrix, isochrones, and static maps with overlays",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "author": {
-    "name": "NextBillion.ai"
+    "name": "NextBillion.ai",
+    "url": "https://github.com/nextbillion-ai"
   },
   "homepage": "https://docs.nextbillion.ai",
-  "mcpServers": "./.mcp.json"
+  "repository": "https://github.com/nextbillion-ai/nextbillion-mcp",
+  "license": "Apache-2.0",
+  "keywords": ["geocoding", "routing", "maps", "places", "distance-matrix", "isochrone"],
+  "documentationUrl": "https://github.com/nextbillion-ai/nextbillion-mcp#readme",
+  "supportUrl": "https://github.com/nextbillion-ai/nextbillion-mcp/issues",
+  "privacyPolicyUrl": "https://nextbillion.ai/privacy",
+  "mcpServers": "./.mcp.json",
+  "userConfig": {
+    "nbai_api_key": {
+      "type": "string",
+      "title": "NextBillion.ai API key",
+      "description": "Get one from https://console.nextbillion.ai or by emailing support@nextbillion.ai. It is sent only to api.nextbillion.io and is never written to disk.",
+      "sensitive": true,
+      "required": true
+    }
+  }
 }

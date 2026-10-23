@@ -3,13 +3,15 @@
  * search structures (spec §7). Sync and lazy: the first documentation tool call pays
  * the load; API tools never touch it.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Bm25Field } from './bm25.js';
 import { tokenize } from './tokenizer.js';
 import type {
   ChunkRecord,
   DocsIndexFile,
+  DocsIndexManifest,
   DocsIndexMeta,
   PageRecord,
   ParameterRecord,
@@ -30,18 +32,54 @@ export interface DocsIndex {
 }
 
 /**
- * Candidate locations of the data file relative to this module: `../data/` next to the
- * bundled `dist/index.js` (npm package, Claude Code plugin, Claude Desktop extension) and
- * `../../data/` when running from `src/` under tsx or vitest.
+ * Candidate locations of the index relative to this module: `../data/docs-index` next to
+ * the bundled `dist/index.js` (npm package, Claude Code plugin, Claude Desktop extension)
+ * and `../../data/docs-index` when running from `src/` under tsx or vitest. The index is a
+ * directory of JSON parts (see `readDocsIndexFile`) so that no single file exceeds the
+ * size limits of plugin directories; a legacy single `docs-index.json` is still accepted.
  */
 function defaultIndexPath(): string {
   const override = process.env.NBAI_DOCS_INDEX?.trim();
   if (override) return override;
-  for (const relative of ['../data/docs-index.json', '../../data/docs-index.json']) {
+  for (const relative of [
+    '../data/docs-index',
+    '../../data/docs-index',
+    '../data/docs-index.json',
+    '../../data/docs-index.json',
+  ]) {
     const candidate = fileURLToPath(new URL(relative, import.meta.url));
     if (existsSync(candidate)) return candidate;
   }
-  throw new Error('documentation index data/docs-index.json not found next to the server');
+  throw new Error('documentation index data/docs-index not found next to the server');
+}
+
+const readJson = <T>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) as T;
+
+/**
+ * Reads the packed index from `path`: either a directory holding `manifest.json` plus the
+ * part files it lists (the committed layout), that manifest file itself, or a legacy
+ * single-file index. Parts are concatenated in manifest order, so the result is identical
+ * to the single-file form.
+ */
+export function readDocsIndexFile(path: string): DocsIndexFile {
+  const manifestPath = statSync(path).isDirectory() ? join(path, 'manifest.json') : path;
+  const dir = statSync(path).isDirectory() ? path : join(path, '..');
+  const parsed = readJson<DocsIndexManifest | DocsIndexFile>(manifestPath);
+  if ('layout' in parsed) {
+    if (parsed.layout !== 'split-v1' || parsed.meta?.format !== 2) {
+      throw new Error(`unsupported documentation index layout in ${manifestPath}`);
+    }
+    return {
+      meta: parsed.meta,
+      pages: readJson<PageRecord[]>(join(dir, parsed.parts.pages)),
+      parameters: readJson<ParameterRecord[]>(join(dir, parsed.parts.parameters)),
+      chunks: parsed.parts.chunks.flatMap((part) => readJson<ChunkRecord[]>(join(dir, part))),
+    };
+  }
+  if (parsed.meta?.format !== 2) {
+    throw new Error(`unsupported documentation index format in ${manifestPath}`);
+  }
+  return parsed;
 }
 
 export function buildDocsIndex(file: DocsIndexFile): DocsIndex {
@@ -71,9 +109,7 @@ export function buildDocsIndex(file: DocsIndexFile): DocsIndex {
 }
 
 export function loadDocsIndex(path: string = defaultIndexPath()): DocsIndex {
-  const file = JSON.parse(readFileSync(path, 'utf8')) as DocsIndexFile;
-  if (file.meta?.format !== 2) throw new Error(`unsupported documentation index format in ${path}`);
-  return buildDocsIndex(file);
+  return buildDocsIndex(readDocsIndexFile(path));
 }
 
 let cached: DocsIndex | undefined;

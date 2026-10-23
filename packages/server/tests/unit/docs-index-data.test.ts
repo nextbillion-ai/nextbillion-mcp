@@ -1,16 +1,36 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { hasUnbalancedFence, MIN_CHUNK_CHARS } from '../../src/docs/markdown.js';
-import type { DocsIndexFile } from '../../src/docs/types.js';
+import { readDocsIndexFile } from '../../src/docs/store.js';
+import type { DocsIndexManifest } from '../../src/docs/types.js';
 import { ALL_TOOLS } from '../../src/tools/index.js';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const index = JSON.parse(readFileSync(`${root}data/docs-index.json`, 'utf8')) as DocsIndexFile;
+const indexDir = `${root}data/docs-index`;
+const index = readDocsIndexFile(indexDir);
 const pin = JSON.parse(readFileSync(`${root}docs/docs-pin.json`, 'utf8')) as { commit: string };
 const pageIds = new Set(index.pages.map((p) => p.doc_id));
 
 describe('committed documentation index', () => {
+  it('is split into parts that stay under the plugin directory file limits', () => {
+    const manifest = JSON.parse(
+      readFileSync(`${indexDir}/manifest.json`, 'utf8'),
+    ) as DocsIndexManifest;
+    expect(manifest.layout).toBe('split-v1');
+    const listed = new Set([
+      'manifest.json',
+      manifest.parts.pages,
+      manifest.parts.parameters,
+      ...manifest.parts.chunks,
+    ]);
+    expect(new Set(readdirSync(indexDir))).toEqual(listed);
+    for (const file of listed) {
+      expect(statSync(`${indexDir}/${file}`).size, file).toBeLessThan(1024 * 1024);
+    }
+    expect(manifest.parts.chunks.length).toBeGreaterThan(1);
+  });
+
   it('was built from the pinned docs commit and is internally consistent', () => {
     expect(index.meta.format).toBe(2);
     expect(index.meta.parameters).toBe(index.parameters.length);

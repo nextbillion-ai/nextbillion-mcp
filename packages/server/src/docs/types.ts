@@ -80,3 +80,18 @@ export interface DocsIndexFile {
   chunks: ChunkRecord[];
   parameters: ParameterRecord[];
 }
+
+/**
+ * On disk the index is a directory: `manifest.json` (this shape) beside the part files it
+ * names, each a JSON array. Chunks are split into several parts so that every file stays
+ * well under the per-file limits of plugin directories (5 MiB hard, 256 KiB preferred).
+ */
+export interface DocsIndexManifest {
+  layout: 'split-v1';
+  meta: DocsIndexMeta;
+  parts: {
+    pages: string;
+    parameters: string;
+    chunks: string[];
+  };
+}
