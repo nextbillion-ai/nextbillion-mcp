@@ -6011,11 +6011,13 @@ function loadHttpConfig(env = process.env) {
   if (!Number.isInteger(port) || port <= 0 || port > 65535) {
     throw new ConfigError(`PORT must be a TCP port number, got: ${env.PORT}`);
   }
+  const allowHttp = /^(1|true|yes)$/i.test(env.NBAI_ALLOW_HTTP?.trim() ?? "");
   const publicUrl = parseHttpsUrl(
     env.NBAI_PUBLIC_URL?.trim() || "https://mcp.nextbillion.io",
-    "NBAI_PUBLIC_URL"
+    "NBAI_PUBLIC_URL",
+    allowHttp
   );
-  const issuerUrl = env.NBAI_ISSUER_URL?.trim() ? parseHttpsUrl(env.NBAI_ISSUER_URL.trim(), "NBAI_ISSUER_URL") : publicUrl;
+  const issuerUrl = env.NBAI_ISSUER_URL?.trim() ? parseHttpsUrl(env.NBAI_ISSUER_URL.trim(), "NBAI_ISSUER_URL", allowHttp) : publicUrl;
   const timeoutMs = env.NBAI_TIMEOUT_MS ? Number(env.NBAI_TIMEOUT_MS) : DEFAULT_TIMEOUT_MS;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
     throw new ConfigError(`NBAI_TIMEOUT_MS must be a positive number, got: ${env.NBAI_TIMEOUT_MS}`);
@@ -6028,7 +6030,7 @@ function loadHttpConfig(env = process.env) {
     timeoutMs
   };
 }
-function parseHttpsUrl(value, name) {
+function parseHttpsUrl(value, name, allowHttp = false) {
   let url2;
   try {
     url2 = new URL(value);
@@ -6036,9 +6038,9 @@ function parseHttpsUrl(value, name) {
     throw new ConfigError(`${name} must be an absolute URL, got: ${value}`);
   }
   const loopback = url2.hostname === "localhost" || url2.hostname === "127.0.0.1";
-  if (url2.protocol !== "https:" && !(url2.protocol === "http:" && loopback)) {
+  if (url2.protocol !== "https:" && !(url2.protocol === "http:" && (loopback || allowHttp))) {
     throw new ConfigError(
-      `${name} must use https:// (http:// is allowed for localhost only), got: ${value}`
+      `${name} must use https:// (http:// is allowed for localhost, or anywhere with NBAI_ALLOW_HTTP=1), got: ${value}`
     );
   }
   if (url2.search || url2.hash)

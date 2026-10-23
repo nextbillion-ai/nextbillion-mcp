@@ -89,12 +89,16 @@ export function loadHttpConfig(env: NodeJS.ProcessEnv = process.env): HttpConfig
   if (!Number.isInteger(port) || port <= 0 || port > 65535) {
     throw new ConfigError(`PORT must be a TCP port number, got: ${env.PORT}`);
   }
+  // Plain http is accepted for localhost, or anywhere with NBAI_ALLOW_HTTP=1 (private
+  // networks such as a Tailscale tailnet while testing). Hosted Claude requires https.
+  const allowHttp = /^(1|true|yes)$/i.test(env.NBAI_ALLOW_HTTP?.trim() ?? '');
   const publicUrl = parseHttpsUrl(
     env.NBAI_PUBLIC_URL?.trim() || 'https://mcp.nextbillion.io',
     'NBAI_PUBLIC_URL',
+    allowHttp,
   );
   const issuerUrl = env.NBAI_ISSUER_URL?.trim()
-    ? parseHttpsUrl(env.NBAI_ISSUER_URL.trim(), 'NBAI_ISSUER_URL')
+    ? parseHttpsUrl(env.NBAI_ISSUER_URL.trim(), 'NBAI_ISSUER_URL', allowHttp)
     : publicUrl;
   const timeoutMs = env.NBAI_TIMEOUT_MS ? Number(env.NBAI_TIMEOUT_MS) : DEFAULT_TIMEOUT_MS;
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
@@ -109,7 +113,7 @@ export function loadHttpConfig(env: NodeJS.ProcessEnv = process.env): HttpConfig
   };
 }
 
-function parseHttpsUrl(value: string, name: string): URL {
+function parseHttpsUrl(value: string, name: string, allowHttp = false): URL {
   let url: URL;
   try {
     url = new URL(value);
@@ -117,9 +121,9 @@ function parseHttpsUrl(value: string, name: string): URL {
     throw new ConfigError(`${name} must be an absolute URL, got: ${value}`);
   }
   const loopback = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback)) {
+  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && (loopback || allowHttp))) {
     throw new ConfigError(
-      `${name} must use https:// (http:// is allowed for localhost only), got: ${value}`,
+      `${name} must use https:// (http:// is allowed for localhost, or anywhere with NBAI_ALLOW_HTTP=1), got: ${value}`,
     );
   }
   if (url.search || url.hash)
