@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.4.0 — 2026-10-24
+
+Hosted mode: the same server runs at https://mcp.nextbillion.io with a browser sign-in, so
+Claude, Claude Code, Cursor and Codex connect to a URL instead of launching a local process.
+Stdio mode, tools and schemas are unchanged.
+
+### Sign-in (OAuth authorization server)
+
+- **Built-in OAuth 2.1 authorization server** at `/oauth/authorize`, `/oauth/token`,
+  `/oauth/register` plus `/.well-known/oauth-authorization-server`. Sign-in is a page where the
+  user pastes their NextBillion.ai API key once; the key is checked against the API (a
+  request the gateway rejects after authentication, so nothing is billed) and sealed into the
+  tokens. Hosts such as Claude, Claude Code, Cursor and Codex can now connect to the hosted
+  server with a browser sign-in and no local configuration.
+- **Stateless by design.** Authorization codes, access tokens (1 h), refresh tokens (30 d) and
+  dynamically registered client ids are all encrypted payloads (AES-256-GCM, key from
+  `NBAI_TOKEN_KEY`, comma-separated keys for rotation). The server stores nothing about any
+  user; revoking access is resetting the key in the console. Without `NBAI_TOKEN_KEY` a random
+  key is used and tokens die with the process (fine locally, warned at start-up).
+- Client identification by Client ID Metadata Document (what Claude uses) with a 5-minute
+  cache, and by stateless Dynamic Client Registration for other hosts. PKCE S256 required;
+  loopback redirect URIs match on any port (Claude Code); redirects only ever go to registered
+  URIs; RFC 9207 `iss` on the callback; refresh tokens rotate; failures are `invalid_grant`.
+- Access tokens from this server and bare API keys are both accepted as bearer tokens.
+- MCP SDK 2.0 → 2.3.1 (additive release; no behaviour change).
+
+### Streamable HTTP server
+
+- **`--http` mode (Streamable HTTP).** The same server can run hosted: `nextbillion-mcp --http`
+  listens on `PORT` (default 8080) and serves the MCP endpoint at the root of `NBAI_PUBLIC_URL`
+  (default `https://mcp.nextbillion.io`). Stateless by construction (one server instance per
+  request, per the 2026-07-28 revision); nothing about a caller is kept between requests.
+- **Per-request credentials.** Callers send `Authorization: Bearer <NextBillion.ai API key>`;
+  the key is used for that request's API calls only. `NBAI_API_KEY` and `NBAI_IMAGE_DIR` are
+  ignored in this mode (a hosted server bills nobody's key by default and writes nothing to
+  disk).
+- **Lazy authentication.** Anonymous hosts can connect, list tools and use the four
+  documentation tools. A call to an API tool without credentials is answered with HTTP 401 and
+  a `WWW-Authenticate: Bearer resource_metadata=…` challenge, which is what makes Claude open
+  its sign-in flow. `/.well-known/oauth-protected-resource` is served; the authorization
+  server behind it (paste-your-API-key sign-in) lands in the next change.
+- `GET /healthz` liveness route; `Dockerfile` (node:22-alpine, bundled server + docs index,
+  non-root); CI builds the image and checks `/healthz`, and a tag-triggered job publishes it
+  to the company registry with `nip`.
+- No changes to stdio mode, tools or schemas.
+
 ## 0.3.2 — 2026-10-22
 
 Documentation tools: six fixes found while reproducing the knowledge-base evaluation runs
