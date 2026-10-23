@@ -90,14 +90,19 @@ PORT=8080 NBAI_PUBLIC_URL=https://mcp.nextbillion.io nextbillion-mcp --http
 - **Lazy authentication.** Without credentials a host can still connect, list tools and use
   the four documentation tools. The first call to an API tool is answered with HTTP 401 and a
   `WWW-Authenticate: Bearer resource_metadata=…` challenge, which makes Claude open its
-  sign-in flow. The browser sign-in (paste your API key once; the server keeps nothing) is the
-  next change in this series.
+  sign-in flow.
+- **Sign-in.** The server is its own OAuth 2.1 authorization server (`/oauth/*`). The sign-in
+  page asks for the user's NextBillion.ai API key once, checks it with the API, and seals it
+  into the tokens it issues (AES-256-GCM, key in `NBAI_TOKEN_KEY`; generate one with
+  `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`). Nothing is
+  stored server-side; revoke by resetting the key in the console. Claude identifies itself with
+  its Client ID Metadata Document; other hosts can use dynamic registration.
 - `NBAI_IMAGE_DIR` is ignored: a hosted server writes nothing to disk. Map images are returned
   inline only.
 - Stateless: the SDK builds one server instance per request and the API client for it is
   created from that request's key. Nothing about a caller is retained between requests.
 - Container: `docker build -t nextbillion-mcp .` then
-  `docker run -p 8080:8080 -e NBAI_PUBLIC_URL=https://mcp.nextbillion.io nextbillion-mcp`.
+  `docker run -p 8080:8080 -e NBAI_PUBLIC_URL=https://mcp.nextbillion.io -e NBAI_TOKEN_KEY=… nextbillion-mcp`.
 
 ## Privacy Policy
 

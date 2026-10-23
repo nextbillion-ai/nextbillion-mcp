@@ -5,6 +5,8 @@ import { ConfigError, loadConfig, loadHttpConfig, resolveImageDir } from './conf
 import { buildServer, SERVER_NAME } from './core/server.js';
 import { createHttpApp } from './http/app.js';
 import { startHttpServer } from './http/node-server.js';
+import { KeyRing } from './http/oauth/crypto.js';
+import { probeApiKey } from './http/oauth/probe.js';
 import { logError, logInfo } from './log.js';
 import { NbClient } from './nbclient/client.js';
 
@@ -43,6 +45,8 @@ function main(): void {
         '  PORT              (optional) TCP port, default 8080\n' +
         '  NBAI_PUBLIC_URL   (optional) URL users enter, default https://mcp.nextbillion.io\n' +
         '  NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL\n' +
+        '  NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;\n' +
+        '                    comma-separated, current first, to rotate\n' +
         '  NBAI_BASE_URL, NBAI_TIMEOUT_MS as above\n',
     );
     return;
@@ -109,12 +113,31 @@ async function serveHttp(): Promise<void> {
     delete process.env.NBAI_IMAGE_DIR;
   }
 
+  let keys;
+  try {
+    keys = KeyRing.fromEnv(process.env.NBAI_TOKEN_KEY);
+  } catch (error) {
+    logError(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+    return;
+  }
+  if (keys.ephemeral) {
+    logError(
+      'NBAI_TOKEN_KEY is not set: using a random key, so tokens will not survive a restart and ' +
+        'other instances cannot read them. Set a 32-byte base64 key for any real deployment.',
+    );
+  }
+
   const app = createHttpApp({
     version: pkg.version,
     publicUrl: config.publicUrl,
     issuerUrl: config.issuerUrl,
     nbClientFactory: (apiKey) =>
       new NbClient({ apiKey, baseUrl: config.baseUrl, timeoutMs: config.timeoutMs }),
+    oauth: {
+      keyRing: keys.ring,
+      probeApiKey: (apiKey) => probeApiKey(config.baseUrl, apiKey),
+    },
   });
   const server = await startHttpServer(app, config.port);
   logInfo(

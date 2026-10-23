@@ -18,6 +18,9 @@ import {
   protectedToolNames,
 } from './auth.js';
 import type { FetchApp } from './node-server.js';
+import type { KeyRing } from './oauth/crypto.js';
+import type { ApiKeyProbeResult } from './oauth/probe.js';
+import { AuthorizationServer } from './oauth/server.js';
 
 export interface HttpAppOptions {
   version: string;
@@ -27,8 +30,17 @@ export interface HttpAppOptions {
   issuerUrl: URL;
   /** Builds the API client for one request from the caller's key. */
   nbClientFactory: (apiKey: string) => NbClient;
-  /** Token verifier; defaults to bare API keys. */
+  /** Token verifier; defaults to the authorization server's (or bare API keys without one). */
   verifier?: OAuthTokenVerifier;
+  /**
+   * Enables the built-in OAuth authorization server at `/oauth/*` (paste-your-API-key
+   * sign-in). Without it the server only accepts bare API keys as bearer tokens.
+   */
+  oauth?: {
+    keyRing: KeyRing;
+    probeApiKey: (apiKey: string) => Promise<ApiKeyProbeResult>;
+    fetchFn?: typeof fetch;
+  };
 }
 
 const DOCS_URL = 'https://github.com/nextbillion-ai/nextbillion-mcp#readme';
@@ -43,10 +55,21 @@ const JSON_HEADERS = { 'content-type': 'application/json', 'cache-control': 'no-
  * Routes:
  *   GET  /healthz                                  liveness
  *   GET  /.well-known/oauth-protected-resource     RFC 9728 document pointing at the issuer
+ *   *    /.well-known/oauth-authorization-server, /oauth/{authorize,token,register}
+ *                                                  the built-in authorization server (optional)
  *   *    <publicUrl.pathname>                      the MCP endpoint (both protocol eras)
  */
 export function createHttpApp(options: HttpAppOptions): FetchApp {
-  const verifier = options.verifier ?? new ApiKeyVerifier();
+  const authServer = options.oauth
+    ? new AuthorizationServer({
+        issuerUrl: options.issuerUrl,
+        resourceUrl: options.publicUrl,
+        keyRing: options.oauth.keyRing,
+        probeApiKey: options.oauth.probeApiKey,
+        fetchFn: options.oauth.fetchFn,
+      })
+    : undefined;
+  const verifier = options.verifier ?? authServer?.verifier ?? new ApiKeyVerifier();
   const mcpPath = options.publicUrl.pathname || '/';
   const resource = options.publicUrl.href.replace(/\/$/, '');
   const resourceMetadataUrl = getOAuthProtectedResourceMetadataUrl(options.publicUrl);
@@ -76,6 +99,10 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
       }
       if (path === '/.well-known/oauth-protected-resource') {
         return wellKnown(request, protectedResourceMetadata);
+      }
+      if (authServer) {
+        const handled = await authServer.handle(request);
+        if (handled) return handled;
       }
       if (path !== mcpPath) {
         return json({ error: 'not_found', mcp_endpoint: resource }, 404);

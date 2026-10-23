@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased — 0.4.0 (hosted mode, part 2: sign-in)
+
+- **Built-in OAuth 2.1 authorization server** at `/oauth/authorize`, `/oauth/token`,
+  `/oauth/register` plus `/.well-known/oauth-authorization-server`. Sign-in is a page where the
+  user pastes their NextBillion.ai API key once; the key is checked against the API (a
+  request the gateway rejects after authentication, so nothing is billed) and sealed into the
+  tokens. Hosts such as Claude, Claude Code, Cursor and Codex can now connect to the hosted
+  server with a browser sign-in and no local configuration.
+- **Stateless by design.** Authorization codes, access tokens (1 h), refresh tokens (30 d) and
+  dynamically registered client ids are all encrypted payloads (AES-256-GCM, key from
+  `NBAI_TOKEN_KEY`, comma-separated keys for rotation). The server stores nothing about any
+  user; revoking access is resetting the key in the console. Without `NBAI_TOKEN_KEY` a random
+  key is used and tokens die with the process (fine locally, warned at start-up).
+- Client identification by Client ID Metadata Document (what Claude uses) with a 5-minute
+  cache, and by stateless Dynamic Client Registration for other hosts. PKCE S256 required;
+  loopback redirect URIs match on any port (Claude Code); redirects only ever go to registered
+  URIs; RFC 9207 `iss` on the callback; refresh tokens rotate; failures are `invalid_grant`.
+- Access tokens from this server and bare API keys are both accepted as bearer tokens.
+- MCP SDK 2.0 → 2.3.1 (additive release; no behaviour change).
+
 ## Unreleased — 0.4.0 (hosted mode, part 1)
 
 - **`--http` mode (Streamable HTTP).** The same server can run hosted: `nextbillion-mcp --http`
