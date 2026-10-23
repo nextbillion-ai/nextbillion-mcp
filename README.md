@@ -67,6 +67,38 @@ underlying API's coordinate-order conventions internally.
 
 Four tools answer questions about the APIs and SDKs from the official documentation without a network call: `search_documentation` returns ranked excerpts with a `source_url` to cite and the name of the tool that performs the operation, `get_documentation` returns one page or one section, `get_api_parameters` returns the request parameters of a REST endpoint as structured records (units only when the docs state them), and `list_documentation_topics` lists what is covered. The index (342 pages of docs.nextbillion.ai) ships inside the package and is rebuilt when the docs change; see `packages/server/docs/README.md`. Pages that exist on the site but not in the docs repository (solutions, apps, help, the Web Maps SDK v1) are not covered.
 
+## Hosted mode (preview, 0.4.0)
+
+The same server can run as a remote MCP server over Streamable HTTP, so hosts connect to a
+URL instead of launching a local process:
+
+```bash
+PORT=8080 NBAI_PUBLIC_URL=https://mcp.nextbillion.io nextbillion-mcp --http
+```
+
+- The MCP endpoint is the root of `NBAI_PUBLIC_URL` (the URL users enter in their host; it is
+  also the OAuth `resource`). `GET /healthz` answers liveness and
+  `/.well-known/oauth-protected-resource` is served for OAuth discovery.
+- **Credentials travel with each request.** There is no server-wide key: `NBAI_API_KEY` is
+  ignored, and every API call uses the key of the caller. Developers and CI send it directly:
+
+  ```bash
+  claude mcp add --transport http nextbillion https://mcp.nextbillion.io \
+    --header "Authorization: Bearer $NBAI_API_KEY"
+  ```
+
+- **Lazy authentication.** Without credentials a host can still connect, list tools and use
+  the four documentation tools. The first call to an API tool is answered with HTTP 401 and a
+  `WWW-Authenticate: Bearer resource_metadata=…` challenge, which makes Claude open its
+  sign-in flow. The browser sign-in (paste your API key once; the server keeps nothing) is the
+  next change in this series.
+- `NBAI_IMAGE_DIR` is ignored: a hosted server writes nothing to disk. Map images are returned
+  inline only.
+- Stateless: the SDK builds one server instance per request and the API client for it is
+  created from that request's key. Nothing about a caller is retained between requests.
+- Container: `docker build -t nextbillion-mcp .` then
+  `docker run -p 8080:8080 -e NBAI_PUBLIC_URL=https://mcp.nextbillion.io nextbillion-mcp`.
+
 ## Privacy Policy
 
 `nextbillion-mcp` is a local MCP server: it runs on your own machine, is started by your

@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased — 0.4.0 (hosted mode, part 1)
+
+- **`--http` mode (Streamable HTTP).** The same server can run hosted: `nextbillion-mcp --http`
+  listens on `PORT` (default 8080) and serves the MCP endpoint at the root of `NBAI_PUBLIC_URL`
+  (default `https://mcp.nextbillion.io`). Stateless by construction (one server instance per
+  request, per the 2026-07-28 revision); nothing about a caller is kept between requests.
+- **Per-request credentials.** Callers send `Authorization: Bearer <NextBillion.ai API key>`;
+  the key is used for that request's API calls only. `NBAI_API_KEY` and `NBAI_IMAGE_DIR` are
+  ignored in this mode (a hosted server bills nobody's key by default and writes nothing to
+  disk).
+- **Lazy authentication.** Anonymous hosts can connect, list tools and use the four
+  documentation tools. A call to an API tool without credentials is answered with HTTP 401 and
+  a `WWW-Authenticate: Bearer resource_metadata=…` challenge, which is what makes Claude open
+  its sign-in flow. `/.well-known/oauth-protected-resource` is served; the authorization
+  server behind it (paste-your-API-key sign-in) lands in the next change.
+- `GET /healthz` liveness route; `Dockerfile` (node:22-alpine, bundled server + docs index,
+  non-root); CI builds the image and checks `/healthz`, and a tag-triggered job publishes it
+  to the company registry with `nip`.
+- No changes to stdio mode, tools or schemas.
+
 ## 0.3.2 — 2026-10-22
 
 Documentation tools: six fixes found while reproducing the knowledge-base evaluation runs
