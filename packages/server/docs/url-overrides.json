@@ -7,11 +7,13 @@
     "maps/mobile-sdks/jetpack-compose": "maps/maps-sdk-jetpack-compose-extension",
     "maps/mobile-sdks/web-maps": "maps/web-maps-sdk-v2",
     "maps/mobile-sdks/ios-offline-maps": "maps/ios-offline-maps",
+    "maps/mobile-sdks/android-offline-maps": "maps/android-offline-maps",
     "routing/mobile-sdks/android": "routing/android-navigation-sdk",
     "routing/mobile-sdks/ios": "routing/ios-navigation-sdk",
     "routing/mobile-sdks/flutter": "routing/flutter-navigation-sdk",
     "routing/mobile-sdks/jetpack": "routing/navigation-sdk-jetpack-compose-extension",
     "routing/mobile-sdks/ios-offline-navigation": "routing/ios-offline-navigation",
+    "routing/mobile-sdks/android-offline-navigation": "routing/android-offline-navigation",
     "tracking/mobile-sdks/android": "tracking/android-tracking-sdk",
     "tracking/mobile-sdks/ios": "tracking/ios-tracking-sdk",
     "tracking/mobile-sdks/flutter": "tracking/flutter-tracking-sdk",
@@ -69,6 +71,26 @@
     "Routing/Mobile SDKs/iOS Offline Navigation/preview-offline-map.md": {
       "url": "routing/ios-offline-navigation/offline-map-preview",
       "why": "page renamed on the live site"
+    },
+    "Maps/Mobile SDKs/Android Offline Maps/download-a-region.md": {
+      "url": "maps/android-offline-maps/download-region",
+      "why": "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+    },
+    "Maps/Mobile SDKs/Android Offline Maps/check-and-install-updates.md": {
+      "url": "maps/android-offline-maps/install-updates",
+      "why": "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+    },
+    "Maps/Mobile SDKs/Android Offline Maps/limits-and-application-control.md": {
+      "url": "maps/android-offline-maps/limits",
+      "why": "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+    },
+    "Routing/Mobile SDKs/Android Offline Navigation/loading-the-region-catalog.md": {
+      "url": "routing/android-offline-navigation/loading-region-catalog",
+      "why": "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+    },
+    "Routing/Mobile SDKs/Android Offline Navigation/detect-route-and-map-updates.md": {
+      "url": "routing/android-offline-navigation/update-regional-data",
+      "why": "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
     },
     "Places/Autosuggestions/autosuggestion-apis.md": {
       "exclude": "overview that repeats autosuggest-api.md and autocomplete-api.md; the live site has no combined page"

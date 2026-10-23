@@ -3,9 +3,17 @@
 ## 0.3.2 — 2026-10-22
 
 Documentation tools: six fixes found while reproducing the knowledge-base evaluation runs
-of 15 October. No new tools, no schema changes; the bundled index is rebuilt from the same
-docs commit (80908e8).
+of 15 October, plus a refresh of the bundled documentation. No new tools, no schema changes.
 
+- **Documentation refreshed to nb-public-docs 713d1e5 (2026-10-22).** 25 new pages: Android
+  Offline Maps (14) and Android Offline Navigation (11), mapped to their live URLs (five
+  files were renamed in the repo after publishing; the overrides keep the live slugs).
+  Updated pages: Directions API gains the `require=truck_route` parameter and the freight
+  network wording for `prefer`; Distance Matrix and Navigation API `prefer` wording; Route
+  Optimization gains `coordinate_jobs` (multi-technician jobs, 21 fields) and
+  `options.coordination` (3); Hours of Service fixes the type of
+  `driver_current_hos_state.daily_cycle_duty_times` (array of integer). 342 → 367 pages,
+  1,435 → 1,460 parameters, index 7.3 → 7.5 MB.
 - **`get_api_parameters` resolves more endpoint spellings.** Hosts build the slug from
   whatever they have seen, so `geocode/batch`, `geocode_batch` (the tool name),
   `Batch Geocode API` and the page's doc_id now all resolve to `batch-geocode`; the result
