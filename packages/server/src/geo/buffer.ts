@@ -6,6 +6,7 @@
  */
 import { destination, distance, inverse } from './measure.js';
 import { polygonOp } from './polygon-ops.js';
+import { simplifyLine } from './simplify.js';
 import type { MultiPolygonCoords, Position, Ring } from './types.js';
 
 /** A geodesic circle (closed ring) around `centre`. */
@@ -43,16 +44,37 @@ export function bufferPoint(p: Position, radius: number, steps: number): MultiPo
   return [[circle(p, radius, steps)]];
 }
 
+/**
+ * Corridor around a line. Vertices closer to the line than radius/20 cannot change the
+ * corridor's outline by more than that, so the line is simplified first (a 2,000-point
+ * route typically collapses to a few hundred segments); the capsules are then merged
+ * pairwise (balanced tree) rather than in one n-way union, which keeps polyclip's
+ * sweep fast for long lines.
+ */
 export function bufferLine(line: Position[], radius: number, steps: number): MultiPolygonCoords {
+  const simplified = simplifyLine(line, radius / 20);
   const pieces: MultiPolygonCoords[] = [];
-  for (let i = 0; i < line.length - 1; i += 1) {
-    const a = line[i]!;
-    const b = line[i + 1]!;
+  for (let i = 0; i < simplified.length - 1; i += 1) {
+    const a = simplified[i]!;
+    const b = simplified[i + 1]!;
     if (distance(a, b) < 1e-6) continue;
     pieces.push([[segmentCapsule(a, b, radius, steps)]]);
   }
   if (pieces.length === 0) return bufferPoint(line[0]!, radius, steps);
-  return pieces.length === 1 ? pieces[0]! : polygonOp('union', pieces);
+  return unionAll(pieces);
+}
+
+/** Balanced pairwise union: O(n log n) polyclip work instead of one n-way sweep. */
+export function unionAll(pieces: MultiPolygonCoords[]): MultiPolygonCoords {
+  let level = pieces;
+  while (level.length > 1) {
+    const next: MultiPolygonCoords[] = [];
+    for (let i = 0; i < level.length; i += 2) {
+      next.push(i + 1 < level.length ? polygonOp('union', [level[i]!, level[i + 1]!]) : level[i]!);
+    }
+    level = next;
+  }
+  return level[0]!;
 }
 
 export function bufferArea(
@@ -65,7 +87,7 @@ export function bufferArea(
   const ringBuffers: MultiPolygonCoords[] = [];
   for (const poly of polygons)
     for (const ring of poly) ringBuffers.push(bufferLine(ring, radius, steps));
-  const edgeZone = ringBuffers.length === 1 ? ringBuffers[0]! : polygonOp('union', ringBuffers);
+  const edgeZone = unionAll(ringBuffers);
   return distanceMeters > 0
     ? polygonOp('union', [polygons, edgeZone])
     : polygonOp('difference', [polygons, edgeZone]);
