@@ -8,7 +8,7 @@ import { API_SCOPE, ApiKeyVerifier } from '../auth.js';
 import { ClientError, ClientResolver, isLoopbackHost, redirectUriAllowed } from './clients.js';
 import { KeyRing, nowSeconds, verifyPkceS256 } from './crypto.js';
 import { logError } from '../../log.js';
-import { renderErrorPage, renderSignInPage } from './page.js';
+import { SUBMIT_SCRIPT_CSP_SOURCE, renderErrorPage, renderSignInPage } from './page.js';
 import type { ApiKeyProbeResult } from './probe.js';
 
 export interface AuthorizationServerOptions {
@@ -251,6 +251,8 @@ export class AuthorizationServer {
         redirectIsLoopback: isLoopbackHost(new URL(redirectUri).hostname),
         requestToken,
       }),
+      200,
+      { redirectUri },
     );
   }
 
@@ -298,6 +300,7 @@ export class AuthorizationServer {
           error,
         }),
         400,
+        { redirectUri },
       );
     };
 
@@ -436,7 +439,20 @@ function json(body: unknown, status = 200, headers: Record<string, string> = {})
   });
 }
 
-function html(body: string, status = 200): Response {
+/**
+ * Error pages get a locked-down policy. The sign-in page additionally allows its submit
+ * script (by hash) and, in `form-action`, the application's redirect URI: Chromium applies
+ * `form-action` to the redirect that follows a form submission, so without the registered
+ * redirect origin the browser blocks the hand-back to the application after a successful
+ * sign-in.
+ */
+function html(body: string, status = 200, signIn?: { redirectUri: string }): Response {
+  let formAction = "'self'";
+  let scriptSrc = '';
+  if (signIn) {
+    formAction += ` ${new URL(signIn.redirectUri).origin}`;
+    scriptSrc = `; script-src ${SUBMIT_SCRIPT_CSP_SOURCE}`;
+  }
   return new Response(body, {
     status,
     headers: {
@@ -444,8 +460,7 @@ function html(body: string, status = 200): Response {
       ...NO_STORE,
       'referrer-policy': 'no-referrer',
       'x-frame-options': 'DENY',
-      'content-security-policy':
-        "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'",
+      'content-security-policy': `default-src 'none'; style-src 'unsafe-inline'${scriptSrc}; form-action ${formAction}; base-uri 'none'`,
     },
   });
 }

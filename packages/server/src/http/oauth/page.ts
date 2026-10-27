@@ -1,5 +1,7 @@
 /** Minimal, dependency-free HTML for the sign-in page. All interpolated values are escaped. */
 
+import { createHash } from 'node:crypto';
+
 export function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
@@ -19,9 +21,19 @@ const STYLE = `
   label { display: block; font-weight: 600; margin-top: 1rem; }
   input[type=password] { width: 100%; box-sizing: border-box; font: inherit; padding: 0.6rem 0.7rem; border: 1px solid #c8ccd2; border-radius: 8px; margin-top: 0.35rem; }
   button { font: inherit; font-weight: 600; margin-top: 1.25rem; padding: 0.65rem 1.2rem; border: 0; border-radius: 8px; background: #1f5eff; color: #fff; cursor: pointer; }
+  button:disabled { opacity: 0.6; cursor: progress; }
   .error { background: #fff1f0; color: #a8071a; border: 1px solid #ffccc7; border-radius: 8px; padding: 0.6rem 0.9rem; margin-top: 1rem; }
   code { background: #f0f1f3; padding: 0.1rem 0.3rem; border-radius: 4px; }
 `;
+
+/**
+ * Disables the button the moment the form is submitted so the click is visibly acknowledged
+ * and cannot be repeated while the key is being verified. Static, so the CSP can allow it by
+ * hash instead of `'unsafe-inline'`.
+ */
+const SUBMIT_SCRIPT =
+  "document.querySelector('form').addEventListener('submit',function(){var b=this.querySelector('button');b.disabled=true;b.textContent='Connecting\u2026';});";
+export const SUBMIT_SCRIPT_CSP_SOURCE = `'sha256-${createHash('sha256').update(SUBMIT_SCRIPT).digest('base64')}'`;
 
 export interface SignInPageOptions {
   /** Host of the application asking for access (what the user can trust). */
@@ -57,6 +69,7 @@ ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ''}
 <input id="api_key" name="api_key" type="password" required maxlength="512" autocomplete="off" spellcheck="false" autofocus>
 <button type="submit">Connect</button>
 </form>
+<script>${SUBMIT_SCRIPT}</script>
 <p class="muted">Don't have a key? Get one at <a href="https://console.nextbillion.ai" rel="noopener">console.nextbillion.ai</a> or email support@nextbillion.ai.</p>
 </main></body></html>`;
 }

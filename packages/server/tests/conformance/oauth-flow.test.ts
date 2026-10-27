@@ -91,7 +91,14 @@ async function signInInBrowser(h: Harness, authorizationUrl: URL, apiKey: string
     }),
   );
   expect(submit.status).toBe(302);
-  return new URL(submit.headers.get('location')!);
+  const location = new URL(submit.headers.get('location')!);
+  // Chromium applies form-action to the post-submit redirect: the app's origin must be allowed,
+  // and the submit-button script is allowed by hash rather than 'unsafe-inline'.
+  const csp = page.headers.get('content-security-policy') ?? '';
+  expect(csp).toContain(`form-action 'self' ${location.origin}`);
+  expect(csp).toMatch(/script-src 'sha256-[A-Za-z0-9+/=]+'/);
+  expect(body).toContain('<script>');
+  return location;
 }
 
 const open: Array<{ close(): Promise<void> }> = [];

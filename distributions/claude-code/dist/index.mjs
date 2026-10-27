@@ -25450,6 +25450,7 @@ function verifyPkceS256(codeVerifier, codeChallenge) {
 init_log();
 
 // src/http/oauth/page.ts
+import { createHash as createHash3 } from "node:crypto";
 function escapeHtml(value) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
@@ -25463,9 +25464,12 @@ var STYLE = `
   label { display: block; font-weight: 600; margin-top: 1rem; }
   input[type=password] { width: 100%; box-sizing: border-box; font: inherit; padding: 0.6rem 0.7rem; border: 1px solid #c8ccd2; border-radius: 8px; margin-top: 0.35rem; }
   button { font: inherit; font-weight: 600; margin-top: 1.25rem; padding: 0.65rem 1.2rem; border: 0; border-radius: 8px; background: #1f5eff; color: #fff; cursor: pointer; }
+  button:disabled { opacity: 0.6; cursor: progress; }
   .error { background: #fff1f0; color: #a8071a; border: 1px solid #ffccc7; border-radius: 8px; padding: 0.6rem 0.9rem; margin-top: 1rem; }
   code { background: #f0f1f3; padding: 0.1rem 0.3rem; border-radius: 4px; }
 `;
+var SUBMIT_SCRIPT = "document.querySelector('form').addEventListener('submit',function(){var b=this.querySelector('button');b.disabled=true;b.textContent='Connecting\u2026';});";
+var SUBMIT_SCRIPT_CSP_SOURCE = `'sha256-${createHash3("sha256").update(SUBMIT_SCRIPT).digest("base64")}'`;
 function renderSignInPage(o) {
   const app = o.appName ? `${escapeHtml(o.appName)} (${escapeHtml(o.appHost)})` : escapeHtml(o.appHost);
   const loopbackNote = o.redirectIsLoopback ? `<p class="muted">You will be returned to an application on this computer. Continue only if you started this sign-in yourself.</p>` : `<p class="muted">You will be returned to <code>${escapeHtml(o.redirectHost)}</code> after signing in.</p>`;
@@ -25484,6 +25488,7 @@ ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ""}
 <input id="api_key" name="api_key" type="password" required maxlength="512" autocomplete="off" spellcheck="false" autofocus>
 <button type="submit">Connect</button>
 </form>
+<script>${SUBMIT_SCRIPT}</script>
 <p class="muted">Don't have a key? Get one at <a href="https://console.nextbillion.ai" rel="noopener">console.nextbillion.ai</a> or email support@nextbillion.ai.</p>
 </main></body></html>`;
 }
@@ -25687,7 +25692,9 @@ var AuthorizationServer = class {
         redirectHost: new URL(redirectUri).host,
         redirectIsLoopback: isLoopbackHost(new URL(redirectUri).hostname),
         requestToken
-      })
+      }),
+      200,
+      { redirectUri }
     );
   }
   async handleAuthorizeSubmit(request) {
@@ -25726,7 +25733,8 @@ var AuthorizationServer = class {
           requestToken: form.get("request") ?? "",
           error: error2
         }),
-        400
+        400,
+        { redirectUri }
       );
     };
     if (!ApiKeyVerifier.looksLikeKey(apiKey)) return again("Please enter a valid API key.");
@@ -25850,7 +25858,13 @@ function json(body, status = 200, headers = {}) {
     headers: { "content-type": "application/json", ...headers }
   });
 }
-function html(body, status = 200) {
+function html(body, status = 200, signIn) {
+  let formAction = "'self'";
+  let scriptSrc = "";
+  if (signIn) {
+    formAction += ` ${new URL(signIn.redirectUri).origin}`;
+    scriptSrc = `; script-src ${SUBMIT_SCRIPT_CSP_SOURCE}`;
+  }
   return new Response(body, {
     status,
     headers: {
@@ -25858,7 +25872,7 @@ function html(body, status = 200) {
       ...NO_STORE,
       "referrer-policy": "no-referrer",
       "x-frame-options": "DENY",
-      "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'"
+      "content-security-policy": `default-src 'none'; style-src 'unsafe-inline'${scriptSrc}; form-action ${formAction}; base-uri 'none'`
     }
   });
 }
