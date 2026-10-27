@@ -2,10 +2,9 @@
 node_modules
 **/node_modules
 **/dist
-dist-mcpb
 distributions
-docs
-notes
 .github
 *.md
-!packages/server/README.md
+packages/server/tests
+packages/server/docs
+packages/server/scripts

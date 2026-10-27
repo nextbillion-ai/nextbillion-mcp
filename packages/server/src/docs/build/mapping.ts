@@ -3,7 +3,7 @@
  * published URLs on https://docs.nextbillion.ai.
  *
  * The docs repo has no site configuration and no front matter, so a page's URL is derived
- * from its file path by rules plus two checked-in tables (docs/url-overrides.json):
+ * from its file path by rules plus two checked-in tables (url-overrides.json next to this file):
  *   - folderAliases: slugified folder path -> URL path prefix (SDK folders, renamed APIs)
  *   - pages: exact file path -> { url } for one-off renames (optionally with a #fragment
  *     when several files are sections of one live page), or { exclude } with a reason.

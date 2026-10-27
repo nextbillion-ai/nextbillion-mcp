@@ -13,16 +13,16 @@ describe('loadHttpConfig (hosted mode)', () => {
     expect(loadHttpConfig({ NBAI_PUBLIC_URL: 'http://localhost:8080' }).publicUrl.port).toBe(
       '8080',
     );
-    expect(() => loadHttpConfig({ NBAI_PUBLIC_URL: 'http://nixos-singapore:8090' })).toThrow(
+    expect(() => loadHttpConfig({ NBAI_PUBLIC_URL: 'http://mcp.example:8090' })).toThrow(
       ConfigError,
     );
     const cfg = loadHttpConfig({
-      NBAI_PUBLIC_URL: 'http://nixos-singapore:8090',
+      NBAI_PUBLIC_URL: 'http://mcp.example:8090',
       NBAI_ALLOW_HTTP: '1',
       PORT: '8090',
     });
-    expect(cfg.publicUrl.origin).toBe('http://nixos-singapore:8090');
-    expect(cfg.issuerUrl.origin).toBe('http://nixos-singapore:8090');
+    expect(cfg.publicUrl.origin).toBe('http://mcp.example:8090');
+    expect(cfg.issuerUrl.origin).toBe('http://mcp.example:8090');
     expect(cfg.port).toBe(8090);
   });
 

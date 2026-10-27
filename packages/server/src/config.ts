@@ -29,7 +29,7 @@ export function loadHttpConfig(env: NodeJS.ProcessEnv = process.env): HttpConfig
     throw new ConfigError(`PORT must be a TCP port number, got: ${env.PORT}`);
   }
   // Plain http is accepted for localhost, or anywhere with NBAI_ALLOW_HTTP=1 (private
-  // networks such as a Tailscale tailnet while testing). Hosted Claude requires https.
+  // networks while testing). Hosted Claude requires https.
   const allowHttp = /^(1|true|yes)$/i.test(env.NBAI_ALLOW_HTTP?.trim() ?? '');
   const publicUrl = parseHttpsUrl(
     env.NBAI_PUBLIC_URL?.trim() || 'https://mcp.nextbillion.io',
