@@ -41,7 +41,7 @@ export interface HttpAppOptions {
     probeApiKey?: (apiKey: string) => Promise<ApiKeyProbeResult>;
     fetchFn?: typeof fetch;
   };
-  /** Extra facts for /healthz (documentation index version and origin). */
+  /** Extra facts for /health (documentation index version and origin). */
   docsIndexInfo?: () => Record<string, unknown>;
 }
 
@@ -55,7 +55,7 @@ const JSON_HEADERS = { 'content-type': 'application/json', 'cache-control': 'no-
  * about a caller is kept between requests.
  *
  * Routes:
- *   GET  /healthz                                  liveness
+ *   GET  /health, /healthz                         liveness (see note on /healthz below)
  *   GET  /.well-known/oauth-protected-resource     RFC 9728 document pointing at the issuer
  *   *    /.well-known/oauth-authorization-server, /oauth/{authorize,token,register}
  *                                                  the built-in authorization server (optional)
@@ -96,7 +96,10 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
       const url = new URL(request.url);
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
-      if (path === '/healthz') {
+      // /health is the public liveness URL; Google's front end intercepts the exact path
+      // /healthz on run.app and custom domains (branded 404 before the container), so that one
+      // is kept only for the container probes, which bypass the front end.
+      if (path === '/health' || path === '/healthz') {
         return json({
           status: 'ok',
           name: 'nextbillion-mcp',

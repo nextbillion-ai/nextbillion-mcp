@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.4.0 — 2026-10-24
+## 0.4.1 — 2026-10-27
+
+- **Hosted mode: liveness URL is `GET /health`.** Google's front end intercepts the exact
+  path `/healthz` on `*.run.app` and custom domains and answers its own 404 before the
+  request reaches the container; `/health` returns the same document (status, version,
+  documentation index origin and commit). `/healthz` still works inside the container and
+  remains the Cloud Run probe path. The release workflow checks `/health` on the service URL
+  and only warns about the custom domain while DNS or the certificate is pending.
+
+## 0.4.0 — 2026-10-27
 
 Hosted mode: the same server runs at https://mcp.nextbillion.io with a browser sign-in, so
 Claude, Claude Code, Cursor and Codex connect to a URL instead of launching a local process.
