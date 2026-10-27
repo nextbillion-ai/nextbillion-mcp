@@ -41,6 +41,8 @@ export interface HttpAppOptions {
     probeApiKey?: (apiKey: string) => Promise<ApiKeyProbeResult>;
     fetchFn?: typeof fetch;
   };
+  /** Extra facts for /healthz (documentation index version and origin). */
+  docsIndexInfo?: () => Record<string, unknown>;
 }
 
 const DOCS_URL = 'https://github.com/nextbillion-ai/nextbillion-mcp#readme';
@@ -95,7 +97,12 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
       const path = url.pathname.replace(/\/+$/, '') || '/';
 
       if (path === '/healthz') {
-        return json({ status: 'ok', name: 'nextbillion-mcp', version: options.version });
+        return json({
+          status: 'ok',
+          name: 'nextbillion-mcp',
+          version: options.version,
+          ...(options.docsIndexInfo ? { docs: options.docsIndexInfo() } : {}),
+        });
       }
       if (path === '/.well-known/oauth-protected-resource') {
         return wellKnown(request, protectedResourceMetadata);

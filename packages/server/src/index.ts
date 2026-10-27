@@ -3,6 +3,12 @@ import { createRequire } from 'node:module';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { ConfigError, loadConfig, loadHttpConfig, resolveImageDir } from './config.js';
 import { buildServer, SERVER_NAME } from './core/server.js';
+import {
+  configureDocsIndex,
+  docsIndexInfo,
+  refreshDocsIndex,
+  startDocsIndex,
+} from './docs/store.js';
 import { createHttpApp } from './http/app.js';
 import { startHttpServer } from './http/node-server.js';
 import { KeyRing } from './http/oauth/crypto.js';
@@ -47,6 +53,11 @@ function main(): void {
         '  NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL\n' +
         '  NBAI_KEY_CHECK_URL (optional) gateway URL used to check pasted keys at sign-in,\n' +
         '                    default <NBAI_BASE_URL>/h/geocode (an unbilled request)\n' +
+        '  NBAI_DOCS_GITHUB_TOKEN (required for live docs) read token for the docs repository;\n' +
+        '                    the index is rebuilt from it at start and whenever main moves\n' +
+        '  NBAI_DOCS_REPO    (optional) owner/name, default nextbillion-ai/nb-public-docs\n' +
+        '  NBAI_DOCS_REF     (optional) branch, default main\n' +
+        '  NBAI_DOCS_REFRESH_MINUTES (optional) how often to check, default 10; 0 = once at start\n' +
         '  NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;\n' +
         '                    comma-separated, current first, to rotate\n' +
         '  NBAI_BASE_URL, NBAI_TIMEOUT_MS as above\n',
@@ -130,10 +141,47 @@ async function serveHttp(): Promise<void> {
     );
   }
 
+  // Documentation: rebuilt in-process from the docs repository at start and whenever its
+  // main branch moves (checked every NBAI_DOCS_REFRESH_MINUTES); the image copy is the
+  // fallback. See docs/store.ts.
+  const docsRepo = process.env.NBAI_DOCS_REPO?.trim() || 'nextbillion-ai/nb-public-docs';
+  const docsToken = process.env.NBAI_DOCS_GITHUB_TOKEN?.trim() || undefined;
+  const refreshMinutes = Number(process.env.NBAI_DOCS_REFRESH_MINUTES ?? 10);
+  if (!docsToken) {
+    logError(
+      'NBAI_DOCS_GITHUB_TOKEN is not set: the documentation index cannot follow the docs repository; ' +
+        'serving the copy built into the image',
+    );
+  }
+  configureDocsIndex(
+    docsToken
+      ? {
+          github: {
+            repo: docsRepo,
+            ref: process.env.NBAI_DOCS_REF?.trim() || 'main',
+            token: docsToken,
+          },
+        }
+      : {},
+  );
+  if (docsToken) {
+    void startDocsIndex().catch((error) =>
+      logError('documentation index: start-up build failed', error),
+    );
+    if (refreshMinutes > 0) {
+      setInterval(() => void refreshDocsIndex(), refreshMinutes * 60_000).unref();
+    }
+    logInfo(
+      `documentation index: following ${docsRepo}` +
+        (refreshMinutes > 0 ? `, checked every ${refreshMinutes} min` : ', checked once at start'),
+    );
+  }
+
   const app = createHttpApp({
     version: pkg.version,
     publicUrl: config.publicUrl,
     issuerUrl: config.issuerUrl,
+    docsIndexInfo,
     nbClientFactory: (apiKey) =>
       new NbClient({ apiKey, baseUrl: config.baseUrl, timeoutMs: config.timeoutMs }),
     oauth: {

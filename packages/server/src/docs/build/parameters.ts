@@ -7,9 +7,9 @@
  * docs' own wording ("in seconds", "in meters", "unix timestamp"); when the docs do not
  * state one the field stays null. Pure functions, build-time only.
  */
-import { parseBlocks, splitSections, type Block } from '../../src/docs/markdown.js';
-import { stem } from '../../src/docs/tokenizer.js';
-import type { PageRecord, ParameterRecord } from '../../src/docs/types.js';
+import { parseBlocks, splitSections, type Block } from '../markdown.js';
+import { stem } from '../tokenizer.js';
+import type { PageRecord, ParameterRecord } from '../types.js';
 import { slugify } from './mapping.js';
 
 /** Headings that organise a page rather than name an operation or API variant. */

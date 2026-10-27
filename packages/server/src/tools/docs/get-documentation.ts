@@ -37,7 +37,7 @@ export const getDocumentation: NbTool<typeof Schema> = {
   inputSchema: Schema,
   annotations: DOCS_TOOL_ANNOTATIONS,
   async run(args): Promise<ToolResult> {
-    const index = getDocsIndex();
+    const index = await getDocsIndex();
     const commit = index.meta.commit_sha.slice(0, 7);
     const docId = args.doc_id
       .trim()
