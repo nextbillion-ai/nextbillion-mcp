@@ -128,7 +128,7 @@ export const getApiParameters: NbTool<typeof Schema> = {
   annotations: DOCS_TOOL_ANNOTATIONS,
   async run(args): Promise<ToolResult> {
     if (!args.endpoint && !args.doc_id) throw new ToolInputError('give endpoint or doc_id');
-    const index = getDocsIndex();
+    const index = await getDocsIndex();
     const commit = index.meta.commit_sha.slice(0, 7);
     const knownApis = [...new Set(index.endpoints.map((e) => e.split('/')[0]))];
     const miss = (text: string, extra: Record<string, unknown>): ToolResult => ({

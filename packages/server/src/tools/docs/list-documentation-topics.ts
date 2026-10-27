@@ -23,7 +23,7 @@ export const listDocumentationTopics: NbTool<typeof Schema> = {
   inputSchema: Schema,
   annotations: DOCS_TOOL_ANNOTATIONS,
   async run(args): Promise<ToolResult> {
-    const index = getDocsIndex();
+    const index = await getDocsIndex();
     const sdk = args.sdk?.trim().toLowerCase();
     const categories = new Map<string, Map<string, ApiEntry>>();
     let count = 0;

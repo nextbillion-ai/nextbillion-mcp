@@ -41,7 +41,7 @@ export const searchDocumentation: NbTool<typeof Schema> = {
   inputSchema: Schema,
   annotations: DOCS_TOOL_ANNOTATIONS,
   async run(args): Promise<ToolResult> {
-    const index = getDocsIndex();
+    const index = await getDocsIndex();
     // Loaded at call time: tools/index.ts imports this module, so a static import would cycle.
     const { ALL_TOOLS } = await import('../index.js');
     const hits = search(index, {

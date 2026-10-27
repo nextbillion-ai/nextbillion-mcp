@@ -43,25 +43,33 @@ jobs:
           docker rm -f "$cid"
 
   image:
-    # Publishes the hosted image to the company registry on release tags. Runs on the
-    # company's self-hosted runners, which provide `nip` and its registry credentials
-    # (see nextbillion-ai/github-runner); pushes to
-    # asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp:<tag>.
+    # Publishes the hosted image on release tags and rolls it out to Cloud Run. Runs on a
+    # public runner; authenticates to GCP with the deployer service account's key
+    # (secret GCP_SA_KEY; the account and its roles are Terraform-managed in
+    # nextbillion-ai/nextbillion-infra, see nextbillion-mcp.tf "Manual steps").
+    # Pushes to asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp:<tag>.
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     needs: test
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: asia-southeast1-docker.pkg.dev
+      IMAGE: asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp
     steps:
       - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v2
       - name: Build and push image
+        id: push
         run: |
           tag="${GITHUB_REF#refs/tags/}"
           [ "$tag" = "$GITHUB_REF" ] && tag="sha-${GITHUB_SHA::7}"
-          export DOCKER_CONFIG="$(mktemp -d)"
-          NIP_TARGETS=asia-southeast1 nip -t "nextbillion-mcp:${tag}" .
-          image="asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp:${tag}"
-          echo "pushed ${image}"
-          echo "image=${image}" >> "$GITHUB_OUTPUT"
-        id: push
+          gcloud auth configure-docker "$REGISTRY" --quiet
+          docker build -t "$IMAGE:$tag" .
+          docker push "$IMAGE:$tag"
+          echo "pushed $IMAGE:$tag"
+          echo "image=$IMAGE:$tag" >> "$GITHUB_OUTPUT"
       # Rolls the new image out to the hosted service (infrastructure is Terraform-managed in
       # nextbillion-ai/nextbillion-infra; the image field there is ignored so this step owns it).
       # Only release tags deploy; manual dispatch builds and pushes without deploying.

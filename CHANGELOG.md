@@ -6,6 +6,21 @@ Hosted mode: the same server runs at https://mcp.nextbillion.io with a browser s
 Claude, Claude Code, Cursor and Codex connect to a URL instead of launching a local process.
 Stdio mode, tools and schemas are unchanged.
 
+### Documentation follows the docs repository
+
+- The hosted server rebuilds its documentation index in-process from `nextbillion-ai/nb-public-docs`:
+  at start, and again whenever `main` moves (checked every `NBAI_DOCS_REFRESH_MINUTES`,
+  default 10, with a conditional request that is free when nothing changed). A rebuild
+  downloads the repository as a tarball (~1 MB), runs the same builder as
+  `npm run docs:build-index` and swaps the new index in atomically; the previous one serves
+  until then. Documentation changes therefore reach the hosted server within minutes and
+  without a release. `NBAI_DOCS_GITHUB_TOKEN` (read access to the private repository) is
+  required for this; without it, or when GitHub is unreachable at start, the copy built into
+  the image is served and `/healthz` says so (`docs.origin`, `docs.commit_sha`,
+  `docs.last_error`).
+- The builder (`src/docs/builder.ts`, with the URL mapping and parameter extraction) is now
+  part of the server bundle; `scripts/docs/build-index.ts` is a thin wrapper around it.
+
 ### Sign-in (OAuth authorization server)
 
 - **Built-in OAuth 2.1 authorization server** at `/oauth/authorize`, `/oauth/token`,

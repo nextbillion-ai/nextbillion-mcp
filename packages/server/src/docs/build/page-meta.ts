@@ -3,7 +3,7 @@
  * and page type (spec §6). Build-time only.
  */
 import { slugify } from './mapping.js';
-import type { PageType } from '../../src/docs/types.js';
+import type { PageType } from '../types.js';
 
 export interface PageMeta {
   category: string;

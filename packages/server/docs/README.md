@@ -2,14 +2,14 @@
 
 This directory holds the checked-in inputs for the documentation tools (`search_documentation`, `get_documentation`, `get_api_parameters`, `list_documentation_topics`). The source is the private repository `nextbillion-ai/nb-public-docs`; nothing here requires access to it at build or test time. Retrieval quality is checked by the unit tests on the committed index (spec acceptance tests) and by the manual host pass before a release.
 
-| File                            | What it is                                                                                 | Maintained by                                      |
-| ------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| `docs-pin.json`                 | The docs commit the committed inputs were taken from, and the date of the sitemap snapshot | `npm run docs:validate -- --docs … --write`        |
-| `docs-files.txt`                | Every Markdown page in the docs repo at the pinned commit                                  | same                                               |
-| `sitemap-urls.txt`              | Snapshot of the live sitemap (`https://docs.nextbillion.ai/sitemap-0.xml`), URL paths only | `npm run docs:validate -- --fetch-sitemap --write` |
-| `url-overrides.json`            | Folder aliases and page overrides for the path-to-URL mapping (see below)                  | by hand                                            |
-| `reports/files-without-urls.md` | Pages that are not indexed, and why                                                        | `npm run docs:validate -- --write`                 |
-| `reports/urls-without-files.md` | Live pages with no source in the docs repo (known coverage gap)                            | same                                               |
+| File                                   | What it is                                                                                         | Maintained by                                      |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `docs-pin.json`                        | The docs commit the committed inputs were taken from, and the date of the sitemap snapshot         | `npm run docs:validate -- --docs … --write`        |
+| `docs-files.txt`                       | Every Markdown page in the docs repo at the pinned commit                                          | same                                               |
+| `sitemap-urls.txt`                     | Snapshot of the live sitemap (`https://docs.nextbillion.ai/sitemap-0.xml`), URL paths only         | `npm run docs:validate -- --fetch-sitemap --write` |
+| `../src/docs/build/url-overrides.json` | Folder aliases and page overrides for the path-to-URL mapping (see below); bundled into the server | by hand                                            |
+| `reports/files-without-urls.md`        | Pages that are not indexed, and why                                                                | `npm run docs:validate -- --write`                 |
+| `reports/urls-without-files.md`        | Live pages with no source in the docs repo (known coverage gap)                                    | same                                               |
 
 ## How a page gets its URL
 
@@ -26,7 +26,7 @@ A page's `doc_id` is its slugified repo path without `.md`, independent of the U
 
 ## Refreshing after a docs change (manual, by decision of 2026-10-07)
 
-There is no scheduled refresh. When the docs change, an engineer runs the steps below, opens a PR, and the maintainer publishes a patch release.
+The hosted server does not depend on this file for freshness: it rebuilds the index in-process from the docs repository at start and whenever `main` moves (`src/docs/store.ts`, using the same `src/docs/builder.ts`). The steps below refresh the committed snapshot (the image's fallback and the local package); run them when the URL mapping or the pinned commit should move.
 
 ```bash
 # 1. Update the local clone of the docs repo

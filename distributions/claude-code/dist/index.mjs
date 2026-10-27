@@ -1042,7 +1042,7 @@ var init_checks = __esm({
     };
     $ZodCheckLessThan = /* @__PURE__ */ $constructor("$ZodCheckLessThan", (inst, def) => {
       $ZodCheck.init(inst, def);
-      const origin = numericOriginMap[typeof def.value];
+      const origin2 = numericOriginMap[typeof def.value];
       inst._zod.onattach.push((inst2) => {
         const bag = inst2._zod.bag;
         const curr = (def.inclusive ? bag.maximum : bag.exclusiveMaximum) ?? Number.POSITIVE_INFINITY;
@@ -1058,7 +1058,7 @@ var init_checks = __esm({
           return;
         }
         payload.issues.push({
-          origin,
+          origin: origin2,
           code: "too_big",
           maximum: typeof def.value === "object" ? def.value.getTime() : def.value,
           input: payload.value,
@@ -1070,7 +1070,7 @@ var init_checks = __esm({
     });
     $ZodCheckGreaterThan = /* @__PURE__ */ $constructor("$ZodCheckGreaterThan", (inst, def) => {
       $ZodCheck.init(inst, def);
-      const origin = numericOriginMap[typeof def.value];
+      const origin2 = numericOriginMap[typeof def.value];
       inst._zod.onattach.push((inst2) => {
         const bag = inst2._zod.bag;
         const curr = (def.inclusive ? bag.minimum : bag.exclusiveMinimum) ?? Number.NEGATIVE_INFINITY;
@@ -1086,7 +1086,7 @@ var init_checks = __esm({
           return;
         }
         payload.issues.push({
-          origin,
+          origin: origin2,
           code: "too_small",
           minimum: typeof def.value === "object" ? def.value.getTime() : def.value,
           input: payload.value,
@@ -1122,7 +1122,7 @@ var init_checks = __esm({
       $ZodCheck.init(inst, def);
       def.format = def.format || "float64";
       const isInt = def.format?.includes("int");
-      const origin = isInt ? "int" : "number";
+      const origin2 = isInt ? "int" : "number";
       const [minimum, maximum] = NUMBER_FORMAT_RANGES[def.format];
       inst._zod.onattach.push((inst2) => {
         const bag = inst2._zod.bag;
@@ -1137,7 +1137,7 @@ var init_checks = __esm({
         if (isInt) {
           if (!Number.isInteger(input)) {
             payload.issues.push({
-              expected: origin,
+              expected: origin2,
               format: def.format,
               code: "invalid_type",
               continue: false,
@@ -1154,7 +1154,7 @@ var init_checks = __esm({
                 maximum: Number.MAX_SAFE_INTEGER,
                 note: "Integers must be within the safe integer range.",
                 inst,
-                origin,
+                origin: origin2,
                 inclusive: true,
                 continue: !def.abort
               });
@@ -1165,7 +1165,7 @@ var init_checks = __esm({
                 minimum: Number.MIN_SAFE_INTEGER,
                 note: "Integers must be within the safe integer range.",
                 inst,
-                origin,
+                origin: origin2,
                 inclusive: true,
                 continue: !def.abort
               });
@@ -1214,9 +1214,9 @@ var init_checks = __esm({
         const length = input.length;
         if (length <= def.maximum)
           return;
-        const origin = getLengthableOrigin(input);
+        const origin2 = getLengthableOrigin(input);
         payload.issues.push({
-          origin,
+          origin: origin2,
           code: "too_big",
           maximum: def.maximum,
           inclusive: true,
@@ -1243,9 +1243,9 @@ var init_checks = __esm({
         const length = input.length;
         if (length >= def.minimum)
           return;
-        const origin = getLengthableOrigin(input);
+        const origin2 = getLengthableOrigin(input);
         payload.issues.push({
-          origin,
+          origin: origin2,
           code: "too_small",
           minimum: def.minimum,
           inclusive: true,
@@ -1273,10 +1273,10 @@ var init_checks = __esm({
         const length = input.length;
         if (length === def.length)
           return;
-        const origin = getLengthableOrigin(input);
+        const origin2 = getLengthableOrigin(input);
         const tooBig = length > def.length;
         payload.issues.push({
-          origin,
+          origin: origin2,
           ...tooBig ? { code: "too_big", maximum: def.length } : { code: "too_small", minimum: def.length },
           inclusive: true,
           exact: true,
@@ -3155,8 +3155,8 @@ var init_en = __esm({
         set: { unit: "items", verb: "to have" },
         map: { unit: "entries", verb: "to have" }
       };
-      function getSizing(origin) {
-        return Sizable[origin] ?? null;
+      function getSizing(origin2) {
+        return Sizable[origin2] ?? null;
       }
       const FormatDictionary = {
         regex: "input",
@@ -4572,14 +4572,14 @@ var init_json_schema_processors = __esm({
     unionProcessor = (schema, ctx, json3, params) => {
       const def = schema._zod.def;
       const isExclusive = def.inclusive === false;
-      const options = def.options.map((x, i) => process2(x, ctx, {
+      const options2 = def.options.map((x, i) => process2(x, ctx, {
         ...params,
         path: [...params.path, isExclusive ? "oneOf" : "anyOf", i]
       }));
       if (isExclusive) {
-        json3.oneOf = options;
+        json3.oneOf = options2;
       } else {
-        json3.anyOf = options;
+        json3.anyOf = options2;
       }
     };
     intersectionProcessor = (schema, ctx, json3, params) => {
@@ -5042,17 +5042,17 @@ function looseObject(shape, params) {
     ...util_exports.normalizeParams(params)
   });
 }
-function union(options, params) {
+function union(options2, params) {
   return new ZodUnion({
     type: "union",
-    options,
+    options: options2,
     ...util_exports.normalizeParams(params)
   });
 }
-function discriminatedUnion(discriminator, options, params) {
+function discriminatedUnion(discriminator, options2, params) {
   return new ZodDiscriminatedUnion({
     type: "union",
-    options,
+    options: options2,
     discriminator,
     ...util_exports.normalizeParams(params)
   });
@@ -6198,20 +6198,20 @@ var init_geo = __esm({
 });
 
 // src/tools/places/text-search.ts
-function textSearchTool(options) {
+function textSearchTool(options2) {
   return {
-    name: options.name,
-    title: options.title,
-    description: options.description,
+    name: options2.name,
+    title: options2.title,
+    description: options2.description,
     inputSchema: TextSearchSchema,
     annotations: READ_ONLY,
-    docs: options.docs,
+    docs: options2.docs,
     async run(args, nb) {
-      const response = await nb.getJson(options.path, {
+      const response = await nb.getJson(options2.path, {
         q: args.query,
         ...placesFilterQuery(args)
       });
-      return textResult(summarizePlaces(response, options.noun), response);
+      return textResult(summarizePlaces(response, options2.noun), response);
     }
   };
 }
@@ -7316,6 +7316,266 @@ var init_bm25 = __esm({
   }
 });
 
+// src/docs/build/mapping.ts
+function slugify2(segment) {
+  return segment.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+function docIdForPath(relPath) {
+  return stripMd(relPath).split("/").map(slugify2).join("/");
+}
+function stripMd(relPath) {
+  return relPath.replace(/\.md$/i, "");
+}
+function urlResult(path, rule) {
+  return { kind: "url", path, url: `${DOCS_SITE}/${path}`, rule };
+}
+function mapDocPath(relPath, overrides) {
+  const override = overrides.pages[relPath];
+  if (override !== void 0) {
+    if ("exclude" in override) return { kind: "excluded", reason: override.exclude };
+    return urlResult(override.url, "page-override");
+  }
+  const segments = stripMd(relPath).split("/").map(slugify2);
+  if (segments.length >= 2 && segments[segments.length - 1] === segments[segments.length - 2]) {
+    segments.pop();
+  }
+  for (let n = segments.length; n >= 1; n -= 1) {
+    const alias = overrides.folderAliases[segments.slice(0, n).join("/")];
+    if (alias !== void 0) {
+      const path = [alias, ...segments.slice(n)].filter((s) => s.length > 0).join("/");
+      return urlResult(path, "folder-alias");
+    }
+  }
+  return urlResult(segments.join("/"), "path-rules");
+}
+var DOCS_SITE;
+var init_mapping = __esm({
+  "src/docs/build/mapping.ts"() {
+    "use strict";
+    DOCS_SITE = "https://docs.nextbillion.ai";
+  }
+});
+
+// src/docs/build/page-meta.ts
+function pageMeta(relPath) {
+  const segments = relPath.replace(/\.md$/i, "").split("/");
+  const folders = segments.slice(0, -1);
+  const category = folders[0] ?? "";
+  const slugs = folders.map(slugify2);
+  let page_type = "reference";
+  if (slugs.includes("examples")) page_type = "example";
+  else if (slugs.includes("tutorials") || slugs.includes("tutorial")) page_type = "guide";
+  for (let n = slugs.length; n >= 1; n -= 1) {
+    const sdk = SDK_FOLDERS[slugs.slice(0, n).join("/")];
+    if (sdk) return { category, api: sdk.api, sdk: sdk.sdk, page_type };
+  }
+  if (slugs[1] === "mobile-sdks") {
+    throw new Error(`no SDK_FOLDERS entry for ${relPath}; add one in scripts/docs/page-meta.ts`);
+  }
+  const named = folders.filter((f) => !STRUCTURAL.has(slugify2(f)));
+  return { category, api: named[named.length - 1] ?? category, page_type };
+}
+var SDK_FOLDERS, STRUCTURAL;
+var init_page_meta = __esm({
+  "src/docs/build/page-meta.ts"() {
+    "use strict";
+    init_mapping();
+    SDK_FOLDERS = {
+      "maps/mobile-sdks/android": { api: "Android Maps SDK", sdk: "Android" },
+      "maps/mobile-sdks/ios": { api: "iOS Maps SDK", sdk: "iOS" },
+      "maps/mobile-sdks/flutter": { api: "Flutter Maps SDK", sdk: "Flutter" },
+      "maps/mobile-sdks/jetpack-compose": { api: "Maps SDK Jetpack Compose Extension", sdk: "Android" },
+      "maps/mobile-sdks/web-maps": { api: "Web Maps SDK", sdk: "Web" },
+      "maps/mobile-sdks/ios-offline-maps": { api: "iOS Offline Maps", sdk: "iOS" },
+      "maps/mobile-sdks/android-offline-maps": { api: "Android Offline Maps", sdk: "Android" },
+      "routing/mobile-sdks/android": { api: "Android Navigation SDK", sdk: "Android" },
+      "routing/mobile-sdks/ios": { api: "iOS Navigation SDK", sdk: "iOS" },
+      "routing/mobile-sdks/flutter": { api: "Flutter Navigation SDK", sdk: "Flutter" },
+      "routing/mobile-sdks/jetpack": {
+        api: "Navigation SDK Jetpack Compose Extension",
+        sdk: "Android"
+      },
+      "routing/mobile-sdks/ios-offline-navigation": { api: "iOS Offline Navigation", sdk: "iOS" },
+      "routing/mobile-sdks/android-offline-navigation": {
+        api: "Android Offline Navigation",
+        sdk: "Android"
+      },
+      "tracking/mobile-sdks/android": { api: "Android Tracking SDK", sdk: "Android" },
+      "tracking/mobile-sdks/ios": { api: "iOS Tracking SDK", sdk: "iOS" },
+      "tracking/mobile-sdks/flutter": { api: "Flutter Tracking SDK", sdk: "Flutter" }
+    };
+    STRUCTURAL = /* @__PURE__ */ new Set([
+      "examples",
+      "tutorials",
+      "tutorial",
+      "references",
+      "style-specification"
+    ]);
+  }
+});
+
+// src/docs/markdown.ts
+function parseBlocks(markdown) {
+  const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
+  const blocks = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const fence = FENCE_OPEN.exec(line);
+    if (fence) {
+      const marker = fence[1];
+      const fenceLines = [line];
+      i += 1;
+      while (i < lines.length) {
+        const current = lines[i];
+        fenceLines.push(current);
+        i += 1;
+        const close = FENCE_CLOSE.exec(current);
+        if (close && close[1][0] === marker[0] && close[1].length >= marker.length) break;
+      }
+      blocks.push({ kind: "fence", lines: fenceLines, lang: fence[2].trim() });
+      continue;
+    }
+    const heading = HEADING.exec(line);
+    if (heading) {
+      blocks.push({
+        kind: "heading",
+        lines: [line],
+        level: heading[1].length,
+        heading: heading[2]
+      });
+      i += 1;
+      continue;
+    }
+    if (TABLE_ROW.test(line)) {
+      const tableLines = [];
+      while (i < lines.length && TABLE_ROW.test(lines[i])) {
+        tableLines.push(lines[i]);
+        i += 1;
+      }
+      blocks.push({ kind: "table", lines: tableLines });
+      continue;
+    }
+    if (line.trim() === "") {
+      blocks.push({ kind: "blank", lines: [line] });
+      i += 1;
+      continue;
+    }
+    const textLines = [];
+    while (i < lines.length && lines[i].trim() !== "" && !HEADING.test(lines[i]) && !FENCE_OPEN.test(lines[i]) && !TABLE_ROW.test(lines[i])) {
+      textLines.push(lines[i]);
+      i += 1;
+    }
+    blocks.push({ kind: "text", lines: textLines });
+  }
+  return blocks;
+}
+function splitSections(blocks) {
+  const sections = [];
+  const open = [];
+  let current = { headingPath: [], level: 0, blocks: [] };
+  for (const block of blocks) {
+    if (block.kind === "heading" && block.level !== void 0 && block.level <= 3) {
+      if (current.blocks.length > 0) sections.push(current);
+      open.length = Math.min(open.length, block.level - 1);
+      open[block.level - 1] = block.heading ?? "";
+      current = {
+        headingPath: open.filter((h) => h !== void 0),
+        level: block.level,
+        blocks: [block]
+      };
+      continue;
+    }
+    current.blocks.push(block);
+  }
+  if (current.blocks.length > 0) sections.push(current);
+  return sections;
+}
+function headingAnchor(heading) {
+  return heading.toLowerCase().replace(/[`*_~]/g, "").replace(/[^a-z0-9 -]/g, "").trim().replace(/\s+/g, "-");
+}
+function chunkSection(section, options2 = {}) {
+  const cap = options2.cap ?? 2e3;
+  const exampleMinChars = options2.exampleMinChars ?? 200;
+  const chunks = [];
+  let pending = [];
+  let pendingChars = 0;
+  const isResponse = section.headingPath.slice(-2).some((h) => RESPONSE_HEADING.test(h));
+  const flush = () => {
+    if (pending.length === 0) return;
+    const hasTable = pending.some((b) => b.kind === "table");
+    chunks.push({
+      headingPath: section.headingPath,
+      chunkType: isResponse && hasTable ? "response_schema" : "content",
+      text: pending.flatMap((b) => b.lines).join("\n")
+    });
+    pending = [];
+    pendingChars = 0;
+  };
+  for (const block of section.blocks) {
+    const chars = block.lines.join("\n").length;
+    if (block.kind === "fence" && chars >= exampleMinChars) {
+      flush();
+      chunks.push({
+        headingPath: section.headingPath,
+        chunkType: "example",
+        text: block.lines.join("\n")
+      });
+      continue;
+    }
+    if (pending.length > 0 && pendingChars + chars > cap && block.kind !== "blank") flush();
+    pending.push(block);
+    pendingChars += chars + 1;
+  }
+  flush();
+  return chunks;
+}
+function mergeTinyChunks(chunks, minChars = MIN_CHUNK_CHARS) {
+  const out = [];
+  let carry;
+  for (const chunk of chunks) {
+    const merged = carry ? { ...chunk, text: `${carry.text}
+${chunk.text}` } : chunk;
+    carry = void 0;
+    if (merged.text.trim().length < minChars) {
+      carry = merged;
+      continue;
+    }
+    out.push(merged);
+  }
+  if (carry) {
+    const last = out.pop();
+    out.push(last ? { ...last, text: `${last.text}
+${carry.text}` } : carry);
+  }
+  return out;
+}
+function hasUnbalancedFence(text) {
+  let open;
+  for (const line of text.split("\n")) {
+    if (open === void 0) {
+      const fence = FENCE_OPEN.exec(line);
+      if (fence) open = fence[1];
+      continue;
+    }
+    const close = FENCE_CLOSE.exec(line);
+    if (close && close[1][0] === open[0] && close[1].length >= open.length) open = void 0;
+  }
+  return open !== void 0;
+}
+var FENCE_OPEN, FENCE_CLOSE, HEADING, TABLE_ROW, RESPONSE_HEADING, MIN_CHUNK_CHARS;
+var init_markdown = __esm({
+  "src/docs/markdown.ts"() {
+    "use strict";
+    FENCE_OPEN = /^\s{0,3}(`{3,}|~{3,})(.*)$/;
+    FENCE_CLOSE = /^\s{0,3}(`{3,}|~{3,})\s*$/;
+    HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
+    TABLE_ROW = /^\s*\|/;
+    RESPONSE_HEADING = /\bresponse\b/i;
+    MIN_CHUNK_CHARS = 100;
+  }
+});
+
 // src/docs/tokenizer.ts
 function stem(word2) {
   let w = word2;
@@ -7327,24 +7587,24 @@ function stem(word2) {
   if (w.length > 4 && w.endsWith("e")) w = w.slice(0, -1);
   return w;
 }
-function word(token, options) {
+function word(token, options2) {
   if (/\d/.test(token)) return token;
   if (token.length < 2 || STOPWORDS.has(token)) return void 0;
-  return options.stem === false ? token : stem(token);
+  return options2.stem === false ? token : stem(token);
 }
-function tokenize(text, options = {}) {
+function tokenize(text, options2 = {}) {
   const terms = [];
   for (const match of text.toLowerCase().matchAll(IDENTIFIER)) {
     const token = match[0];
     if (JOINER.test(token)) {
       terms.push(token);
       for (const part of token.split(JOINER)) {
-        const term2 = word(part, options);
+        const term2 = word(part, options2);
         if (term2 !== void 0) terms.push(term2);
       }
       continue;
     }
-    const term = word(token, options);
+    const term = word(token, options2);
     if (term !== void 0) terms.push(term);
   }
   return terms;
@@ -7364,17 +7624,586 @@ var init_tokenizer = __esm({
   }
 });
 
+// src/docs/build/parameters.ts
+function apiSlug(api) {
+  return slugify2(api).split("-").filter((t) => t !== "api" && t !== "apis").join("-");
+}
+function variantTokens(heading, apiWords) {
+  return slugify2(heading).split("-").filter((t) => t.length > 0 && !STOP.has(t) && !apiWords.has(stem(t)));
+}
+function endpointFor(page, headingPath) {
+  const api = apiSlug(page.api);
+  const apiWords = new Set(api.split("-").map(stem));
+  const seen = /* @__PURE__ */ new Set();
+  const tokens = [];
+  const push = (list) => {
+    for (const token of list) {
+      const key = stem(token);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      tokens.push(token);
+    }
+  };
+  push(variantTokens(page.doc_id.split("/").pop() ?? "", apiWords));
+  for (const heading of headingPath.slice(1)) {
+    if (GENERIC_HEADING.test(heading.trim())) continue;
+    push(variantTokens(heading, apiWords));
+  }
+  return tokens.length === 0 ? api : `${api}/${tokens.join("-")}`;
+}
+function splitRow(line) {
+  const inner = line.trim().replace(/^\|/, "").replace(/\|$/, "");
+  return inner.split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, "|").trim());
+}
+function parseTable(lines) {
+  if (lines.length < 3) return void 0;
+  const headers2 = splitRow(lines[0]);
+  const separator = splitRow(lines[1]);
+  if (!separator.every((c) => /^:?-{2,}:?$/.test(c.trim()))) return void 0;
+  const rows = lines.slice(2).map((l) => {
+    const cells = splitRow(l);
+    while (cells.length < headers2.length) cells.push("");
+    return cells;
+  });
+  return { headers: headers2, rows };
+}
+function roleOf(header) {
+  const h = header.toLowerCase().replace(/[`*]/g, "").trim();
+  if (/^(name|field|parameter|param|property|key|attribute)s?$/.test(h)) return "name";
+  if (h === "required") return "required";
+  if (/^format/.test(h)) return "format";
+  if (/^type/.test(h)) return "type";
+  if (h === "description" || h === "details") return "description";
+  if (h === "default") return "default";
+  if (h === "location") return "location";
+  return void 0;
+}
+function unitsFrom(text) {
+  const explicit = /\bunits?\s*:\s*`?([a-z]+(?:\/[a-z]+)?)`?/i.exec(text);
+  if (explicit) {
+    const word2 = explicit[1].toLowerCase();
+    if (UNIT_WORDS[word2]) return UNIT_WORDS[word2];
+  }
+  const match = UNIT_PATTERN.exec(text);
+  if (match) return UNIT_WORDS[match[1].toLowerCase()] ?? match[1].toLowerCase();
+  if (/\bunix\s+(?:epoch|timestamp)\b/i.test(text)) {
+    return /\b(?:milliseconds|ms)\b/i.test(text) ? "unix timestamp (milliseconds)" : "unix timestamp (seconds)";
+  }
+  return null;
+}
+function parseFormat(cell) {
+  const out = {};
+  for (const raw of cell.split(/<br\s*\/?>/i)) {
+    const piece = raw.trim();
+    const m = /^([A-Za-z][A-Za-z ]{1,24}?)\s*:\s*(.+)$/.exec(piece);
+    if (!m) continue;
+    const key = m[1].toLowerCase().trim();
+    const value = m[2].trim().replace(/,$/, "");
+    if (key === "type") out.type = code(value).toLowerCase();
+    else if (key === "default") out.default = code(value);
+    else if (/^(allowed values?|values|options|enum)$/.test(key)) {
+      out.allowed_values = value.split(/,\s*|\s+or\s+/).map(code).filter((v) => v.length > 0);
+    } else if (key === "example") out.example = code(value);
+    else if (/^(minimum( value)?|min)$/.test(key)) out.minimum = code(value);
+    else if (/^(maximum( value)?|max)$/.test(key)) out.maximum = code(value);
+    else if (key === "format") out.formatNote = value;
+    else if (/^units?$/.test(key)) out.units = value.toLowerCase();
+  }
+  return out;
+}
+function locationFrom(heading, explicit) {
+  const text = `${explicit ?? ""} ${heading}`.toLowerCase();
+  if (/\bpath\b/.test(text)) return "path";
+  if (/\bbody\b/.test(text)) return "body";
+  if (/\bquery\b|\brequest parameters?\b|\bget request\b/.test(text)) return "query";
+  return null;
+}
+function extractParameters(page, markdown) {
+  const blocks = parseBlocks(markdown);
+  const sections = splitSections(blocks);
+  const records = [];
+  for (const section of sections) {
+    let nearest;
+    for (const block of section.blocks) {
+      if (block.kind === "heading") {
+        nearest = block;
+        continue;
+      }
+      if (block.kind !== "table") continue;
+      const table = parseTable(block.lines);
+      if (!table) continue;
+      const roles = table.headers.map(roleOf);
+      const col = (role) => roles.indexOf(role);
+      if (col("name") === -1 || col("type") === -1 && col("format") === -1 && col("description") === -1)
+        continue;
+      const tableHeading = nearest?.heading ?? section.headingPath[section.headingPath.length - 1] ?? "";
+      const requestLayout = col("required") !== -1 || col("format") !== -1;
+      if (!requestLayout && !(REQUEST_HEADING.test(tableHeading) && !EXCLUDE_HEADING.test(tableHeading)))
+        continue;
+      if (EXCLUDE_HEADING.test(tableHeading) && /\bresponse\b/i.test(tableHeading)) continue;
+      const headingPath = [...section.headingPath];
+      if (nearest && (nearest.level ?? 0) > section.level && nearest.heading && headingPath[headingPath.length - 1] !== nearest.heading) {
+        headingPath.push(nearest.heading);
+      }
+      const endpoint = endpointFor(page, headingPath);
+      for (const row of table.rows) {
+        const name = code(row[col("name")] ?? "");
+        if (!/^(\[\]\.)?[A-Za-z_][\w.\-\[\]]*$/.test(name)) continue;
+        const format = col("format") !== -1 ? parseFormat(row[col("format")]) : {};
+        const typeCell = col("type") !== -1 ? clean(row[col("type")]) : "";
+        let type = format.type ?? (typeCell ? code(typeCell).toLowerCase() : null);
+        let explicitLocation;
+        if (type && type.includes("/") && !/\bkm\/h|m\/s/.test(type)) {
+          const [t, loc] = type.split("/").map((x) => x.trim());
+          type = t || null;
+          explicitLocation = loc;
+        }
+        const requiredCell = col("required") !== -1 ? clean(row[col("required")]).toLowerCase() : "";
+        const required2 = /^(yes|required|true|mandatory)/.test(requiredCell) ? true : /^(no|optional|false)/.test(requiredCell) ? false : null;
+        const description = clean(row[col("description")] ?? "");
+        const defaultValue = format.default ?? (col("default") !== -1 ? code(clean(row[col("default")])) || null : null);
+        const unitText = `${format.formatNote ?? ""} ${description}`;
+        const record2 = {
+          endpoint,
+          name,
+          type,
+          required: required2,
+          default: defaultValue,
+          allowed_values: format.allowed_values ?? [],
+          units: format.units ?? unitsFrom(unitText),
+          location: locationFrom(
+            tableHeading,
+            explicitLocation ?? (col("location") !== -1 ? row[col("location")] : void 0)
+          ),
+          description,
+          heading_path: headingPath,
+          doc_id: page.doc_id
+        };
+        if (format.example) record2.example = format.example;
+        if (format.minimum) record2.minimum = format.minimum;
+        if (format.maximum) record2.maximum = format.maximum;
+        records.push(record2);
+      }
+    }
+  }
+  return records;
+}
+function dedupe(records) {
+  const seen = /* @__PURE__ */ new Set();
+  const out = [];
+  for (const record2 of records) {
+    const key = `${record2.endpoint}|${record2.name}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(record2);
+  }
+  return out;
+}
+var GENERIC_HEADING, REQUEST_HEADING, EXCLUDE_HEADING, STOP, clean, code, UNIT_WORDS, UNIT_PATTERN;
+var init_parameters = __esm({
+  "src/docs/build/parameters.ts"() {
+    "use strict";
+    init_markdown();
+    init_tokenizer();
+    init_mapping();
+    GENERIC_HEADING = /^(introduction|overview|api overview|(?:post |get )?(?:request|query|path) (?:parameters?|body|schema)|(?:post )?body schema|response schema|input parameters|configuring the feature.*|samples?.*|examples?.*|example-.*|api (?:query|rate) limits.*|api error (?:codes|handling)|(?:get|post|put|delete) (?:request|method)|request|response|namespaces?|object overview|multi-dimensional parameters|webhook configurations?|read the .*results?|weather codes|action (?:response schema|message body))$/i;
+    REQUEST_HEADING = /\b(request|parameters?|body|input|query|path)\b/i;
+    EXCLUDE_HEADING = /\b(response|error|limits?|samples?|examples?)\b/i;
+    STOP = /* @__PURE__ */ new Set([
+      "a",
+      "an",
+      "the",
+      "of",
+      "for",
+      "to",
+      "and",
+      "method",
+      "api",
+      "apis",
+      "new",
+      "existing",
+      "all",
+      "its",
+      "with"
+    ]);
+    clean = (cell) => cell.replace(/<br\s*\/?>/gi, " ").replace(/\s+/g, " ").trim();
+    code = (value) => value.replace(/^`|`$/g, "").replace(/^\*\*|\*\*$/g, "").trim();
+    UNIT_WORDS = {
+      kilogram: "kilograms",
+      kilograms: "kilograms",
+      kg: "kilograms",
+      kgs: "kilograms",
+      gram: "grams",
+      grams: "grams",
+      tonne: "tonnes",
+      tonnes: "tonnes",
+      ton: "tons",
+      tons: "tons",
+      meter: "meters",
+      meters: "meters",
+      metre: "meters",
+      metres: "meters",
+      kilometer: "kilometers",
+      kilometers: "kilometers",
+      kilometre: "kilometers",
+      kilometres: "kilometers",
+      km: "kilometers",
+      centimeter: "centimeters",
+      centimeters: "centimeters",
+      centimetre: "centimeters",
+      centimetres: "centimeters",
+      cm: "centimeters",
+      second: "seconds",
+      seconds: "seconds",
+      sec: "seconds",
+      secs: "seconds",
+      minute: "minutes",
+      minutes: "minutes",
+      min: "minutes",
+      mins: "minutes",
+      hour: "hours",
+      hours: "hours",
+      hr: "hours",
+      hrs: "hours",
+      millisecond: "milliseconds",
+      milliseconds: "milliseconds",
+      ms: "milliseconds",
+      degree: "degrees",
+      degrees: "degrees",
+      percent: "percent",
+      percentage: "percent",
+      "km/h": "km/h",
+      kph: "km/h",
+      mph: "mph",
+      "m/s": "m/s"
+    };
+    UNIT_PATTERN = new RegExp(
+      `\\b(?:in|as)\\s+(${Object.keys(UNIT_WORDS).map((w) => w.replace("/", "\\/")).join("|")})\\b`,
+      "i"
+    );
+  }
+});
+
+// src/docs/build/url-overrides.json
+var url_overrides_default;
+var init_url_overrides = __esm({
+  "src/docs/build/url-overrides.json"() {
+    url_overrides_default = {
+      $comment: "Overrides for scripts/docs/mapping.ts. folderAliases keys are slugified repo folder paths; values are URL path prefixes on docs.nextbillion.ai. pages keys are exact repo paths; a url may carry a #fragment when the file is one section of a live page; exclude needs a reason. Validate with `npm run docs:validate`.",
+      folderAliases: {
+        "maps/mobile-sdks/android": "maps/android-maps-sdk",
+        "maps/mobile-sdks/ios": "maps/ios-maps-sdk",
+        "maps/mobile-sdks/flutter": "maps/flutter-maps-sdk",
+        "maps/mobile-sdks/jetpack-compose": "maps/maps-sdk-jetpack-compose-extension",
+        "maps/mobile-sdks/web-maps": "maps/web-maps-sdk-v2",
+        "maps/mobile-sdks/ios-offline-maps": "maps/ios-offline-maps",
+        "maps/mobile-sdks/android-offline-maps": "maps/android-offline-maps",
+        "routing/mobile-sdks/android": "routing/android-navigation-sdk",
+        "routing/mobile-sdks/ios": "routing/ios-navigation-sdk",
+        "routing/mobile-sdks/flutter": "routing/flutter-navigation-sdk",
+        "routing/mobile-sdks/jetpack": "routing/navigation-sdk-jetpack-compose-extension",
+        "routing/mobile-sdks/ios-offline-navigation": "routing/ios-offline-navigation",
+        "routing/mobile-sdks/android-offline-navigation": "routing/android-offline-navigation",
+        "tracking/mobile-sdks/android": "tracking/android-tracking-sdk",
+        "tracking/mobile-sdks/ios": "tracking/ios-tracking-sdk",
+        "tracking/mobile-sdks/flutter": "tracking/flutter-tracking-sdk",
+        "routing/distance-matrix": "routing/distance-matrix-api",
+        "routing/snap-to-road": "routing/snap-to-roads-api",
+        "places/geocoding/batch-geocode": "places/geocoding/batch-api",
+        "places/geocoding/forward-geocode": "places/geocoding/forward-api",
+        "places/geocoding/geocode-postcode": "places/geocoding/postcode-api",
+        "places/geocoding/reverse-geocode": "places/geocoding/reverse-api",
+        "places/geocoding/structured-geocode": "places/geocoding/structured-api",
+        "places/multi-geocode": "places/multi-geocode-api",
+        "places/place-lookup": "places/place-lookup-api",
+        "places/autosuggestions": "places"
+      },
+      pages: {
+        "README.md": {
+          exclude: "repository readme, not a documentation page"
+        },
+        "Places/Autosuggestions/autosuggest-api.md": {
+          url: "places/autosuggestions-api",
+          why: "page renamed on the live site"
+        },
+        "Places/Search/Search Places API/search-places-apis.md": {
+          url: "places/search/search-places-api",
+          why: "overview of the combined Search Places page"
+        },
+        "Places/Search/Search Places API/discover-api.md": {
+          url: "places/search/search-places-api#discover-api",
+          why: "Discover is an H2 section of the Search Places page"
+        },
+        "Places/Search/Search Places API/browse-api.md": {
+          url: "places/search/search-places-api#browse-api",
+          why: "Browse is an H2 section of the Search Places page"
+        },
+        "Integrations/Motive/motive-fleet-hub-integration.md": {
+          url: "integrations/motive/fleet-hub-integration",
+          why: "file name carries the vendor prefix; the URL does not"
+        },
+        "Integrations/ServiceNow/service-now.md": {
+          url: "integrations/service-now",
+          why: "folder slug (servicenow) differs from the page slug (service-now)"
+        },
+        "Optimization/Route Optimization API/Tutorials/3d-volume-and-cargo-orientation.md": {
+          url: "optimization/route-optimization-api/tutorials/delivery-load-optimization-3d-volume-and-cargo-orientation",
+          why: "page renamed on the live site"
+        },
+        "Maps/Mobile SDKs/Web Maps/Examples/support-right-to-left-text.md": {
+          url: "maps/web-maps-sdk-v2/examples/add-support-right-to-left",
+          why: "page renamed on the live site"
+        },
+        "Routing/Mobile SDKs/iOS/sdk-configuration-and-plug-in.md": {
+          url: "routing/ios-navigation-sdk/sdk-configuration",
+          why: "page renamed on the live site"
+        },
+        "Routing/Mobile SDKs/iOS Offline Navigation/preview-offline-map.md": {
+          url: "routing/ios-offline-navigation/offline-map-preview",
+          why: "page renamed on the live site"
+        },
+        "Maps/Mobile SDKs/Android Offline Maps/download-a-region.md": {
+          url: "maps/android-offline-maps/download-region",
+          why: "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+        },
+        "Maps/Mobile SDKs/Android Offline Maps/check-and-install-updates.md": {
+          url: "maps/android-offline-maps/install-updates",
+          why: "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+        },
+        "Maps/Mobile SDKs/Android Offline Maps/limits-and-application-control.md": {
+          url: "maps/android-offline-maps/limits",
+          why: "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+        },
+        "Routing/Mobile SDKs/Android Offline Navigation/loading-the-region-catalog.md": {
+          url: "routing/android-offline-navigation/loading-region-catalog",
+          why: "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+        },
+        "Routing/Mobile SDKs/Android Offline Navigation/detect-route-and-map-updates.md": {
+          url: "routing/android-offline-navigation/update-regional-data",
+          why: "file renamed in the repo on 2026-10-14; the live site keeps the old slug"
+        },
+        "Places/Autosuggestions/autosuggestion-apis.md": {
+          exclude: "overview that repeats autosuggest-api.md and autocomplete-api.md; the live site has no combined page"
+        },
+        "Optimization/Route Optimization API/Tutorials/skill_example.md": {
+          exclude: "empty file (1 byte) in the docs repo; no live URL"
+        },
+        "Routing/Mobile SDKs/Android/Examples/add-Infowindow-on-mapview.md": {
+          url: "routing/android-navigation-sdk/examples/add-Infowindow-on-mapview",
+          why: "page renamed on the live site"
+        }
+      }
+    };
+  }
+});
+
+// src/docs/builder.ts
+function isDocsPage(relPath) {
+  return /\.md$/i.test(relPath) && !/(^|\/)readme\.md$/i.test(relPath);
+}
+function buildDocsIndexFile(input) {
+  const overrides = input.overrides ?? URL_OVERRIDES;
+  const pages = [];
+  const chunks = [];
+  const problems = [];
+  const skipped = [];
+  const rawParameters = [];
+  const paths = [...input.files.keys()].filter(isDocsPage).sort();
+  for (const file of paths) {
+    const mapped = mapDocPath(file, overrides);
+    if (mapped.kind !== "url") {
+      skipped.push({ path: file, reason: mapped.reason });
+      continue;
+    }
+    const docId = docIdForPath(file);
+    const markdown = input.files.get(file);
+    const blocks = parseBlocks(markdown);
+    const sections = splitSections(blocks);
+    const meta2 = pageMeta(file);
+    const title = blocks.find((b) => b.kind === "heading" && b.level === 1)?.heading ?? file.split("/").pop().replace(/\.md$/i, "");
+    const outline = sections.filter((s) => s.level > 0).map((s) => ({
+      heading: s.headingPath[s.headingPath.length - 1] ?? "",
+      level: s.level,
+      anchor: headingAnchor(s.headingPath[s.headingPath.length - 1] ?? "")
+    }));
+    const pageChunks = [];
+    for (const chunk of mergeTinyChunks(sections.flatMap((section) => chunkSection(section)))) {
+      pageChunks.push({
+        chunk_id: `${docId}#${pageChunks.length}`,
+        doc_id: docId,
+        chunk_type: chunk.chunkType,
+        heading_path: chunk.headingPath,
+        text: chunk.text
+      });
+    }
+    const rejoined = pageChunks.map((c) => c.text).join("\n");
+    if (rejoined !== markdown.replace(/\r\n?/g, "\n")) {
+      problems.push(`${file}: chunks do not rejoin to the page`);
+    }
+    for (const chunk of pageChunks) {
+      if (hasUnbalancedFence(chunk.text)) problems.push(`${chunk.chunk_id}: unbalanced code fence`);
+    }
+    for (let i = 1; i < pageChunks.length; i += 1) {
+      const prevLast = pageChunks[i - 1].text.split("\n").pop() ?? "";
+      const first = pageChunks[i].text.split("\n")[0] ?? "";
+      if (/^\s*\|/.test(prevLast) && /^\s*\|/.test(first)) {
+        problems.push(`${pageChunks[i].chunk_id}: table split`);
+      }
+    }
+    const pageRecord = {
+      doc_id: docId,
+      title,
+      category: meta2.category,
+      api: meta2.api,
+      ...meta2.sdk ? { sdk: meta2.sdk } : {},
+      page_type: meta2.page_type,
+      source_url: mapped.url,
+      path: file,
+      sections: outline
+    };
+    pages.push(pageRecord);
+    chunks.push(...pageChunks);
+    if (meta2.page_type !== "example" && meta2.sdk === void 0) {
+      rawParameters.push(...extractParameters(pageRecord, markdown));
+    }
+  }
+  const priority = (docId) => PAGE_PRIORITY[pages.find((p) => p.doc_id === docId)?.page_type ?? "guide"] ?? 1;
+  const parameters = dedupe(
+    [...rawParameters].sort((a, b) => priority(a.doc_id) - priority(b.doc_id))
+  );
+  const index = {
+    meta: {
+      format: 2,
+      commit_sha: input.commitSha,
+      built_at: input.builtAt,
+      pages: pages.length,
+      chunks: chunks.length,
+      parameters: parameters.length
+    },
+    pages,
+    chunks,
+    parameters
+  };
+  return { index, skipped, problems };
+}
+var URL_OVERRIDES, PAGE_PRIORITY;
+var init_builder = __esm({
+  "src/docs/builder.ts"() {
+    "use strict";
+    init_mapping();
+    init_page_meta();
+    init_parameters();
+    init_url_overrides();
+    init_markdown();
+    URL_OVERRIDES = url_overrides_default;
+    PAGE_PRIORITY = { reference: 0, guide: 1, example: 2 };
+  }
+});
+
+// src/docs/github.ts
+import { gunzipSync } from "node:zlib";
+function headers(source, accept) {
+  const h = {
+    accept,
+    "user-agent": "nextbillion-mcp",
+    "x-github-api-version": "2022-11-28"
+  };
+  if (source.token) h.authorization = `Bearer ${source.token}`;
+  return h;
+}
+async function request(source, path, accept, extra = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    return await (source.fetchFn ?? fetch)(`${API}${path}`, {
+      headers: { ...headers(source, accept), ...extra },
+      signal: controller.signal,
+      redirect: "follow"
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function latestCommit(source, knownSha) {
+  const response = await request(
+    source,
+    `/repos/${source.repo}/commits/${encodeURIComponent(source.ref)}`,
+    "application/vnd.github+json",
+    knownSha ? { "if-none-match": `"${knownSha}"` } : {}
+  );
+  if (response.status === 304 && knownSha) return { changed: false, sha: knownSha };
+  if (!response.ok) throw new Error(`GitHub ${response.status} for ${source.repo}@${source.ref}`);
+  const body = await response.json();
+  if (typeof body.sha !== "string") throw new Error("GitHub commit response has no sha");
+  return { changed: body.sha !== knownSha, sha: body.sha, date: body.commit?.committer?.date };
+}
+async function fetchSnapshot(source) {
+  const head = await latestCommit(source);
+  const response = await request(
+    source,
+    `/repos/${source.repo}/tarball/${encodeURIComponent(head.sha)}`,
+    "application/vnd.github+json"
+  );
+  if (!response.ok)
+    throw new Error(`GitHub ${response.status} downloading ${source.repo}@${head.sha.slice(0, 7)}`);
+  const tar = gunzipSync(Buffer.from(await response.arrayBuffer()));
+  const files = /* @__PURE__ */ new Map();
+  for (const entry of readTar(tar)) {
+    const slash = entry.path.indexOf("/");
+    if (slash === -1) continue;
+    files.set(entry.path.slice(slash + 1), entry.content.toString("utf8"));
+  }
+  return { commitSha: head.sha, commitDate: head.date, files };
+}
+function* readTar(tar) {
+  let offset = 0;
+  let longName;
+  while (offset + 512 <= tar.length) {
+    const header = tar.subarray(offset, offset + 512);
+    if (header.every((b) => b === 0)) break;
+    const name = cstr(header, 0, 100);
+    const size = parseInt(cstr(header, 124, 12).trim() || "0", 8);
+    const type = String.fromCharCode(header[156]);
+    const prefix = cstr(header, 345, 155);
+    const dataStart = offset + 512;
+    const data = tar.subarray(dataStart, dataStart + size);
+    offset = dataStart + Math.ceil(size / 512) * 512;
+    if (type === "L") {
+      longName = cstr(data, 0, size);
+      continue;
+    }
+    const path = longName ?? (prefix ? `${prefix}/${name}` : name);
+    longName = void 0;
+    if (type === "0" || type === "\0" || type === "") {
+      yield { path, content: Buffer.from(data) };
+    }
+  }
+}
+function cstr(buffer, start, length) {
+  const slice = buffer.subarray(start, start + length);
+  const end = slice.indexOf(0);
+  return slice.subarray(0, end === -1 ? slice.length : end).toString("utf8");
+}
+var API, FETCH_TIMEOUT_MS;
+var init_github = __esm({
+  "src/docs/github.ts"() {
+    "use strict";
+    API = "https://api.github.com";
+    FETCH_TIMEOUT_MS = 6e4;
+  }
+});
+
 // src/docs/store.ts
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-function defaultIndexPath() {
+function bundledIndexPath() {
   const override = process.env.NBAI_DOCS_INDEX?.trim();
   if (override) return override;
   for (const relative of ["../data/docs-index.json", "../../data/docs-index.json"]) {
     const candidate = fileURLToPath(new URL(relative, import.meta.url));
     if (existsSync(candidate)) return candidate;
   }
-  throw new Error("documentation index data/docs-index.json not found next to the server");
+  return void 0;
 }
 function buildDocsIndex(file) {
   const pages = new Map(file.pages.map((p) => [p.doc_id, p]));
@@ -7401,21 +8230,116 @@ function buildDocsIndex(file) {
     endpoints: [...new Set(file.parameters.map((p) => p.endpoint))]
   };
 }
-function loadDocsIndex(path = defaultIndexPath()) {
+function loadDocsIndex(path) {
   const file = JSON.parse(readFileSync(path, "utf8"));
   if (file.meta?.format !== 2) throw new Error(`unsupported documentation index format in ${path}`);
   return buildDocsIndex(file);
 }
-function getDocsIndex() {
-  cached2 ??= loadDocsIndex();
+function configureDocsIndex(next) {
+  options = next;
+  cached2 = void 0;
+  origin = "none";
+  firstBuild = void 0;
+  checking = void 0;
+  lastError = void 0;
+}
+function docsIndexInfo() {
+  return {
+    origin,
+    ...cached2 ? { commit_sha: cached2.meta.commit_sha, built_at: cached2.meta.built_at } : {},
+    ...lastError ? { last_error: lastError } : {}
+  };
+}
+async function rebuildFromGitHub(github) {
+  const started = Date.now();
+  const snapshot = await fetchSnapshot(github);
+  const { index, problems, skipped } = buildDocsIndexFile({
+    files: snapshot.files,
+    commitSha: snapshot.commitSha,
+    builtAt: snapshot.commitDate ?? (/* @__PURE__ */ new Date()).toISOString()
+  });
+  if (problems.length > 0) {
+    throw new Error(`index integrity: ${problems.length} problem(s), first: ${problems[0]}`);
+  }
+  cached2 = buildDocsIndex(index);
+  origin = "github";
+  lastError = void 0;
+  logInfo(
+    `documentation index: rebuilt from ${github.repo}@${snapshot.commitSha.slice(0, 7)} (${index.pages.length} pages, ${skipped.length} excluded) in ${Date.now() - started} ms`
+  );
+}
+function refreshDocsIndex() {
+  if (checking) return checking;
+  const github = options.github;
+  if (!github) return Promise.resolve({ status: "disabled" });
+  const run = (async () => {
+    try {
+      const known = origin === "github" ? cached2?.meta.commit_sha : void 0;
+      const head = await latestCommit(github, known);
+      if (!head.changed) return { status: "unchanged" };
+      await rebuildFromGitHub(github);
+      return { status: "rebuilt" };
+    } catch (error2) {
+      lastError = error2 instanceof Error ? error2.message : String(error2);
+      logError(`documentation index: could not refresh from ${github.repo}`, lastError);
+      return { status: "failed", error: lastError };
+    } finally {
+      checking = void 0;
+    }
+  })();
+  checking = run;
+  return run;
+}
+function startDocsIndex() {
+  firstBuild ??= (async () => {
+    const outcome = await refreshDocsIndex();
+    if (outcome.status === "rebuilt" || cached2) return;
+    loadBundledFallback(outcome.error);
+  })();
+  return firstBuild;
+}
+function loadBundledFallback(reason) {
+  const bundled = options.allowBundled === false ? void 0 : bundledIndexPath();
+  if (!bundled) {
+    throw new DocsUnavailableError(reason);
+  }
+  cached2 = loadDocsIndex(bundled);
+  origin = "bundled";
+  if (reason) {
+    logError(
+      `documentation index: using the bundled copy (${cached2.meta.commit_sha.slice(0, 7)}) until GitHub is reachable`
+    );
+  }
+}
+async function getDocsIndex() {
+  if (cached2) return cached2;
+  if (options.github) {
+    await startDocsIndex();
+    if (cached2) return cached2;
+    throw new DocsUnavailableError(lastError);
+  }
+  loadBundledFallback();
   return cached2;
 }
-var cached2;
+var options, cached2, origin, firstBuild, checking, lastError, DocsUnavailableError;
 var init_store = __esm({
   "src/docs/store.ts"() {
     "use strict";
+    init_log();
     init_bm25();
+    init_builder();
+    init_github();
     init_tokenizer();
+    options = {};
+    origin = "none";
+    DocsUnavailableError = class extends Error {
+      constructor(reason) {
+        super(
+          "The documentation is not available right now" + (reason ? ` (${reason})` : "") + ". The API tools are unaffected; please try again in a few minutes."
+        );
+        this.name = "DocsUnavailableError";
+      }
+    };
   }
 });
 
@@ -7450,8 +8374,8 @@ Example: {"query": "truck_size truck_weight routing", "api": "Directions"}`;
 // src/tools/docs/get-api-parameters.ts
 function normalizeEndpoint(raw) {
   const [api = "", ...rest] = raw.trim().toLowerCase().replace(/^\/+|\/+$/g, "").replace(/[\s_]+/g, "-").split("/");
-  const apiSlug = api.split("-").filter((t) => t.length > 0 && t !== "api" && t !== "apis").join("-");
-  return rest.length > 0 ? `${apiSlug}/${rest.join("/")}` : apiSlug;
+  const apiSlug2 = api.split("-").filter((t) => t.length > 0 && t !== "api" && t !== "apis").join("-");
+  return rest.length > 0 ? `${apiSlug2}/${rest.join("/")}` : apiSlug2;
 }
 function wordKey(slug) {
   return slug.split(/[/-]/).filter((t) => t.length > 0 && t !== "api" && t !== "apis").sort().join("-");
@@ -7531,7 +8455,7 @@ var init_get_api_parameters = __esm({
       annotations: DOCS_TOOL_ANNOTATIONS,
       async run(args) {
         if (!args.endpoint && !args.doc_id) throw new ToolInputError("give endpoint or doc_id");
-        const index = getDocsIndex();
+        const index = await getDocsIndex();
         const commit = index.meta.commit_sha.slice(0, 7);
         const knownApis = [...new Set(index.endpoints.map((e) => e.split("/")[0]))];
         const miss = (text, extra) => ({
@@ -7650,29 +8574,6 @@ var init_get_api_parameters = __esm({
   }
 });
 
-// src/docs/markdown.ts
-function hasUnbalancedFence(text) {
-  let open;
-  for (const line of text.split("\n")) {
-    if (open === void 0) {
-      const fence = FENCE_OPEN.exec(line);
-      if (fence) open = fence[1];
-      continue;
-    }
-    const close = FENCE_CLOSE.exec(line);
-    if (close && close[1][0] === open[0] && close[1].length >= open.length) open = void 0;
-  }
-  return open !== void 0;
-}
-var FENCE_OPEN, FENCE_CLOSE;
-var init_markdown = __esm({
-  "src/docs/markdown.ts"() {
-    "use strict";
-    FENCE_OPEN = /^\s{0,3}(`{3,}|~{3,})(.*)$/;
-    FENCE_CLOSE = /^\s{0,3}(`{3,}|~{3,})\s*$/;
-  }
-});
-
 // src/tools/docs/get-documentation.ts
 function cutAtLine(text, max) {
   let cut = text.lastIndexOf("\n", max);
@@ -7709,7 +8610,7 @@ var init_get_documentation = __esm({
       inputSchema: Schema14,
       annotations: DOCS_TOOL_ANNOTATIONS,
       async run(args) {
-        const index = getDocsIndex();
+        const index = await getDocsIndex();
         const commit = index.meta.commit_sha.slice(0, 7);
         const docId = args.doc_id.trim().replace(/^\/+|\/+$/g, "").replace(/\.md$/i, "");
         const page = index.pages.get(docId);
@@ -7872,15 +8773,15 @@ function queryTerms(query) {
   }
   return weights;
 }
-function search(index, options) {
-  const limit = Math.min(Math.max(options.limit ?? 5, 1), 10);
-  const terms = queryTerms(options.query);
+function search(index, options2) {
+  const limit = Math.min(Math.max(options2.limit ?? 5, 1), 10);
+  const terms = queryTerms(options2.query);
   if (terms.size === 0) return [];
   const scores = new Float64Array(index.chunks.length);
   index.body.scoreInto(scores, terms);
   const headScores = new Float64Array(index.chunks.length);
   index.head.scoreInto(headScores, terms);
-  const sdk = options.sdk?.trim().toLowerCase();
+  const sdk = options2.sdk?.trim().toLowerCase();
   const candidates = [];
   for (let i = 0; i < scores.length; i += 1) {
     let score = scores[i] + SEARCH_WEIGHTS.head * headScores[i];
@@ -7890,13 +8791,13 @@ function search(index, options) {
     if (page === void 0) continue;
     if (sdk && (page.sdk ?? "").toLowerCase() !== sdk) continue;
     if (chunk.chunk_type === "example") {
-      if (!options.includeExamples) continue;
+      if (!options2.includeExamples) continue;
       score *= SEARCH_WEIGHTS.examplePenalty;
     } else if (chunk.chunk_type === "response_schema") {
       score *= SEARCH_WEIGHTS.responseSchemaPenalty;
     }
-    if (looselyEquals(options.category, page.category)) score *= SEARCH_WEIGHTS.categoryBoost;
-    if (looselyEquals(options.api, page.api)) score *= SEARCH_WEIGHTS.apiBoost;
+    if (looselyEquals(options2.category, page.category)) score *= SEARCH_WEIGHTS.categoryBoost;
+    if (looselyEquals(options2.api, page.api)) score *= SEARCH_WEIGHTS.apiBoost;
     candidates.push({ chunk: i, score });
   }
   candidates.sort((a, b) => b.score - a.score || a.chunk - b.chunk);
@@ -7931,7 +8832,7 @@ function search(index, options) {
       heading_path: chunk.heading_path,
       snippet: snippet(chunk.text, terms),
       source_url: sectionUrl(page, chunk),
-      related_tools: options.relatedTools?.(chunk.doc_id) ?? [],
+      related_tools: options2.relatedTools?.(chunk.doc_id) ?? [],
       score: Math.round(score * 1e3) / 1e3,
       chunk_type: chunk.chunk_type
     };
@@ -8031,7 +8932,7 @@ var init_list_documentation_topics = __esm({
       inputSchema: Schema15,
       annotations: DOCS_TOOL_ANNOTATIONS,
       async run(args) {
-        const index = getDocsIndex();
+        const index = await getDocsIndex();
         const sdk = args.sdk?.trim().toLowerCase();
         const categories = /* @__PURE__ */ new Map();
         let count = 0;
@@ -8151,7 +9052,7 @@ var init_search_documentation = __esm({
       inputSchema: Schema16,
       annotations: DOCS_TOOL_ANNOTATIONS,
       async run(args) {
-        const index = getDocsIndex();
+        const index = await getDocsIndex();
         const { ALL_TOOLS: ALL_TOOLS2 } = await Promise.resolve().then(() => (init_tools(), tools_exports));
         const hits = search(index, {
           query: args.query,
@@ -9356,9 +10257,9 @@ var OAuthError = class OAuthError2 extends Error {
     if (typeof this !== "function") throw new TypeError("isInstance must be called on the class (e.g. `SdkError.isInstance(value)`); for callbacks use `v => SdkError.isInstance(v)`");
     return brandedHasInstance(this, value);
   }
-  constructor(code, message, errorUri) {
+  constructor(code2, message, errorUri) {
     super(message);
-    this.code = code;
+    this.code = code2;
     this.errorUri = errorUri;
     this.name = "OAuthError";
     stampErrorBrands(this, new.target);
@@ -9433,9 +10334,9 @@ var SdkError = class extends Error {
   * failure as `{ cause }` so it is reachable through the `Error.cause` chain that
   * loggers and error trackers walk.
   */
-  constructor(code, message, data, options) {
-    super(message, options);
-    this.code = code;
+  constructor(code2, message, data, options2) {
+    super(message, options2);
+    this.code = code2;
     this.data = data;
     this.name = "SdkError";
     stampErrorBrands(this, new.target);
@@ -9448,8 +10349,8 @@ var SdkHttpError = class extends SdkError {
   /**
   * @param options - Standard `ErrorOptions`, forwarded to `Error` (see {@linkcode SdkError}).
   */
-  constructor(code, message, data, options) {
-    super(code, message, data, options);
+  constructor(code2, message, data, options2) {
+    super(code2, message, data, options2);
     this.name = "SdkHttpError";
   }
   get status() {
@@ -10684,7 +11585,7 @@ var rev2025Codec = {
       } : t)
     };
   },
-  encodeErrorCode: (code) => code === -32002 ? -32602 : code,
+  encodeErrorCode: (code2) => code2 === -32002 ? -32602 : code2,
   checkInboundEnvelope: (_material) => void 0
 };
 function build() {
@@ -11638,9 +12539,9 @@ var ProtocolError = class ProtocolError2 extends Error {
     if (typeof this !== "function") throw new TypeError("isInstance must be called on the class (e.g. `SdkError.isInstance(value)`); for callbacks use `v => SdkError.isInstance(v)`");
     return brandedHasInstance(this, value);
   }
-  constructor(code, message, data) {
+  constructor(code2, message, data) {
     super(message);
-    this.code = code;
+    this.code = code2;
     this.data = data;
     this.name = "ProtocolError";
     stampErrorBrands(this, new.target);
@@ -11648,27 +12549,27 @@ var ProtocolError = class ProtocolError2 extends Error {
   /**
   * Factory method to create the appropriate error type based on the error code and data
   */
-  static fromError(code, message, data) {
-    if (code === ProtocolErrorCode.UrlElicitationRequired && data) {
+  static fromError(code2, message, data) {
+    if (code2 === ProtocolErrorCode.UrlElicitationRequired && data) {
       const errorData = data;
       if (errorData.elicitations) return new UrlElicitationRequiredError(errorData.elicitations, message);
     }
-    if (code === ProtocolErrorCode.UnsupportedProtocolVersion && data) {
+    if (code2 === ProtocolErrorCode.UnsupportedProtocolVersion && data) {
       const errorData = data;
       if (Array.isArray(errorData.supported) && typeof errorData.requested === "string") return new UnsupportedProtocolVersionError({
         supported: errorData.supported,
         requested: errorData.requested
       }, message);
     }
-    if (code === ProtocolErrorCode.InvalidParams || code === ProtocolErrorCode.ResourceNotFound) {
+    if (code2 === ProtocolErrorCode.InvalidParams || code2 === ProtocolErrorCode.ResourceNotFound) {
       const errorData = data;
-      if (typeof errorData?.uri === "string" && (code === ProtocolErrorCode.ResourceNotFound || Object.keys(errorData).length === 1)) return new ResourceNotFoundError(errorData.uri, message);
+      if (typeof errorData?.uri === "string" && (code2 === ProtocolErrorCode.ResourceNotFound || Object.keys(errorData).length === 1)) return new ResourceNotFoundError(errorData.uri, message);
     }
-    if (code === ProtocolErrorCode.MissingRequiredClientCapability && data) {
+    if (code2 === ProtocolErrorCode.MissingRequiredClientCapability && data) {
       const errorData = data;
       if (errorData.requiredCapabilities !== null && typeof errorData.requiredCapabilities === "object" && !Array.isArray(errorData.requiredCapabilities)) return new MissingRequiredClientCapabilityError({ requiredCapabilities: errorData.requiredCapabilities }, message);
     }
-    return new ProtocolError2(code, message, data);
+    return new ProtocolError2(code2, message, data);
   }
 };
 var ResourceNotFoundError = class extends ProtocolError {
@@ -12027,7 +12928,7 @@ var rev2026Codec = {
   encodeResult(method, result, serverInfo) {
     return stampServerInfoMeta(fillCacheFields(method, stampResultType(method, enforceDeletedFields(method, result))), serverInfo);
   },
-  encodeErrorCode: (code) => code === -32002 ? -32602 : code,
+  encodeErrorCode: (code2) => code2 === -32002 ? -32602 : code2,
   checkInboundEnvelope(material) {
     if (material.envelope === void 0) return "Request is missing the required _meta envelope for protocol revision 2026-07-28 (io.modelcontextprotocol/protocolVersion, io.modelcontextprotocol/clientCapabilities)";
     const parsed = buildSchemas2026().RequestMetaEnvelopeSchema.safeParse(material.envelope);
@@ -12262,11 +13163,11 @@ var isJSONRPCResultResponse = (value) => JSONRPCResultResponseSchema.safeParse(v
 var isJSONRPCErrorResponse = (value) => JSONRPCErrorResponseSchema.safeParse(value).success;
 var isInputRequiredResult = (value) => typeof value === "object" && value !== null && !Array.isArray(value) && value.resultType === "input_required";
 var isInitializeRequest = (value) => InitializeRequestSchema.safeParse(value).success;
-function assertCompleteRequestPrompt(request) {
-  if (request.params.ref.type !== "ref/prompt") throw new TypeError(`Expected CompleteRequestPrompt, but got ${request.params.ref.type}`);
+function assertCompleteRequestPrompt(request2) {
+  if (request2.params.ref.type !== "ref/prompt") throw new TypeError(`Expected CompleteRequestPrompt, but got ${request2.params.ref.type}`);
 }
-function assertCompleteRequestResourceTemplate(request) {
-  if (request.params.ref.type !== "ref/resource") throw new TypeError(`Expected CompleteRequestResourceTemplate, but got ${request.params.ref.type}`);
+function assertCompleteRequestResourceTemplate(request2) {
+  if (request2.params.ref.type !== "ref/resource") throw new TypeError(`Expected CompleteRequestResourceTemplate, but got ${request2.params.ref.type}`);
 }
 var MCP_PARAM_HEADER_PREFIX = "Mcp-Param-";
 var X_MCP_HEADER_KEY = "x-mcp-header";
@@ -12390,10 +13291,10 @@ function valueAtPath(root, path) {
   }
   return node;
 }
-function validateMcpParamHeaders(declarations, args, headers) {
+function validateMcpParamHeaders(declarations, args, headers2) {
   for (const decl of declarations) {
     const headerKey = `${MCP_PARAM_HEADER_PREFIX}${decl.headerName}`;
-    const headerValue = headers.get(headerKey);
+    const headerValue = headers2.get(headerKey);
     const bodyRaw = valueAtPath(args, decl.path);
     if (bodyRaw === void 0 || bodyRaw === null) continue;
     const bodyString = mcpParamPrimitiveToString(bodyRaw);
@@ -12506,9 +13407,9 @@ var LADDER_ERROR_HTTP_STATUS = {
   [ProtocolErrorCode.MissingRequiredClientCapability]: 400,
   [HEADER_MISMATCH_ERROR_CODE]: 400
 };
-function httpStatusForErrorCode(code, origin) {
-  if (origin === "in-band") return code === ProtocolErrorCode.MissingRequiredClientCapability ? 400 : 200;
-  return LADDER_ERROR_HTTP_STATUS[code] ?? 400;
+function httpStatusForErrorCode(code2, origin2) {
+  if (origin2 === "in-band") return code2 === ProtocolErrorCode.MissingRequiredClientCapability ? 400 : 200;
+  return LADDER_ERROR_HTTP_STATUS[code2] ?? 400;
 }
 function rejection(rung, cell, httpStatus, error2, settled) {
   return {
@@ -12548,34 +13449,34 @@ function mcpNameSource(method, params) {
 function stripHttpOws(value) {
   let start = 0;
   while (start < value.length) {
-    const code = value.codePointAt(start);
-    if (code !== 9 && code !== 32) break;
+    const code2 = value.codePointAt(start);
+    if (code2 !== 9 && code2 !== 32) break;
     start += 1;
   }
   let end = value.length;
   while (end > start) {
-    const code = value.codePointAt(end - 1);
-    if (code !== 9 && code !== 32) break;
+    const code2 = value.codePointAt(end - 1);
+    if (code2 !== 9 && code2 !== 32) break;
     end -= 1;
   }
   return start === 0 && end === value.length ? value : value.slice(start, end);
 }
-function validateStandardRequestHeaders(request, route) {
+function validateStandardRequestHeaders(request2, route) {
   if (route.messageKind !== "request") return;
   const method = route.message.method;
-  if (request.protocolVersionHeader === void 0) {
+  if (request2.protocolVersionHeader === void 0) {
     const claimed = route.classification.revision;
     return crossCheckMismatch("version-header-missing", "(missing)", claimed === void 0 ? "the body carries a modern per-request envelope but the required MCP-Protocol-Version header is absent" : `the body envelope names protocol version ${claimed} but the required MCP-Protocol-Version header is absent`, "standard-header-validation");
   }
-  if (request.mcpMethodHeader === void 0) return crossCheckMismatch("method-header-missing", "(missing)", `the body names method ${method} but the required Mcp-Method header is absent`, "standard-header-validation");
+  if (request2.mcpMethodHeader === void 0) return crossCheckMismatch("method-header-missing", "(missing)", `the body names method ${method} but the required Mcp-Method header is absent`, "standard-header-validation");
   const source = mcpNameSource(method, route.message.params);
   if (source === void 0) return;
   const { field: sourceField, value: bodyValue } = source;
-  if (request.mcpNameHeader === void 0) {
+  if (request2.mcpNameHeader === void 0) {
     if (bodyValue === void 0) return;
     return crossCheckMismatch("name-header-missing", "(missing)", `the body carries params.${sourceField}="${bodyValue}" but the required Mcp-Name header is absent`, "standard-header-validation");
   }
-  const normalizedNameHeader = stripHttpOws(request.mcpNameHeader);
+  const normalizedNameHeader = stripHttpOws(request2.mcpNameHeader);
   const decoded = decodeMcpParamValue(normalizedNameHeader);
   if (decoded === void 0) return crossCheckMismatch("name-header-invalid-encoding", normalizedNameHeader, "the Mcp-Name header carries an invalid Base64 sentinel value", "standard-header-validation");
   if (bodyValue !== void 0 && decoded !== bodyValue) return crossCheckMismatch("name-header-mismatch", normalizedNameHeader, `the body carries params.${sourceField}="${bodyValue}" but the Mcp-Name header names "${decoded}"`, "standard-header-validation");
@@ -12608,10 +13509,10 @@ function classifyBatch(body) {
     reason: "batch"
   };
 }
-function classifyRequestBody(request, body) {
+function classifyRequestBody(request2, body) {
   const params = body.params;
   const method = body.method;
-  const headerVersion = request.protocolVersionHeader;
+  const headerVersion = request2.protocolVersionHeader;
   const headerNamesModern = headerVersion !== void 0 && isModernProtocolVersion(headerVersion);
   if (method === "initialize" && !carriesValidModernEnvelopeClaim(params)) {
     if (headerNamesModern) return crossCheckMismatch("initialize-with-modern-header", headerVersion, "an initialize request (legacy handshake) was sent with a modern MCP-Protocol-Version header");
@@ -12628,7 +13529,7 @@ function classifyRequestBody(request, body) {
     if (firstIssue !== void 0) return rejection("envelope", "envelope-invalid", 400, new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid _meta envelope for protocol revision 2026-07-28: ${firstIssue.key}: ${firstIssue.problem}`, { envelope: firstIssue }), true);
     const claimedVersion = envelopeClaimVersion(params);
     if (headerVersion !== void 0 && claimedVersion !== void 0 && headerVersion !== claimedVersion) return crossCheckMismatch("header-body-version-mismatch", headerVersion, `the body envelope names protocol version ${claimedVersion} but the MCP-Protocol-Version header names ${headerVersion}`);
-    if (request.mcpMethodHeader !== void 0 && request.mcpMethodHeader !== method) return crossCheckMismatch("method-header-mismatch", request.mcpMethodHeader, `the body names method ${method} but the Mcp-Method header names ${request.mcpMethodHeader}`);
+    if (request2.mcpMethodHeader !== void 0 && request2.mcpMethodHeader !== method) return crossCheckMismatch("method-header-mismatch", request2.mcpMethodHeader, `the body names method ${method} but the Mcp-Method header names ${request2.mcpMethodHeader}`);
     return {
       kind: "modern",
       messageKind: "request",
@@ -12648,10 +13549,10 @@ function classifyRequestBody(request, body) {
     ...headerVersion !== void 0 && { requestedVersion: headerVersion }
   };
 }
-function classifyNotificationBody(request, body) {
+function classifyNotificationBody(request2, body) {
   const params = body.params;
   const method = body.method;
-  const headerVersion = request.protocolVersionHeader;
+  const headerVersion = request2.protocolVersionHeader;
   const headerNamesModern = headerVersion !== void 0 && isModernProtocolVersion(headerVersion);
   if (hasEnvelopeClaim(params)) {
     const claimedVersion = envelopeClaimVersion(params);
@@ -12665,7 +13566,7 @@ function classifyNotificationBody(request, body) {
     }
     if (headerVersion !== void 0 && headerVersion !== claimedVersion) return crossCheckMismatch("notification-header-body-version-mismatch", headerVersion, `the notification envelope names protocol version ${claimedVersion} but the MCP-Protocol-Version header names ${headerVersion}`);
     const classification = classificationForClaim(claimedVersion);
-    if (classification.era === "modern" && request.mcpMethodHeader !== void 0 && request.mcpMethodHeader !== method) return crossCheckMismatch("notification-method-header-mismatch", request.mcpMethodHeader, `the notification body names method ${method} but the Mcp-Method header names ${request.mcpMethodHeader}`);
+    if (classification.era === "modern" && request2.mcpMethodHeader !== void 0 && request2.mcpMethodHeader !== method) return crossCheckMismatch("notification-method-header-mismatch", request2.mcpMethodHeader, `the notification body names method ${method} but the Mcp-Method header names ${request2.mcpMethodHeader}`);
     return {
       kind: "modern",
       messageKind: "notification",
@@ -12674,7 +13575,7 @@ function classifyNotificationBody(request, body) {
     };
   }
   if (headerNamesModern) {
-    if (request.mcpMethodHeader !== void 0 && request.mcpMethodHeader !== method) return crossCheckMismatch("notification-method-header-mismatch", request.mcpMethodHeader, `the notification body names method ${method} but the Mcp-Method header names ${request.mcpMethodHeader}`);
+    if (request2.mcpMethodHeader !== void 0 && request2.mcpMethodHeader !== method) return crossCheckMismatch("notification-method-header-mismatch", request2.mcpMethodHeader, `the notification body names method ${method} but the Mcp-Method header names ${request2.mcpMethodHeader}`);
     return {
       kind: "modern",
       messageKind: "notification",
@@ -12691,25 +13592,25 @@ function classifyNotificationBody(request, body) {
     ...headerVersion !== void 0 && { requestedVersion: headerVersion }
   };
 }
-function classifyInboundRequest(request) {
-  request = {
-    ...request,
-    ...request.protocolVersionHeader !== void 0 && { protocolVersionHeader: stripHttpOws(request.protocolVersionHeader) },
-    ...request.mcpMethodHeader !== void 0 && { mcpMethodHeader: stripHttpOws(request.mcpMethodHeader) },
-    ...request.mcpNameHeader !== void 0 && { mcpNameHeader: stripHttpOws(request.mcpNameHeader) }
+function classifyInboundRequest(request2) {
+  request2 = {
+    ...request2,
+    ...request2.protocolVersionHeader !== void 0 && { protocolVersionHeader: stripHttpOws(request2.protocolVersionHeader) },
+    ...request2.mcpMethodHeader !== void 0 && { mcpMethodHeader: stripHttpOws(request2.mcpMethodHeader) },
+    ...request2.mcpNameHeader !== void 0 && { mcpNameHeader: stripHttpOws(request2.mcpNameHeader) }
   };
-  if (request.httpMethod.toUpperCase() !== "POST") return {
+  if (request2.httpMethod.toUpperCase() !== "POST") return {
     kind: "legacy",
     reason: "http-method"
   };
-  const body = request.body;
+  const body = request2.body;
   if (Array.isArray(body)) return classifyBatch(body);
   if (isJSONRPCResultResponse(body) || isJSONRPCErrorResponse(body)) return {
     kind: "legacy",
     reason: "response"
   };
-  if (isPlainObject$2(body) && isJSONRPCRequest(body)) return classifyRequestBody(request, body);
-  if (isPlainObject$2(body) && isJSONRPCNotification(body)) return classifyNotificationBody(request, body);
+  if (isPlainObject$2(body) && isJSONRPCRequest(body)) return classifyRequestBody(request2, body);
+  if (isPlainObject$2(body) && isJSONRPCNotification(body)) return classifyNotificationBody(request2, body);
   return rejection("jsonrpc-shape", "invalid-json-rpc-body", 400, new ProtocolError(ProtocolErrorCode.InvalidRequest, "Bad Request: the request body is not a valid JSON-RPC message"), true);
 }
 function modernOnlyStrictRejection(route, supportedVersions) {
@@ -13554,19 +14455,19 @@ var Protocol = class {
     Promise.resolve().then(() => handler === void 0 ? fallback(notification) : handler(notification, codec)).catch((error2) => this._onerror(/* @__PURE__ */ new Error(`Uncaught error in notification handler: ${error2}`)));
   }
   _onrequest(rawRequest, extra) {
-    const { message: request, lifted } = liftWireOnlyMaterial(rawRequest, "request");
+    const { message: request2, lifted } = liftWireOnlyMaterial(rawRequest, "request");
     const codec = this._negotiatedWireCodec();
     if (extra?.classification === void 0 && this._shouldDropInbound(rawRequest) === "drop") {
       this._onerror(/* @__PURE__ */ new Error(`Dropped inbound request '${rawRequest.method}': not servable on this connection's protocol era`));
       return;
     }
     const capturedTransport = this._transport;
-    const sendErrorResponse = (code, message, data) => {
+    const sendErrorResponse = (code2, message, data) => {
       const errorResponse = {
         jsonrpc: "2.0",
-        id: request.id,
+        id: request2.id,
         error: {
-          code,
+          code: code2,
           message,
           ...data !== void 0 && { data }
         }
@@ -13576,7 +14477,7 @@ var Protocol = class {
     if (extra?.classification !== void 0) {
       const classified = classifiedWireEra(extra.classification);
       if (classified !== codec.era) {
-        this._onerror(/* @__PURE__ */ new Error(`Era mismatch on inbound request '${request.method}': classified as ${classified} but this instance serves ${codec.era}`));
+        this._onerror(/* @__PURE__ */ new Error(`Era mismatch on inbound request '${request2.method}': classified as ${classified} but this instance serves ${codec.era}`));
         const requested = extra.classification.revision ?? classified;
         sendErrorResponse(ProtocolErrorCode.UnsupportedProtocolVersion, `Unsupported protocol version: ${requested}`, {
           supported: this._supportedProtocolVersions,
@@ -13585,11 +14486,11 @@ var Protocol = class {
         return;
       }
     }
-    if (isSpecRequestMethod(request.method) && !codec.hasRequestMethod(request.method) && !(isExtensionReusedRequestMethod(request.method) && this._customSchemaRequestMethods.has(request.method))) {
+    if (isSpecRequestMethod(request2.method) && !codec.hasRequestMethod(request2.method) && !(isExtensionReusedRequestMethod(request2.method) && this._customSchemaRequestMethods.has(request2.method))) {
       sendErrorResponse(ProtocolErrorCode.MethodNotFound, "Method not found");
       return;
     }
-    const handler = this._requestHandlers.get(request.method) ?? this.fallbackRequestHandler;
+    const handler = this._requestHandlers.get(request2.method) ?? this.fallbackRequestHandler;
     if (handler === void 0) {
       sendErrorResponse(ProtocolErrorCode.MethodNotFound, "Method not found");
       return;
@@ -13599,23 +14500,23 @@ var Protocol = class {
       sendErrorResponse(ProtocolErrorCode.InvalidParams, envelopeError);
       return;
     }
-    const sendNotification = (notification, options) => this._notificationViaCodec(this._resolveOutboundCodec(notification.method), notification, {
-      ...options,
-      relatedRequestId: request.id
+    const sendNotification = (notification, options2) => this._notificationViaCodec(this._resolveOutboundCodec(notification.method), notification, {
+      ...options2,
+      relatedRequestId: request2.id
     });
-    const sendRequest = (r, resultSchema, options) => this._requestWithSchemaViaCodec(this._resolveOutboundCodec(r.method), r, resultSchema, {
-      ...options,
-      relatedRequestId: request.id
+    const sendRequest = (r, resultSchema, options2) => this._requestWithSchemaViaCodec(this._resolveOutboundCodec(r.method), r, resultSchema, {
+      ...options2,
+      relatedRequestId: request2.id
     });
     const abortController = new AbortController();
-    this._requestHandlerAbortControllers.set(request.id, abortController);
+    this._requestHandlerAbortControllers.set(request2.id, abortController);
     const partitionedInputResponses = lifted.inputResponses === void 0 ? void 0 : partitionInputResponses(lifted.inputResponses);
     const baseCtx = {
       sessionId: capturedTransport?.sessionId,
       mcpReq: {
-        id: request.id,
-        method: request.method,
-        _meta: request.params?._meta,
+        id: request2.id,
+        method: request2.method,
+        _meta: request2.params?._meta,
         ...lifted.envelope !== void 0 && { envelope: lifted.envelope },
         ...partitionedInputResponses !== void 0 && { inputResponses: partitionedInputResponses.accepted },
         ...partitionedInputResponses !== void 0 && partitionedInputResponses.droppedKeys.length > 0 && { droppedInputResponseKeys: partitionedInputResponses.droppedKeys },
@@ -13634,20 +14535,20 @@ var Protocol = class {
       http: extra?.authInfo ? { authInfo: extra.authInfo } : void 0
     };
     const ctx = this.buildContext(baseCtx, extra);
-    Promise.resolve().then(() => handler(request, ctx)).then(async (result) => {
+    Promise.resolve().then(() => handler(request2, ctx)).then(async (result) => {
       if (abortController.signal.aborted) return;
       let encoded;
       try {
-        encoded = codec.encodeResult(request.method, result, this._outboundServerInfo());
+        encoded = codec.encodeResult(request2.method, result, this._outboundServerInfo());
       } catch (error2) {
-        this._onerror(/* @__PURE__ */ new Error(`Failed to encode result for ${request.method}: ${error2}`));
+        this._onerror(/* @__PURE__ */ new Error(`Failed to encode result for ${request2.method}: ${error2}`));
         sendErrorResponse(ProtocolErrorCode.InternalError, "Internal error");
         return;
       }
       const response = {
         result: encoded,
         jsonrpc: "2.0",
-        id: request.id
+        id: request2.id
       };
       await capturedTransport?.send(response);
     }, async (error2) => {
@@ -13655,7 +14556,7 @@ var Protocol = class {
       const thrownCode = Number.isSafeInteger(error2["code"]) ? error2["code"] : ProtocolErrorCode.InternalError;
       const errorResponse = {
         jsonrpc: "2.0",
-        id: request.id,
+        id: request2.id,
         error: {
           code: codec.encodeErrorCode(thrownCode),
           message: error2.message ?? "Internal error",
@@ -13664,7 +14565,7 @@ var Protocol = class {
       };
       await capturedTransport?.send(errorResponse);
     }).catch((error2) => this._onerror(/* @__PURE__ */ new Error(`Failed to send response: ${error2}`))).finally(() => {
-      if (this._requestHandlerAbortControllers.get(request.id) === abortController) this._requestHandlerAbortControllers.delete(request.id);
+      if (this._requestHandlerAbortControllers.get(request2.id) === abortController) this._requestHandlerAbortControllers.delete(request2.id);
     });
   }
   _onprogress(notification) {
@@ -13716,16 +14617,16 @@ var Protocol = class {
   async close() {
     await this._transport?.close();
   }
-  request(request, schemaOrOptions, maybeOptions) {
-    const codec = this._resolveOutboundCodec(request.method);
+  request(request2, schemaOrOptions, maybeOptions) {
+    const codec = this._resolveOutboundCodec(request2.method);
     if (isStandardSchema(schemaOrOptions)) {
-      if (!isExtensionReusedRequestMethod(request.method)) this._assertOutboundRequestInEra(codec, request.method);
-      return this._requestWithSchemaViaCodec(codec, request, schemaOrOptions, maybeOptions);
+      if (!isExtensionReusedRequestMethod(request2.method)) this._assertOutboundRequestInEra(codec, request2.method);
+      return this._requestWithSchemaViaCodec(codec, request2, schemaOrOptions, maybeOptions);
     }
-    this._assertOutboundRequestInEra(codec, request.method);
-    const validate = codecResultValidator(codec, request.method);
-    if (validate === void 0) throw new TypeError(`'${request.method}' is not a spec method; pass a result schema as the second argument to request().`);
-    return this._requestWithSchemaViaCodec(codec, request, validate, schemaOrOptions);
+    this._assertOutboundRequestInEra(codec, request2.method);
+    const validate = codecResultValidator(codec, request2.method);
+    if (validate === void 0) throw new TypeError(`'${request2.method}' is not a spec method; pass a result schema as the second argument to request().`);
+    return this._requestWithSchemaViaCodec(codec, request2, validate, schemaOrOptions);
   }
   /**
   * The wire codec for this instance's negotiated era — the phase-2 truth:
@@ -13784,18 +14685,18 @@ var Protocol = class {
   * explicit compatibility schemas. Spec methods are still era-gated here:
   * an explicit schema never smuggles a deleted method onto the wire.
   */
-  _requestWithSchema(request, resultSchema, options) {
-    const codec = this._resolveOutboundCodec(request.method);
-    this._assertOutboundRequestInEra(codec, request.method);
-    return this._requestWithSchemaViaCodec(codec, request, resultSchema, options);
+  _requestWithSchema(request2, resultSchema, options2) {
+    const codec = this._resolveOutboundCodec(request2.method);
+    this._assertOutboundRequestInEra(codec, request2.method);
+    return this._requestWithSchemaViaCodec(codec, request2, resultSchema, options2);
   }
   /**
   * The request funnel proper, keyed by the resolved era codec: the codec
   * owns result decoding (raw-first `resultType` discrimination — V-1 —
   * and the era's lift posture) before the schema validation step.
   */
-  _requestWithSchemaViaCodec(codec, request, resultSchema, options) {
-    const { relatedRequestId, resumptionToken, onresumptiontoken, headers } = options ?? {};
+  _requestWithSchemaViaCodec(codec, request2, resultSchema, options2) {
+    const { relatedRequestId, resumptionToken, onresumptiontoken, headers: headers2 } = options2 ?? {};
     const flowStartedAt = Date.now();
     let onAbort;
     let cleanupMessageId;
@@ -13808,29 +14709,29 @@ var Protocol = class {
         return;
       }
       if (this._options?.enforceStrictCapabilities === true) try {
-        this.assertCapabilityForMethod(request.method);
+        this.assertCapabilityForMethod(request2.method);
       } catch (error2) {
         earlyReject(error2);
         return;
       }
-      if (options?.signal?.aborted) {
-        const reason = options.signal.reason;
+      if (options2?.signal?.aborted) {
+        const reason = options2.signal.reason;
         throw reason instanceof SdkError ? reason : new SdkError(SdkErrorCode.RequestTimeout, String(reason));
       }
       const requestAbort = codec.era === MODERN_WIRE_REVISION && this._transport.hasPerRequestStream === true ? new AbortController() : void 0;
       const messageId = this._requestMessageId++;
       cleanupMessageId = messageId;
       const jsonrpcRequest = {
-        ...request,
+        ...request2,
         jsonrpc: "2.0",
         id: messageId
       };
-      if (options?.onprogress) {
-        this._progressHandlers.set(messageId, options.onprogress);
+      if (options2?.onprogress) {
+        this._progressHandlers.set(messageId, options2.onprogress);
         jsonrpcRequest.params = {
-          ...request.params,
+          ...request2.params,
           _meta: {
-            ...request.params?._meta,
+            ...request2.params?._meta,
             progressToken: messageId
           }
         };
@@ -13841,7 +14742,7 @@ var Protocol = class {
         if (responseReceived) return;
         this._progressHandlers.delete(messageId);
         if (requestAbort === void 0) {
-          if (request.method !== "initialize") this._transport?.send(this._envelopeOutbound({
+          if (request2.method !== "initialize") this._transport?.send(this._envelopeOutbound({
             jsonrpc: "2.0",
             method: "notifications/cancelled",
             params: {
@@ -13857,26 +14758,26 @@ var Protocol = class {
         reject(reason instanceof SdkError ? reason : new SdkError(SdkErrorCode.RequestTimeout, String(reason)));
       };
       this._responseHandlers.set(messageId, (response) => {
-        if (options?.signal?.aborted) return;
+        if (options2?.signal?.aborted) return;
         responseReceived = true;
         if (response instanceof Error) return reject(response);
         let decoded;
         try {
-          decoded = codec.decodeResult(request.method, response.result);
+          decoded = codec.decodeResult(request2.method, response.result);
         } catch (error2) {
           return reject(error2 instanceof Error ? error2 : new Error(String(error2)));
         }
         if (decoded.kind === "invalid") return reject(decoded.error);
         if (decoded.kind === "input_required") {
-          if (options?.allowInputRequired === true) return resolve(manualInputRequiredValue(decoded));
+          if (options2?.allowInputRequired === true) return resolve(manualInputRequiredValue(decoded));
           const flow = {
             codec,
-            request,
+            request: request2,
             resultSchema,
-            options,
+            options: options2,
             flowStartedAt,
-            retry: (params, legOptions) => this._requestWithSchemaViaCodec(codec, params === void 0 ? { method: request.method } : {
-              method: request.method,
+            retry: (params, legOptions) => this._requestWithSchemaViaCodec(codec, params === void 0 ? { method: request2.method } : {
+              method: request2.method,
               params
             }, resultSchema, legOptions)
           };
@@ -13885,26 +14786,26 @@ var Protocol = class {
         const result = decoded.result;
         validateStandardSchema(resultSchema, result).then((parseResult) => {
           if (parseResult.success) resolve(parseResult.data);
-          else reject(new SdkError(SdkErrorCode.InvalidResult, `Invalid result for ${request.method}: ${parseResult.error}`));
+          else reject(new SdkError(SdkErrorCode.InvalidResult, `Invalid result for ${request2.method}: ${parseResult.error}`));
         }, reject);
       });
-      onAbort = () => cancel(options?.signal?.reason);
-      options?.signal?.addEventListener("abort", onAbort, { once: true });
-      const timeout = options?.timeout ?? DEFAULT_REQUEST_TIMEOUT_MSEC;
+      onAbort = () => cancel(options2?.signal?.reason);
+      options2?.signal?.addEventListener("abort", onAbort, { once: true });
+      const timeout = options2?.timeout ?? DEFAULT_REQUEST_TIMEOUT_MSEC;
       const timeoutHandler = () => cancel(new SdkError(SdkErrorCode.RequestTimeout, "Request timed out", { timeout }));
-      this._setupTimeout(messageId, timeout, options?.maxTotalTimeout, timeoutHandler, options?.resetTimeoutOnProgress ?? false);
+      this._setupTimeout(messageId, timeout, options2?.maxTotalTimeout, timeoutHandler, options2?.resetTimeoutOnProgress ?? false);
       this._transport.send(outbound, {
         relatedRequestId,
         resumptionToken,
         onresumptiontoken,
-        headers,
+        headers: headers2,
         requestSignal: requestAbort?.signal
       }).catch((error2) => {
         this._progressHandlers.delete(messageId);
         reject(error2);
       });
     }).finally(() => {
-      if (onAbort) options?.signal?.removeEventListener("abort", onAbort);
+      if (onAbort) options2?.signal?.removeEventListener("abort", onAbort);
       if (cleanupMessageId !== void 0) {
         this._responseHandlers.delete(cleanupMessageId);
         this._cleanupTimeout(cleanupMessageId);
@@ -13914,15 +14815,15 @@ var Protocol = class {
   /**
   * Emits a notification, which is a one-way message that does not expect a response.
   */
-  async notification(notification, options) {
-    return await this._notificationViaCodec(this._resolveOutboundCodec(notification.method), notification, options);
+  async notification(notification, options2) {
+    return await this._notificationViaCodec(this._resolveOutboundCodec(notification.method), notification, options2);
   }
   /**
   * The notification funnel proper, keyed by the resolved era codec —
   * direct sends and related notifications (`ctx.mcpReq.notify`) alike
   * resolve through the instance's negotiated era at send time.
   */
-  async _notificationViaCodec(codec, notification, options) {
+  async _notificationViaCodec(codec, notification, options2) {
     if (!this._transport) throw new SdkError(SdkErrorCode.NotConnected, "Not connected");
     if (isSpecNotificationMethod(notification.method) && !codec.hasNotificationMethod(notification.method)) throw new SdkError(SdkErrorCode.MethodNotSupportedByProtocolVersion, `Notification '${notification.method}' is not supported by the negotiated protocol version (wire era ${codec.era})`, {
       method: notification.method,
@@ -13933,35 +14834,35 @@ var Protocol = class {
       jsonrpc: "2.0",
       ...notification
     });
-    if ((this._options?.debouncedNotificationMethods ?? []).includes(notification.method) && !notification.params && options?.relatedRequestId === void 0) {
+    if ((this._options?.debouncedNotificationMethods ?? []).includes(notification.method) && !notification.params && options2?.relatedRequestId === void 0) {
       if (this._pendingDebouncedNotifications.has(notification.method)) return;
       this._pendingDebouncedNotifications.add(notification.method);
       Promise.resolve().then(() => {
         this._pendingDebouncedNotifications.delete(notification.method);
         if (!this._transport) return;
-        this._transport?.send(jsonrpcNotification, options).catch((error2) => this._onerror(error2));
+        this._transport?.send(jsonrpcNotification, options2).catch((error2) => this._onerror(error2));
       });
       return;
     }
-    await this._transport.send(jsonrpcNotification, options);
+    await this._transport.send(jsonrpcNotification, options2);
   }
   setRequestHandler(method, schemasOrHandler, maybeHandler) {
     this.assertRequestHandlerCapability(method);
     let stored;
     if (typeof schemasOrHandler === "function") {
       if (!isSpecRequestMethod(method)) throw new TypeError(`'${method}' is not a spec request method; pass schemas as the second argument to setRequestHandler().`);
-      stored = (request, ctx) => {
+      stored = (request2, ctx) => {
         const dispatchCodec = this._negotiatedWireCodec();
-        let outcome = dispatchCodec.validateRequest(method, request);
-        if (!outcome.ok && outcome.reason === "not-in-era") outcome = dispatchCodec.validateInputRequest(method, request);
+        let outcome = dispatchCodec.validateRequest(method, request2);
+        if (!outcome.ok && outcome.reason === "not-in-era") outcome = dispatchCodec.validateInputRequest(method, request2);
         if (!outcome.ok) {
           if (outcome.reason === "not-in-era") throw new ProtocolError(ProtocolErrorCode.InternalError, `No wire schema for ${method} in the resolved era`);
           throw new Error(outcome.message);
         }
         return Promise.resolve(schemasOrHandler(outcome.value, ctx));
       };
-    } else if (maybeHandler) stored = async (request, ctx) => {
-      const parsed = await validateStandardSchema(schemasOrHandler.params, { ...request.params });
+    } else if (maybeHandler) stored = async (request2, ctx) => {
+      const parsed = await validateStandardSchema(schemasOrHandler.params, { ...request2.params });
       if (!parsed.success) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid params for ${method}: ${parsed.error}`);
       return maybeHandler(parsed.data, ctx);
     };
@@ -14143,8 +15044,8 @@ var STDIO_DEFAULT_MAX_BUFFER_SIZE = 10 * 1024 * 1024;
 var ReadBuffer = class {
   _buffer;
   _maxBufferSize;
-  constructor(options) {
-    this._maxBufferSize = options?.maxBufferSize ?? STDIO_DEFAULT_MAX_BUFFER_SIZE;
+  constructor(options2) {
+    this._maxBufferSize = options2?.maxBufferSize ?? STDIO_DEFAULT_MAX_BUFFER_SIZE;
   }
   append(chunk) {
     if ((this._buffer?.length ?? 0) + chunk.length > this._maxBufferSize) {
@@ -14267,9 +15168,9 @@ var require_code$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
   };
   exports.Name = Name;
   var _Code = class extends _CodeOrName {
-    constructor(code) {
+    constructor(code2) {
       super();
-      this._items = typeof code === "string" ? [code] : code;
+      this._items = typeof code2 === "string" ? [code2] : code2;
     }
     toString() {
       return this.str;
@@ -14294,13 +15195,13 @@ var require_code$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
   exports._Code = _Code;
   exports.nil = new _Code("");
   function _(strs, ...args) {
-    const code = [strs[0]];
+    const code2 = [strs[0]];
     let i = 0;
     while (i < args.length) {
-      addCodeArg(code, args[i]);
-      code.push(strs[++i]);
+      addCodeArg(code2, args[i]);
+      code2.push(strs[++i]);
     }
-    return new _Code(code);
+    return new _Code(code2);
   }
   exports._ = _;
   const plus = new _Code("+");
@@ -14316,10 +15217,10 @@ var require_code$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
     return new _Code(expr);
   }
   exports.str = str;
-  function addCodeArg(code, arg) {
-    if (arg instanceof _Code) code.push(...arg._items);
-    else if (arg instanceof Name) code.push(arg);
-    else code.push(interpolate(arg));
+  function addCodeArg(code2, arg) {
+    if (arg instanceof _Code) code2.push(...arg._items);
+    else if (arg instanceof Name) code2.push(arg);
+    else code2.push(interpolate(arg));
   }
   exports.addCodeArg = addCodeArg;
   function optimize(expr) {
@@ -14489,7 +15390,7 @@ var require_scope = /* @__PURE__ */ __commonJSMin(((exports) => {
       }, usedValues, getCode);
     }
     _reduceValues(values, valueCode, usedValues = {}, getCode) {
-      let code = code_1.nil;
+      let code2 = code_1.nil;
       for (const prefix in values) {
         const vs = values[prefix];
         if (!vs) continue;
@@ -14500,13 +15401,13 @@ var require_scope = /* @__PURE__ */ __commonJSMin(((exports) => {
           let c = valueCode(name);
           if (c) {
             const def = this.opts.es5 ? exports.varKinds.var : exports.varKinds.const;
-            code = (0, code_1._)`${code}${def} ${name} = ${c};${this.opts._n}`;
-          } else if (c = getCode === null || getCode === void 0 ? void 0 : getCode(name)) code = (0, code_1._)`${code}${c}${this.opts._n}`;
+            code2 = (0, code_1._)`${code2}${def} ${name} = ${c};${this.opts._n}`;
+          } else if (c = getCode === null || getCode === void 0 ? void 0 : getCode(name)) code2 = (0, code_1._)`${code2}${c}${this.opts._n}`;
           else throw new ValueError(name);
           nameSet.set(name, UsedValueState.Completed);
         });
       }
-      return code;
+      return code2;
     }
   };
   exports.ValueScope = ValueScope;
@@ -14692,9 +15593,9 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
     }
   };
   var AnyCode = class extends Node {
-    constructor(code) {
+    constructor(code2) {
       super();
-      this.code = code;
+      this.code = code2;
     }
     render({ _n }) {
       return `${this.code};` + _n;
@@ -14716,7 +15617,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       this.nodes = nodes;
     }
     render(opts) {
-      return this.nodes.reduce((code, n) => code + n.render(opts), "");
+      return this.nodes.reduce((code2, n) => code2 + n.render(opts), "");
     }
     optimizeNodes() {
       const { nodes } = this;
@@ -14760,9 +15661,9 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       this.condition = condition;
     }
     render(opts) {
-      let code = `if(${this.condition})` + super.render(opts);
-      if (this.else) code += "else " + this.else.render(opts);
-      return code;
+      let code2 = `if(${this.condition})` + super.render(opts);
+      if (this.else) code2 += "else " + this.else.render(opts);
+      return code2;
     }
     optimizeNodes() {
       super.optimizeNodes();
@@ -14873,10 +15774,10 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
   Return.kind = "return";
   var Try = class extends BlockNode {
     render(opts) {
-      let code = "try" + super.render(opts);
-      if (this.catch) code += this.catch.render(opts);
-      if (this.finally) code += this.finally.render(opts);
-      return code;
+      let code2 = "try" + super.render(opts);
+      if (this.catch) code2 += this.catch.render(opts);
+      if (this.finally) code2 += this.finally.render(opts);
+      return code2;
     }
     optimizeNodes() {
       var _a3, _b;
@@ -14978,17 +15879,17 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return this;
     }
     object(...keyValues) {
-      const code = ["{"];
+      const code2 = ["{"];
       for (const [key, value] of keyValues) {
-        if (code.length > 1) code.push(",");
-        code.push(key);
+        if (code2.length > 1) code2.push(",");
+        code2.push(key);
         if (key !== value || this.opts.es5) {
-          code.push(":");
-          (0, code_1.addCodeArg)(code, value);
+          code2.push(":");
+          (0, code_1.addCodeArg)(code2, value);
         }
       }
-      code.push("}");
-      return new code_1._Code(code);
+      code2.push("}");
+      return new code_1._Code(code2);
     }
     if(condition, thenBody, elseBody) {
       this._blockNode(new If(condition));
@@ -16925,18 +17826,18 @@ var require_utils = /* @__PURE__ */ __commonJSMin(((exports, module) => {
   const isIPv4 = RegExp.prototype.test.bind(/^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u);
   function stringArrayToHexStripped(input) {
     let acc = "";
-    let code = 0;
+    let code2 = 0;
     let i = 0;
     for (i = 0; i < input.length; i++) {
-      code = input[i].charCodeAt(0);
-      if (code === 48) continue;
-      if (!(code >= 48 && code <= 57 || code >= 65 && code <= 70 || code >= 97 && code <= 102)) return "";
+      code2 = input[i].charCodeAt(0);
+      if (code2 === 48) continue;
+      if (!(code2 >= 48 && code2 <= 57 || code2 >= 65 && code2 <= 70 || code2 >= 97 && code2 <= 102)) return "";
       acc += input[i];
       break;
     }
     for (i += 1; i < input.length; i++) {
-      code = input[i].charCodeAt(0);
-      if (!(code >= 48 && code <= 57 || code >= 65 && code <= 70 || code >= 97 && code <= 102)) return "";
+      code2 = input[i].charCodeAt(0);
+      if (!(code2 >= 48 && code2 <= 57 || code2 >= 65 && code2 <= 70 || code2 >= 97 && code2 <= 102)) return "";
       acc += input[i];
     }
     return acc;
@@ -17187,39 +18088,39 @@ var require_schemes = /* @__PURE__ */ __commonJSMin(((exports, module) => {
     wsComponent.fragment = void 0;
     return wsComponent;
   }
-  function urnParse(urnComponent, options) {
+  function urnParse(urnComponent, options2) {
     if (!urnComponent.path) {
       urnComponent.error = "URN can not be parsed";
       return urnComponent;
     }
     const matches = urnComponent.path.match(URN_REG);
     if (matches) {
-      const scheme = options.scheme || urnComponent.scheme || "urn";
+      const scheme = options2.scheme || urnComponent.scheme || "urn";
       urnComponent.nid = matches[1].toLowerCase();
       urnComponent.nss = matches[2];
-      const schemeHandler = getSchemeHandler(`${scheme}:${options.nid || urnComponent.nid}`);
+      const schemeHandler = getSchemeHandler(`${scheme}:${options2.nid || urnComponent.nid}`);
       urnComponent.path = void 0;
-      if (schemeHandler) urnComponent = schemeHandler.parse(urnComponent, options);
+      if (schemeHandler) urnComponent = schemeHandler.parse(urnComponent, options2);
     } else urnComponent.error = urnComponent.error || "URN can not be parsed.";
     return urnComponent;
   }
-  function urnSerialize(urnComponent, options) {
+  function urnSerialize(urnComponent, options2) {
     if (urnComponent.nid === void 0) throw new Error("URN without nid cannot be serialized");
-    const scheme = options.scheme || urnComponent.scheme || "urn";
+    const scheme = options2.scheme || urnComponent.scheme || "urn";
     const nid = urnComponent.nid.toLowerCase();
-    const schemeHandler = getSchemeHandler(`${scheme}:${options.nid || nid}`);
-    if (schemeHandler) urnComponent = schemeHandler.serialize(urnComponent, options);
+    const schemeHandler = getSchemeHandler(`${scheme}:${options2.nid || nid}`);
+    if (schemeHandler) urnComponent = schemeHandler.serialize(urnComponent, options2);
     const uriComponent = urnComponent;
     const nss = urnComponent.nss;
-    uriComponent.path = `${nid || options.nid}:${nss}`;
-    options.skipEscape = true;
+    uriComponent.path = `${nid || options2.nid}:${nss}`;
+    options2.skipEscape = true;
     return uriComponent;
   }
-  function urnuuidParse(urnComponent, options) {
+  function urnuuidParse(urnComponent, options2) {
     const uuidComponent = urnComponent;
     uuidComponent.uuid = uuidComponent.nss;
     uuidComponent.nss = void 0;
-    if (!options.tolerant && (!uuidComponent.uuid || !isUUID(uuidComponent.uuid))) uuidComponent.error = uuidComponent.error || "UUID is not valid.";
+    if (!options2.tolerant && (!uuidComponent.uuid || !isUUID(uuidComponent.uuid))) uuidComponent.error = uuidComponent.error || "UUID is not valid.";
     return uuidComponent;
   }
   function urnuuidSerialize(uuidComponent) {
@@ -17285,25 +18186,25 @@ var require_schemes = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
   const { normalizeIPv6, removeDotSegments, recomposeAuthority, normalizeComponentEncoding, isIPv4, nonSimpleDomain } = require_utils();
   const { SCHEMES, getSchemeHandler } = require_schemes();
-  function normalize(uri, options) {
-    if (typeof uri === "string") uri = serialize(parse3(uri, options), options);
-    else if (typeof uri === "object") uri = parse3(serialize(uri, options), options);
+  function normalize(uri, options2) {
+    if (typeof uri === "string") uri = serialize(parse3(uri, options2), options2);
+    else if (typeof uri === "object") uri = parse3(serialize(uri, options2), options2);
     return uri;
   }
-  function resolve(baseURI, relativeURI, options) {
-    const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
+  function resolve(baseURI, relativeURI, options2) {
+    const schemelessOptions = options2 ? Object.assign({ scheme: "null" }, options2) : { scheme: "null" };
     const resolved = resolveComponent(parse3(baseURI, schemelessOptions), parse3(relativeURI, schemelessOptions), schemelessOptions, true);
     schemelessOptions.skipEscape = true;
     return serialize(resolved, schemelessOptions);
   }
-  function resolveComponent(base, relative, options, skipNormalization) {
+  function resolveComponent(base, relative, options2, skipNormalization) {
     const target = {};
     if (!skipNormalization) {
-      base = parse3(serialize(base, options), options);
-      relative = parse3(serialize(relative, options), options);
+      base = parse3(serialize(base, options2), options2);
+      relative = parse3(serialize(relative, options2), options2);
     }
-    options = options || {};
-    if (!options.tolerant && relative.scheme) {
+    options2 = options2 || {};
+    if (!options2.tolerant && relative.scheme) {
       target.scheme = relative.scheme;
       target.userinfo = relative.userinfo;
       target.host = relative.host;
@@ -17341,25 +18242,25 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
     target.fragment = relative.fragment;
     return target;
   }
-  function equal(uriA, uriB, options) {
+  function equal(uriA, uriB, options2) {
     if (typeof uriA === "string") {
       uriA = unescape(uriA);
-      uriA = serialize(normalizeComponentEncoding(parse3(uriA, options), true), {
-        ...options,
+      uriA = serialize(normalizeComponentEncoding(parse3(uriA, options2), true), {
+        ...options2,
         skipEscape: true
       });
     } else if (typeof uriA === "object") uriA = serialize(normalizeComponentEncoding(uriA, true), {
-      ...options,
+      ...options2,
       skipEscape: true
     });
     if (typeof uriB === "string") {
       uriB = unescape(uriB);
-      uriB = serialize(normalizeComponentEncoding(parse3(uriB, options), true), {
-        ...options,
+      uriB = serialize(normalizeComponentEncoding(parse3(uriB, options2), true), {
+        ...options2,
         skipEscape: true
       });
     } else if (typeof uriB === "object") uriB = serialize(normalizeComponentEncoding(uriB, true), {
-      ...options,
+      ...options2,
       skipEscape: true
     });
     return uriA.toLowerCase() === uriB.toLowerCase();
@@ -17381,24 +18282,24 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
       secure: cmpts.secure,
       error: ""
     };
-    const options = Object.assign({}, opts);
+    const options2 = Object.assign({}, opts);
     const uriTokens = [];
-    const schemeHandler = getSchemeHandler(options.scheme || component.scheme);
-    if (schemeHandler && schemeHandler.serialize) schemeHandler.serialize(component, options);
-    if (component.path !== void 0) if (!options.skipEscape) {
+    const schemeHandler = getSchemeHandler(options2.scheme || component.scheme);
+    if (schemeHandler && schemeHandler.serialize) schemeHandler.serialize(component, options2);
+    if (component.path !== void 0) if (!options2.skipEscape) {
       component.path = escape(component.path);
       if (component.scheme !== void 0) component.path = component.path.split("%3A").join(":");
     } else component.path = unescape(component.path);
-    if (options.reference !== "suffix" && component.scheme) uriTokens.push(component.scheme, ":");
+    if (options2.reference !== "suffix" && component.scheme) uriTokens.push(component.scheme, ":");
     const authority = recomposeAuthority(component);
     if (authority !== void 0) {
-      if (options.reference !== "suffix") uriTokens.push("//");
+      if (options2.reference !== "suffix") uriTokens.push("//");
       uriTokens.push(authority);
       if (component.path && component.path[0] !== "/") uriTokens.push("/");
     }
     if (component.path !== void 0) {
       let s = component.path;
-      if (!options.absolutePath && (!schemeHandler || !schemeHandler.absolutePath)) s = removeDotSegments(s);
+      if (!options2.absolutePath && (!schemeHandler || !schemeHandler.absolutePath)) s = removeDotSegments(s);
       if (authority === void 0 && s[0] === "/" && s[1] === "/") s = "/%2F" + s.slice(2);
       uriTokens.push(s);
     }
@@ -17408,7 +18309,7 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
   }
   const URI_PARSE = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
   function parse3(uri, opts) {
-    const options = Object.assign({}, opts);
+    const options2 = Object.assign({}, opts);
     const parsed = {
       scheme: void 0,
       userinfo: void 0,
@@ -17419,7 +18320,7 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
       fragment: void 0
     };
     let isIP = false;
-    if (options.reference === "suffix") if (options.scheme) uri = options.scheme + ":" + uri;
+    if (options2.reference === "suffix") if (options2.scheme) uri = options2.scheme + ":" + uri;
     else uri = "//" + uri;
     const matches = uri.match(URI_PARSE);
     if (matches) {
@@ -17440,10 +18341,10 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
       else if (parsed.scheme === void 0) parsed.reference = "relative";
       else if (parsed.fragment === void 0) parsed.reference = "absolute";
       else parsed.reference = "uri";
-      if (options.reference && options.reference !== "suffix" && options.reference !== parsed.reference) parsed.error = parsed.error || "URI is not a " + options.reference + " reference.";
-      const schemeHandler = getSchemeHandler(options.scheme || parsed.scheme);
-      if (!options.unicodeSupport && (!schemeHandler || !schemeHandler.unicodeSupport)) {
-        if (parsed.host && (options.domainHost || schemeHandler && schemeHandler.domainHost) && isIP === false && nonSimpleDomain(parsed.host)) try {
+      if (options2.reference && options2.reference !== "suffix" && options2.reference !== parsed.reference) parsed.error = parsed.error || "URI is not a " + options2.reference + " reference.";
+      const schemeHandler = getSchemeHandler(options2.scheme || parsed.scheme);
+      if (!options2.unicodeSupport && (!schemeHandler || !schemeHandler.unicodeSupport)) {
+        if (parsed.host && (options2.domainHost || schemeHandler && schemeHandler.domainHost) && isIP === false && nonSimpleDomain(parsed.host)) try {
           parsed.host = URL.domainToASCII(parsed.host.toLowerCase());
         } catch (e) {
           parsed.error = parsed.error || "Host's domain name can not be converted to ASCII: " + e;
@@ -17457,7 +18358,7 @@ var require_fast_uri = /* @__PURE__ */ __commonJSMin(((exports, module) => {
         if (parsed.path) parsed.path = escape(unescape(parsed.path));
         if (parsed.fragment) parsed.fragment = encodeURI(decodeURIComponent(parsed.fragment));
       }
-      if (schemeHandler && schemeHandler.parse) schemeHandler.parse(parsed, options);
+      if (schemeHandler && schemeHandler.parse) schemeHandler.parse(parsed, options2);
     } else parsed.error = parsed.error || "URI can not be parsed.";
     return parsed;
   }
@@ -17940,10 +18841,10 @@ var require_core$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
   Ajv2.ValidationError = validation_error_1.default;
   Ajv2.MissingRefError = ref_error_1.default;
   exports.default = Ajv2;
-  function checkOptions(checkOpts, options, msg, log = "error") {
+  function checkOptions(checkOpts, options2, msg, log = "error") {
     for (const key in checkOpts) {
       const opt = key;
-      if (opt in options) this.logger[log](`${msg}: option ${key}. ${checkOpts[opt]}`);
+      if (opt in options2) this.logger[log](`${msg}: option ${key}. ${checkOpts[opt]}`);
     }
   }
   function getSchEnv(keyRef) {
@@ -19381,11 +20282,11 @@ var require_format$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
           }
         }
         function getFormat(fmtDef) {
-          const code = fmtDef instanceof RegExp ? (0, codegen_1.regexpCode)(fmtDef) : opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(schema)}` : void 0;
+          const code2 = fmtDef instanceof RegExp ? (0, codegen_1.regexpCode)(fmtDef) : opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(schema)}` : void 0;
           const fmt = gen.scopeValue("formats", {
             key: schema,
             ref: fmtDef,
-            code
+            code: code2
           });
           if (typeof fmtDef == "object" && !(fmtDef instanceof RegExp)) return [
             fmtDef.type || "string",
@@ -21348,11 +22249,11 @@ function serverEventToNotification(event) {
   }
 }
 var DEFAULT_MAX_SUBSCRIPTIONS = 1024;
-function jsonRpcError(id, code, message) {
+function jsonRpcError(id, code2, message) {
   return Response.json({
     jsonrpc: "2.0",
     error: {
-      code,
+      code: code2,
       message
     },
     id
@@ -21374,10 +22275,10 @@ function parseListenFilter(message) {
   const outcome = codecForVersion(MODERN_WIRE_REVISION).validateRequest("subscriptions/listen", message);
   return outcome.ok ? outcome.value.params?.notifications : void 0;
 }
-function createListenRouter(options) {
-  const { bus, onerror } = options;
-  const maxSubscriptions = options.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS;
-  const keepAliveMs = options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
+function createListenRouter(options2) {
+  const { bus, onerror } = options2;
+  const maxSubscriptions = options2.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS;
+  const keepAliveMs = options2.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
   const open = /* @__PURE__ */ new Set();
   function serve(message, signal, capabilities, serverInfo) {
     if (open.size >= maxSubscriptions) {
@@ -21656,8 +22557,8 @@ function buildWwwAuthenticateHeader(errorCode, description, requiredScopes, reso
   if (resourceMetadataUrl) header += `, resource_metadata="${headerQuotedValue(resourceMetadataUrl)}"`;
   return header;
 }
-async function verifyBearerToken(authorizationHeader, options) {
-  const { verifier, requiredScopes = [], expectedResource } = options;
+async function verifyBearerToken(authorizationHeader, options2) {
+  const { verifier, requiredScopes = [], expectedResource } = options2;
   if (!authorizationHeader) throw new OAuthError(OAuthErrorCode.InvalidToken, "Missing Authorization header");
   const [type, token] = authorizationHeader.split(" ");
   if (type?.toLowerCase() !== "bearer" || !token) throw new OAuthError(OAuthErrorCode.InvalidToken, "Invalid Authorization header format, expected 'Bearer TOKEN'");
@@ -21668,14 +22569,14 @@ async function verifyBearerToken(authorizationHeader, options) {
   }
   if (typeof authInfo.expiresAt !== "number" || Number.isNaN(authInfo.expiresAt)) throw new OAuthError(OAuthErrorCode.InvalidToken, "Token has no expiration time");
   else if (authInfo.expiresAt < Date.now() / 1e3) throw new OAuthError(OAuthErrorCode.InvalidToken, "Token has expired");
-  if (options.resourceMetadataUrl !== void 0 && authInfo.resourceMetadataUrl === void 0) return {
+  if (options2.resourceMetadataUrl !== void 0 && authInfo.resourceMetadataUrl === void 0) return {
     ...authInfo,
-    resourceMetadataUrl: options.resourceMetadataUrl
+    resourceMetadataUrl: options2.resourceMetadataUrl
   };
   return authInfo;
 }
-function bearerAuthChallengeResponse(error2, options) {
-  const { requiredScopes = [], resourceMetadataUrl } = options ?? {};
+function bearerAuthChallengeResponse(error2, options2) {
+  const { requiredScopes = [], resourceMetadataUrl } = options2 ?? {};
   if (!(error2 instanceof OAuthError)) {
     const serverError = new OAuthError(OAuthErrorCode.ServerError, "Internal Server Error");
     return Response.json(serverError.toResponseObject(), { status: 500 });
@@ -21728,9 +22629,9 @@ function validateScopeChallenge(challenge) {
   return challenge;
 }
 async function findScopeChallenge(requests, authInfo, resolve) {
-  for (const request of requests) {
+  for (const request2 of requests) {
     const challenge = await resolve({
-      request,
+      request: request2,
       ...authInfo !== void 0 && { authInfo }
     });
     if (challenge !== void 0) return validateScopeChallenge(challenge);
@@ -21748,13 +22649,13 @@ function createScopeChallengeResponse(challenge, resourceMetadataUrl) {
 }
 var DEFAULT_LEGACY_SHIM_MAX_ROUNDS = 8;
 var DEFAULT_LEGACY_SHIM_ROUND_TIMEOUT_MS = 6e5;
-function resolveLegacyShimOptions(options) {
-  if (options?.maxRounds !== void 0 && (!Number.isInteger(options.maxRounds) || options.maxRounds < 1)) throw new RangeError(`inputRequired.maxRounds must be a positive integer (got ${options.maxRounds})`);
-  if (options?.roundTimeoutMs !== void 0 && (!Number.isFinite(options.roundTimeoutMs) || options.roundTimeoutMs <= 0)) throw new RangeError(`inputRequired.roundTimeoutMs must be a positive number (got ${options.roundTimeoutMs})`);
+function resolveLegacyShimOptions(options2) {
+  if (options2?.maxRounds !== void 0 && (!Number.isInteger(options2.maxRounds) || options2.maxRounds < 1)) throw new RangeError(`inputRequired.maxRounds must be a positive integer (got ${options2.maxRounds})`);
+  if (options2?.roundTimeoutMs !== void 0 && (!Number.isFinite(options2.roundTimeoutMs) || options2.roundTimeoutMs <= 0)) throw new RangeError(`inputRequired.roundTimeoutMs must be a positive number (got ${options2.roundTimeoutMs})`);
   return {
-    maxRounds: options?.maxRounds ?? DEFAULT_LEGACY_SHIM_MAX_ROUNDS,
-    roundTimeoutMs: options?.roundTimeoutMs ?? DEFAULT_LEGACY_SHIM_ROUND_TIMEOUT_MS,
-    legacyShim: options?.legacyShim ?? true
+    maxRounds: options2?.maxRounds ?? DEFAULT_LEGACY_SHIM_MAX_ROUNDS,
+    roundTimeoutMs: options2?.roundTimeoutMs ?? DEFAULT_LEGACY_SHIM_ROUND_TIMEOUT_MS,
+    legacyShim: options2?.legacyShim ?? true
   };
 }
 function coerceEmbeddedInputRequest(method, key, entry) {
@@ -21791,7 +22692,7 @@ var LegacyInputRequiredShim = class {
   constructor(_host) {
     this._host = _host;
   }
-  async fulfill(method, handler, request, ctx, firstResult) {
+  async fulfill(method, handler, request2, ctx, firstResult) {
     const { maxRounds, roundTimeoutMs } = this._host;
     const outerSignal = ctx.mcpReq.signal;
     let current = firstResult;
@@ -21852,13 +22753,13 @@ var LegacyInputRequiredShim = class {
         const decoded = await this._host.verifyRequestState(requestState, ctxNext, method);
         if (decoded !== void 0) ctxNext = withRequestStateValue(ctxNext, decoded);
       }
-      const next = await handler(request, ctxNext);
+      const next = await handler(request2, ctxNext);
       if (!isInputRequiredResult(next)) return next;
       current = next;
     }
   }
   /** Routes one embedded request through the host's existing 2025-era senders (gate already ran). */
-  async _dispatchLeg(embedded, options) {
+  async _dispatchLeg(embedded, options2) {
     switch (embedded.method) {
       case "elicitation/create": {
         let params = embedded.params;
@@ -21866,12 +22767,12 @@ var LegacyInputRequiredShim = class {
           ...params,
           elicitationId: syntheticElicitationId()
         };
-        return await this._host.sendElicitation(params, options);
+        return await this._host.sendElicitation(params, options2);
       }
       case "sampling/createMessage":
-        return await this._host.sendSampling(embedded.params, options);
+        return await this._host.sendSampling(embedded.params, options2);
       case "roots/list":
-        return await this._host.listRoots(embedded.params, options);
+        return await this._host.listRoots(embedded.params, options2);
     }
   }
 };
@@ -21921,9 +22822,9 @@ var Server = class extends Protocol {
       roundTimeoutMs: this._inputRequiredServing.roundTimeoutMs,
       resolvedClientCapabilities: (ctx) => this._inputRequestCapabilityView(ctx),
       verifyRequestState: (state, ctx, method) => this._verifyRequestState(state, ctx, method),
-      sendElicitation: (params, options) => this._sendElicitationLeg(params, options, { validateAcceptedContent: false }),
-      sendSampling: (params, options) => this.createMessage(params, options),
-      listRoots: (params, options) => this.listRoots(params, options)
+      sendElicitation: (params, options2) => this._sendElicitationLeg(params, options2, { validateAcceptedContent: false }),
+      sendSampling: (params, options2) => this.createMessage(params, options2),
+      listRoots: (params, options2) => this.listRoots(params, options2)
     });
   }
   /**
@@ -21933,19 +22834,19 @@ var Server = class extends Protocol {
   /**
   * Initializes this server with the given name and version information.
   */
-  constructor(_serverInfo, options) {
-    super(options);
+  constructor(_serverInfo, options2) {
+    super(options2);
     this._serverInfo = _serverInfo;
-    this._capabilities = options?.capabilities ? { ...options.capabilities } : {};
-    this._instructions = options?.instructions;
-    this._jsonSchemaValidator = options?.jsonSchemaValidator ?? new AjvJsonSchemaValidator();
-    this._requestStateVerify = options?.requestState?.verify;
-    this._inputRequiredServing = resolveLegacyShimOptions(options?.inputRequired);
-    if (options?.cacheHints !== void 0) {
-      for (const [operation, hint] of Object.entries(options.cacheHints)) if (hint !== void 0) assertValidCacheHint(hint, `cacheHints['${operation}']`);
-      this._cacheHints = options.cacheHints;
+    this._capabilities = options2?.capabilities ? { ...options2.capabilities } : {};
+    this._instructions = options2?.instructions;
+    this._jsonSchemaValidator = options2?.jsonSchemaValidator ?? new AjvJsonSchemaValidator();
+    this._requestStateVerify = options2?.requestState?.verify;
+    this._inputRequiredServing = resolveLegacyShimOptions(options2?.inputRequired);
+    if (options2?.cacheHints !== void 0) {
+      for (const [operation, hint] of Object.entries(options2.cacheHints)) if (hint !== void 0) assertValidCacheHint(hint, `cacheHints['${operation}']`);
+      this._cacheHints = options2.cacheHints;
     }
-    this.setRequestHandler("initialize", (request) => this._oninitialize(request));
+    this.setRequestHandler("initialize", (request2) => this._oninitialize(request2));
     this.setNotificationHandler("notifications/initialized", () => this.oninitialized?.());
     if (modernProtocolVersions(this._supportedProtocolVersions).length > 0) this.setRequestHandler("server/discover", () => this._ondiscover());
     if (this._capabilities.logging) this._registerLoggingHandler();
@@ -21963,9 +22864,9 @@ var Server = class extends Protocol {
   * Migrate to stderr logging (STDIO servers) or OpenTelemetry.
   */
   _registerLoggingHandler() {
-    this.setRequestHandler("logging/setLevel", async (request, ctx) => {
+    this.setRequestHandler("logging/setLevel", async (request2, ctx) => {
       const transportSessionId = ctx.sessionId || ctx.http?.req?.headers.get("mcp-session-id") || void 0;
-      const { level } = request.params;
+      const { level } = request2.params;
       const parseResult = parseSchema(LoggingLevelSchema, level);
       if (parseResult.success) this._loggingLevels.set(transportSessionId, parseResult.data);
       return {};
@@ -21994,8 +22895,8 @@ var Server = class extends Protocol {
             }
           });
         },
-        elicitInput: (params, options) => this.elicitInput(params, options),
-        requestSampling: (params, options) => this.createMessage(params, options)
+        elicitInput: (params, options2) => this.elicitInput(params, options2),
+        requestSampling: (params, options2) => this.createMessage(params, options2)
       },
       http: hasHttpInfo ? {
         ...ctx.http,
@@ -22039,13 +22940,13 @@ var Server = class extends Protocol {
     if (method !== "tools/call") {
       const cacheHint = this._cacheHints?.[method];
       const isInputRequiredCapable = INPUT_REQUIRED_CAPABLE_METHODS.has(method);
-      if (cacheHint === void 0 && !isInputRequiredCapable) return async (request, ctx) => {
-        const result = await handler(request, ctx);
+      if (cacheHint === void 0 && !isInputRequiredCapable) return async (request2, ctx) => {
+        const result = await handler(request2, ctx);
         if (isInputRequiredResult(result)) throw new ProtocolError(ProtocolErrorCode.InternalError, `Handler for ${method} returned an input-required result, but only tools/call, prompts/get and resources/read support input_required (protocol revision 2026-07-28)`);
         return result;
       };
-      return async (request, ctx) => {
-        const result = isInputRequiredCapable ? await this._invokeInputRequiredCapableHandler(method, handler, request, ctx) : await handler(request, ctx);
+      return async (request2, ctx) => {
+        const result = isInputRequiredCapable ? await this._invokeInputRequiredCapableHandler(method, handler, request2, ctx) : await handler(request2, ctx);
         if (isInputRequiredResult(result)) {
           if (!isInputRequiredCapable) throw new ProtocolError(ProtocolErrorCode.InternalError, `Handler for ${method} returned an input-required result, but only tools/call, prompts/get and resources/read support input_required (protocol revision 2026-07-28)`);
           return result;
@@ -22053,11 +22954,11 @@ var Server = class extends Protocol {
         return cacheHint === void 0 ? result : attachCacheHintFallback(result, cacheHint);
       };
     }
-    return async (request, ctx) => {
+    return async (request2, ctx) => {
       const codec = codecForVersion(this._negotiatedProtocolVersion);
-      const validatedRequest = codec.validateRequest("tools/call", request);
+      const validatedRequest = codec.validateRequest("tools/call", request2);
       if (!validatedRequest.ok) throw new ProtocolError(validatedRequest.reason === "not-in-era" ? ProtocolErrorCode.InternalError : ProtocolErrorCode.InvalidParams, validatedRequest.reason === "not-in-era" ? "No wire schema for tools/call in the resolved era" : `Invalid tools/call request: ${validatedRequest.message}`);
-      const result = await this._invokeInputRequiredCapableHandler("tools/call", handler, request, ctx);
+      const result = await this._invokeInputRequiredCapableHandler("tools/call", handler, request2, ctx);
       if (isInputRequiredResult(result)) return result;
       const normalizedResult = normalizeContentlessToolResult(result);
       const validationResult = codec.validateResult("tools/call", normalizedResult);
@@ -22095,7 +22996,7 @@ var Server = class extends Protocol {
   *   violations per family; `inputRequired.legacyShim: false` restores
   *   the pre-shim loud failure.
   */
-  async _invokeInputRequiredCapableHandler(method, handler, request, ctx) {
+  async _invokeInputRequiredCapableHandler(method, handler, request2, ctx) {
     const servedModern = this._servedModernEra();
     const rawRequestState = ctx.mcpReq.requestState();
     if (rawRequestState !== void 0 && typeof rawRequestState !== "string") throw new ProtocolError(ProtocolErrorCode.InvalidParams, "Invalid or expired requestState", { reason: "invalid_request_state" });
@@ -22106,7 +23007,7 @@ var Server = class extends Protocol {
     }
     let result;
     try {
-      result = await handler(request, ctxForHandler);
+      result = await handler(request2, ctxForHandler);
     } catch (error2) {
       if (error2 instanceof ProtocolError && error2.code === ProtocolErrorCode.UrlElicitationRequired) {
         if (!servedModern) throw error2;
@@ -22117,7 +23018,7 @@ var Server = class extends Protocol {
     if (!isInputRequiredResult(result)) return result;
     if (!servedModern) {
       if (!this._inputRequiredServing.legacyShim) throw new ProtocolError(ProtocolErrorCode.InternalError, `Handler for ${method} returned an input-required result, but this request is served on protocol revision ${this._negotiatedProtocolVersion ?? LATEST_PROTOCOL_VERSION}, which has no input_required vocabulary`);
-      return await this._legacyInputRequiredShim().fulfill(method, handler, request, ctxForHandler, result);
+      return await this._legacyInputRequiredShim().fulfill(method, handler, request2, ctxForHandler, result);
     }
     const inputRequests = result.inputRequests;
     const hasInputRequests = inputRequests != null && Object.keys(inputRequests).length > 0;
@@ -22236,10 +23137,10 @@ var Server = class extends Protocol {
         break;
     }
   }
-  async _oninitialize(request) {
-    const requestedVersion = request.params.protocolVersion;
-    this._clientCapabilities = request.params.capabilities;
-    this._clientVersion = request.params.clientInfo;
+  async _oninitialize(request2) {
+    const requestedVersion = request2.params.protocolVersion;
+    this._clientCapabilities = request2.params.capabilities;
+    this._clientVersion = request2.params.clientInfo;
     const legacyVersions = legacyProtocolVersions(this._supportedProtocolVersions);
     const protocolVersion = legacyVersions.includes(requestedVersion) ? requestedVersion : legacyVersions[0] ?? LATEST_PROTOCOL_VERSION;
     this._negotiatedProtocolVersion = protocolVersion;
@@ -22344,7 +23245,7 @@ var Server = class extends Protocol {
     this._assertPushApiInServedEra("ping");
     return this.request({ method: "ping" });
   }
-  async createMessage(params, options) {
+  async createMessage(params, options2) {
     this._assertPushApiInServedEra("sampling/createMessage");
     if ((params.tools || params.toolChoice) && !this._clientCapabilities?.sampling?.tools) throw new SdkError(SdkErrorCode.CapabilityNotSupported, "Client does not support sampling tools capability.");
     if (params.messages.length > 0) {
@@ -22368,7 +23269,7 @@ var Server = class extends Protocol {
     const wide = await this.request({
       method: "sampling/createMessage",
       params
-    }, options);
+    }, options2);
     const outcome = this._wireCodec().samplingResultVariant(hasTools, wide);
     if (!outcome.ok) throw new SdkError(SdkErrorCode.InvalidResult, `Invalid sampling/createMessage result: ${outcome.reason === "invalid" ? outcome.message : outcome.reason}`);
     return outcome.value;
@@ -22385,7 +23286,7 @@ var Server = class extends Protocol {
   * results in the 2026-07-28 protocol. If your factory serves both eras, this only works on the
   * legacy path.
   */
-  async elicitInput(params, options) {
+  async elicitInput(params, options2) {
     this._assertPushApiInServedEra("elicitation/create");
     switch (params.mode ?? "form") {
       case "url":
@@ -22395,7 +23296,7 @@ var Server = class extends Protocol {
         if (!this._clientCapabilities?.elicitation?.form) throw new SdkError(SdkErrorCode.CapabilityNotSupported, "Client does not support form elicitation.");
         break;
     }
-    return this._sendElicitationLeg(params, options);
+    return this._sendElicitationLeg(params, options2);
   }
   /**
   * The capability-check-free core of {@linkcode elicitInput}. The shim
@@ -22405,7 +23306,7 @@ var Server = class extends Protocol {
   * modern client driver (handlers validate via the schema-aware
   * `acceptedContent` overload and can re-ask).
   */
-  async _sendElicitationLeg(params, options, behavior) {
+  async _sendElicitationLeg(params, options2, behavior) {
     const mode = params.mode ?? "form";
     const validateAcceptedContent = behavior?.validateAcceptedContent ?? true;
     switch (mode) {
@@ -22414,7 +23315,7 @@ var Server = class extends Protocol {
         return this.request({
           method: "elicitation/create",
           params: urlParams
-        }, options);
+        }, options2);
       }
       case "form": {
         const formParams = params.mode === "form" ? params : {
@@ -22424,7 +23325,7 @@ var Server = class extends Protocol {
         const result = await this.request({
           method: "elicitation/create",
           params: formParams
-        }, options);
+        }, options2);
         if (validateAcceptedContent && result.action === "accept" && result.content && formParams.requestedSchema) try {
           const validationResult = this._jsonSchemaValidator.getValidator(formParams.requestedSchema)(result.content);
           if (!validationResult.valid) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Elicitation response content does not match requested schema: ${validationResult.errorMessage}`);
@@ -22449,12 +23350,12 @@ var Server = class extends Protocol {
   * @param options Optional notification options. Useful when the completion notification should be related to a prior request.
   * @returns A function that emits the completion notification when awaited.
   */
-  createElicitationCompletionNotifier(elicitationId, options) {
+  createElicitationCompletionNotifier(elicitationId, options2) {
     if (!this._clientCapabilities?.elicitation?.url) throw new SdkError(SdkErrorCode.CapabilityNotSupported, "Client does not support URL elicitation (required for notifications/elicitation/complete)");
     return () => this.notification({
       method: "notifications/elicitation/complete",
       params: { elicitationId }
-    }, options);
+    }, options2);
   }
   /**
   * Requests the list of roots from the client.
@@ -22465,12 +23366,12 @@ var Server = class extends Protocol {
   * push-style server-to-client request model is replaced by input_required results in the
   * 2026-07-28 protocol. If your factory serves both eras, this only works on the legacy path.
   */
-  async listRoots(params, options) {
+  async listRoots(params, options2) {
     this._assertPushApiInServedEra("roots/list");
     return this.request({
       method: "roots/list",
       params
-    }, options);
+    }, options2);
   }
   /**
   * Sends a logging message to the client, if connected.
@@ -22565,12 +23466,12 @@ var McpServer = class {
       return;
     }
   }
-  constructor(serverInfo, options) {
-    this.server = new Server(serverInfo, options);
-    this._maxToolInputElements = resolveMaxToolInputElements(options?.maxToolInputElements);
-    if (options?.capabilities?.tools) this.setToolRequestHandlers();
-    if (options?.capabilities?.resources) this.setResourceRequestHandlers();
-    if (options?.capabilities?.prompts) this.setPromptRequestHandlers();
+  constructor(serverInfo, options2) {
+    this.server = new Server(serverInfo, options2);
+    this._maxToolInputElements = resolveMaxToolInputElements(options2?.maxToolInputElements);
+    if (options2?.capabilities?.tools) this.setToolRequestHandlers();
+    if (options2?.capabilities?.resources) this.setResourceRequestHandlers();
+    if (options2?.capabilities?.prompts) this.setPromptRequestHandlers();
   }
   /**
   * Attaches to the given transport, starts it, and starts listening for messages.
@@ -22649,14 +23550,14 @@ var McpServer = class {
       if (tool.outputSchema) toolDefinition.outputSchema = standardSchemaToJsonSchema(tool.outputSchema, "output");
       return toolDefinition;
     }) }));
-    this.server.setRequestHandler("tools/call", async (request, ctx) => {
-      const tool = this._registeredTools[request.params.name];
-      if (!tool) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Tool ${request.params.name} not found`);
-      if (!tool.enabled) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Tool ${request.params.name} disabled`);
+    this.server.setRequestHandler("tools/call", async (request2, ctx) => {
+      const tool = this._registeredTools[request2.params.name];
+      if (!tool) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Tool ${request2.params.name} not found`);
+      if (!tool.enabled) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Tool ${request2.params.name} disabled`);
       try {
-        const args = await this.validateToolInput(tool, request.params.arguments, request.params.name);
+        const args = await this.validateToolInput(tool, request2.params.arguments, request2.params.name);
         const result = await this.executeToolHandler(tool, args, ctx);
-        await this.validateToolOutput(tool, result, request.params.name);
+        await this.validateToolOutput(tool, result, request2.params.name);
         if (isInputRequiredResult(result)) return result;
         return this.server.projectCallToolResult(result, tool.outputSchemaJson);
       } catch (error2) {
@@ -22713,40 +23614,40 @@ var McpServer = class {
     if (this._completionHandlerInitialized) return;
     this.server.assertCanSetRequestHandler("completion/complete");
     this.server.registerCapabilities({ completions: {} });
-    this.server.setRequestHandler("completion/complete", async (request) => {
-      switch (request.params.ref.type) {
+    this.server.setRequestHandler("completion/complete", async (request2) => {
+      switch (request2.params.ref.type) {
         case "ref/prompt":
-          assertCompleteRequestPrompt(request);
-          return this.handlePromptCompletion(request, request.params.ref);
+          assertCompleteRequestPrompt(request2);
+          return this.handlePromptCompletion(request2, request2.params.ref);
         case "ref/resource":
-          assertCompleteRequestResourceTemplate(request);
-          return this.handleResourceCompletion(request, request.params.ref);
+          assertCompleteRequestResourceTemplate(request2);
+          return this.handleResourceCompletion(request2, request2.params.ref);
         default:
-          throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid completion reference: ${request.params.ref}`);
+          throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid completion reference: ${request2.params.ref}`);
       }
     });
     this._completionHandlerInitialized = true;
   }
-  async handlePromptCompletion(request, ref) {
+  async handlePromptCompletion(request2, ref) {
     const prompt = this._registeredPrompts[ref.name];
     if (!prompt) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Prompt ${ref.name} not found`);
     if (!prompt.enabled) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Prompt ${ref.name} disabled`);
     if (!prompt.argsSchema) return EMPTY_COMPLETION_RESULT;
-    const field = unwrapOptionalSchema(getSchemaShape(prompt.argsSchema)?.[request.params.argument.name]);
+    const field = unwrapOptionalSchema(getSchemaShape(prompt.argsSchema)?.[request2.params.argument.name]);
     if (!isCompletable(field)) return EMPTY_COMPLETION_RESULT;
     const completer = getCompleter(field);
     if (!completer) return EMPTY_COMPLETION_RESULT;
-    return createCompletionResult(await completer(request.params.argument.value, request.params.context));
+    return createCompletionResult(await completer(request2.params.argument.value, request2.params.context));
   }
-  async handleResourceCompletion(request, ref) {
+  async handleResourceCompletion(request2, ref) {
     const template = Object.values(this._registeredResourceTemplates).find((t) => t.resourceTemplate.uriTemplate.toString() === ref.uri);
     if (!template) {
       if (this._registeredResources[ref.uri]) return EMPTY_COMPLETION_RESULT;
-      throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Resource template ${request.params.ref.uri} not found`);
+      throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Resource template ${request2.params.ref.uri} not found`);
     }
-    const completer = template.resourceTemplate.completeCallback(request.params.argument.name);
+    const completer = template.resourceTemplate.completeCallback(request2.params.argument.name);
     if (!completer) return EMPTY_COMPLETION_RESULT;
-    return createCompletionResult(await completer(request.params.argument.value, request.params.context));
+    return createCompletionResult(await completer(request2.params.argument.value, request2.params.context));
   }
   _resourceHandlersInitialized = false;
   setResourceRequestHandlers() {
@@ -22779,13 +23680,13 @@ var McpServer = class {
         ...template.metadata
       })) };
     });
-    this.server.setRequestHandler("resources/read", async (request, ctx) => {
+    this.server.setRequestHandler("resources/read", async (request2, ctx) => {
       let uri;
       try {
-        uri = new URL(request.params.uri);
+        uri = new URL(request2.params.uri);
       } catch {
-        throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Resource URI ${request.params.uri} is invalid`, {
-          uri: request.params.uri,
+        throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Resource URI ${request2.params.uri} is invalid`, {
+          uri: request2.params.uri,
           reason: "invalid_uri"
         });
       }
@@ -22801,7 +23702,7 @@ var McpServer = class {
           return attachCacheHintFallback(await template.readCallback(uri, variables, ctx), template.cacheHint);
         }
       }
-      throw new ResourceNotFoundError(request.params.uri);
+      throw new ResourceNotFoundError(request2.params.uri);
     });
     this._resourceHandlersInitialized = true;
   }
@@ -22821,11 +23722,11 @@ var McpServer = class {
         _meta: prompt._meta
       };
     }) }));
-    this.server.setRequestHandler("prompts/get", async (request, ctx) => {
-      const prompt = this._registeredPrompts[request.params.name];
-      if (!prompt) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Prompt ${request.params.name} not found`);
-      if (!prompt.enabled) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Prompt ${request.params.name} disabled`);
-      return prompt.handler(request.params.arguments, ctx);
+    this.server.setRequestHandler("prompts/get", async (request2, ctx) => {
+      const prompt = this._registeredPrompts[request2.params.name];
+      if (!prompt) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Prompt ${request2.params.name} not found`);
+      if (!prompt.enabled) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Prompt ${request2.params.name} disabled`);
+      return prompt.handler(request2.params.arguments, ctx);
     });
     this._promptHandlersInitialized = true;
   }
@@ -23157,10 +24058,10 @@ var StdioServerTransport = class {
   _readBuffer;
   _started = false;
   _closed = false;
-  constructor(_stdin = process3.stdin, _stdout = process3.stdout, options) {
+  constructor(_stdin = process3.stdin, _stdout = process3.stdout, options2) {
     this._stdin = _stdin;
     this._stdout = _stdout;
-    this._readBuffer = new ReadBuffer({ maxBufferSize: options?.maxBufferSize });
+    this._readBuffer = new ReadBuffer({ maxBufferSize: options2?.maxBufferSize });
   }
   onclose;
   onerror;
@@ -23268,14 +24169,14 @@ var StdioConnectionChannel = class {
   }
   async start() {
   }
-  async send(message, options) {
+  async send(message, options2) {
     if (isJSONRPCResultResponse(message) || isJSONRPCErrorResponse(message)) {
       const { id } = message;
       if (id !== void 0) this._settle(id);
     }
     if (this._closed) return;
     if (this._outboundIntercept?.(message) === "handled") return;
-    return this._wire.send(message, options);
+    return this._wire.send(message, options2);
   }
   setProtocolVersion = (version2) => {
     this._wire.setProtocolVersion?.(version2);
@@ -23368,29 +24269,29 @@ function classifyOpeningMessage(message) {
     }
   };
 }
-function serveStdio(factory, options = {}) {
-  const legacyMode = options.legacy ?? "serve";
-  const wire = options.transport ?? new StdioServerTransport();
+function serveStdio(factory, options2 = {}) {
+  const legacyMode = options2.legacy ?? "serve";
+  const wire = options2.transport ?? new StdioServerTransport();
   let state = { phase: "opening" };
   let discarding;
   let closing = false;
   const isTornDown = () => closing || state.phase === "closed";
   const reportError = (error2) => {
     try {
-      options.onerror?.(error2);
+      options2.onerror?.(error2);
     } catch {
     }
   };
-  const writeErrorResponse = (id, code, message, data) => wire.send({
+  const writeErrorResponse = (id, code2, message, data) => wire.send({
     jsonrpc: "2.0",
     id,
     error: {
-      code,
+      code: code2,
       message,
       ...data !== void 0 && { data }
     }
   }).catch((error2) => reportError(toError(error2)));
-  const listenRouter = new StdioListenRouter(options.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS);
+  const listenRouter = new StdioListenRouter(options2.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS);
   const modernOutboundIntercept = (message) => {
     if (!isJSONRPCNotification(message)) return void 0;
     const routed = listenRouter.routeOutbound(message);
@@ -23446,7 +24347,7 @@ function serveStdio(factory, options = {}) {
     }
     return false;
   };
-  const answerLegacyRejection = (request, reason, requestedVersion) => {
+  const answerLegacyRejection = (request2, reason, requestedVersion) => {
     const rejection2 = modernOnlyStrictRejection({
       kind: "legacy",
       reason,
@@ -23454,7 +24355,7 @@ function serveStdio(factory, options = {}) {
     }, SUPPORTED_MODERN_PROTOCOL_VERSIONS);
     if (rejection2 === void 0) return Promise.resolve();
     reportError(/* @__PURE__ */ new Error(`Rejected 2025-era request on a modern-only stdio connection (${rejection2.cell}): ${rejection2.message}`));
-    return writeErrorResponse(request.id, rejection2.code, rejection2.message, rejection2.data);
+    return writeErrorResponse(request2.id, rejection2.code, rejection2.message, rejection2.data);
   };
   const onInstanceClosed = (channel) => {
     if (closing || channel === discarding) return;
@@ -23678,10 +24579,10 @@ var PerRequestHTTPServerTransport = class {
   _sse;
   _abortCleanup;
   _keepAliveMs;
-  constructor(options) {
-    this._classification = options.classification;
-    this._responseMode = options.responseMode ?? "auto";
-    this._keepAliveMs = options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
+  constructor(options2) {
+    this._classification = options2.classification;
+    this._responseMode = options2.responseMode ?? "auto";
+    this._keepAliveMs = options2.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
   }
   async start() {
     if (this._started) throw new Error("PerRequestHTTPServerTransport is already started");
@@ -23743,10 +24644,10 @@ var PerRequestHTTPServerTransport = class {
     this.onmessage(message, messageExtra);
     return new Response(null, { status: 202 });
   }
-  async send(message, options) {
+  async send(message, options2) {
     if (this._closed) return;
     const isResponse = isJSONRPCResultResponse(message) || isJSONRPCErrorResponse(message);
-    const relatedId = isResponse ? message.id : options?.relatedRequestId;
+    const relatedId = isResponse ? message.id : options2?.relatedRequestId;
     if (this._requestId === void 0 || relatedId === void 0 || relatedId !== this._requestId) {
       if (isResponse) this.onerror?.(/* @__PURE__ */ new Error(`Received a response for an unknown request id: ${String(message.id)}`));
       return;
@@ -23890,13 +24791,13 @@ function resolveMaxRequestBodySize(value) {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) throw new RangeError(`maxRequestBodySize must be a positive number of bytes, got ${String(value)}`);
   return value;
 }
-async function readRequestBody(request, maxBytes = DEFAULT_MAX_REQUEST_BODY_SIZE) {
-  if (Number(request.headers.get("content-length")) > maxBytes) return { tooLarge: true };
-  if (request.body === null) return {
+async function readRequestBody(request2, maxBytes = DEFAULT_MAX_REQUEST_BODY_SIZE) {
+  if (Number(request2.headers.get("content-length")) > maxBytes) return { tooLarge: true };
+  if (request2.body === null) return {
     tooLarge: false,
     text: ""
   };
-  const reader = request.body.getReader();
+  const reader = request2.body.getReader();
   const decoder = new TextDecoder();
   let received = 0;
   let text = "";
@@ -23942,19 +24843,19 @@ var WebStandardStreamableHTTPServerTransport = class {
   onclose;
   onerror;
   onmessage;
-  constructor(options = {}) {
-    this.sessionIdGenerator = options.sessionIdGenerator;
-    this._enableJsonResponse = options.enableJsonResponse ?? false;
-    this._eventStore = options.eventStore;
-    this._onsessioninitialized = options.onsessioninitialized;
-    this._onsessionclosed = options.onsessionclosed;
-    this._allowedHosts = options.allowedHosts;
-    this._allowedOrigins = options.allowedOrigins;
-    this._enableDnsRebindingProtection = options.enableDnsRebindingProtection ?? false;
-    this._retryInterval = options.retryInterval;
-    this._supportedProtocolVersions = options.supportedProtocolVersions ?? SUPPORTED_PROTOCOL_VERSIONS;
-    this._keepAliveMs = options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
-    this._maxRequestBodySize = resolveMaxRequestBodySize(options.maxRequestBodySize);
+  constructor(options2 = {}) {
+    this.sessionIdGenerator = options2.sessionIdGenerator;
+    this._enableJsonResponse = options2.enableJsonResponse ?? false;
+    this._eventStore = options2.eventStore;
+    this._onsessioninitialized = options2.onsessioninitialized;
+    this._onsessionclosed = options2.onsessionclosed;
+    this._allowedHosts = options2.allowedHosts;
+    this._allowedOrigins = options2.allowedOrigins;
+    this._enableDnsRebindingProtection = options2.enableDnsRebindingProtection ?? false;
+    this._retryInterval = options2.retryInterval;
+    this._supportedProtocolVersions = options2.supportedProtocolVersions ?? SUPPORTED_PROTOCOL_VERSIONS;
+    this._keepAliveMs = options2.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS;
+    this._maxRequestBodySize = resolveMaxRequestBodySize(options2.maxRequestBodySize);
   }
   startKeepAlive(controller, encoder) {
     if (this._closed) return void 0;
@@ -23989,12 +24890,12 @@ var WebStandardStreamableHTTPServerTransport = class {
   /**
   * Helper to create a JSON error response
   */
-  createJsonErrorResponse(status, code, message, options) {
+  createJsonErrorResponse(status, code2, message, options2) {
     const error2 = {
-      code,
+      code: code2,
       message
     };
-    if (options?.data !== void 0) error2.data = options.data;
+    if (options2?.data !== void 0) error2.data = options2.data;
     return Response.json({
       jsonrpc: "2.0",
       error: error2,
@@ -24003,7 +24904,7 @@ var WebStandardStreamableHTTPServerTransport = class {
       status,
       headers: {
         "Content-Type": "application/json",
-        ...options?.headers
+        ...options2?.headers
       }
     });
   }
@@ -24039,7 +24940,7 @@ var WebStandardStreamableHTTPServerTransport = class {
   * Handles an incoming HTTP request, whether `GET`, `POST`, or `DELETE`
   * Returns a `Response` object (Web Standard)
   */
-  async handleRequest(req, options) {
+  async handleRequest(req, options2) {
     if (this._closed) return this.createJsonErrorResponse(404, -32001, "Session not found");
     if (!this.sessionIdGenerator && this._hasHandledRequest) throw new Error("Stateless transport cannot be reused across requests. Create a new transport per request.");
     this._hasHandledRequest = true;
@@ -24047,7 +24948,7 @@ var WebStandardStreamableHTTPServerTransport = class {
     if (validationError) return validationError;
     switch (req.method) {
       case "POST":
-        return this.handlePostRequest(req, options);
+        return this.handlePostRequest(req, options2);
       case "GET":
         return this.handleGetRequest(req);
       case "DELETE":
@@ -24124,13 +25025,13 @@ data:
         if (this._streamMapping.get(this._standaloneSseStreamId)?.controller === streamController) this._streamMapping.delete(this._standaloneSseStreamId);
       }
     });
-    const headers = {
+    const headers2 = {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
       "X-Accel-Buffering": "no"
     };
-    if (this.sessionId !== void 0) headers["mcp-session-id"] = this.sessionId;
+    if (this.sessionId !== void 0) headers2["mcp-session-id"] = this.sessionId;
     this._streamMapping.set(this._standaloneSseStreamId, {
       controller: streamController,
       encoder,
@@ -24144,7 +25045,7 @@ data:
       }
     });
     keepAliveTimer = this.startKeepAlive(streamController, encoder);
-    return new Response(readable, { headers });
+    return new Response(readable, { headers: headers2 });
   }
   /**
   * Replays events that would have been sent after the specified event ID
@@ -24168,13 +25069,13 @@ data:
           return this.createJsonErrorResponse(409, -32e3, "Conflict: Stream already has an active connection");
         }
       }
-      const headers = {
+      const headers2 = {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
         "X-Accel-Buffering": "no"
       };
-      if (this.sessionId !== void 0) headers["mcp-session-id"] = this.sessionId;
+      if (this.sessionId !== void 0) headers2["mcp-session-id"] = this.sessionId;
       const encoder = new TextEncoder();
       let streamController;
       let keepAliveTimer;
@@ -24229,7 +25130,7 @@ data:
         }
       }
       if (this._streamMapping.get(replayedStreamId)?.controller === streamController) keepAliveTimer = this.startKeepAlive(streamController, encoder);
-      return new Response(readable, { headers });
+      return new Response(readable, { headers: headers2 });
     } catch (error2) {
       this.onerror?.(error2);
       return this.createJsonErrorResponse(500, -32e3, "Error replaying events");
@@ -24277,7 +25178,7 @@ data:
   /**
   * Handles `POST` requests containing JSON-RPC messages
   */
-  async handlePostRequest(req, options) {
+  async handlePostRequest(req, options2) {
     try {
       const acceptHeader = req.headers.get("accept");
       if (!acceptHeader?.includes("application/json") || !acceptHeader.includes("text/event-stream")) {
@@ -24288,9 +25189,9 @@ data:
         this.onerror?.(/* @__PURE__ */ new Error("Unsupported Media Type: Content-Type must be application/json"));
         return this.createJsonErrorResponse(415, -32e3, "Unsupported Media Type: Content-Type must be application/json");
       }
-      const request = req;
+      const request2 = req;
       let rawMessage;
-      if (options?.parsedBody === void 0) try {
+      if (options2?.parsedBody === void 0) try {
         const body = await readRequestBody(req, this._maxRequestBodySize);
         if (body.tooLarge) {
           const message = requestBodyTooLargeMessage(this._maxRequestBodySize);
@@ -24302,7 +25203,7 @@ data:
         this.onerror?.(error2);
         return this.createJsonErrorResponse(400, -32700, "Parse error: Invalid JSON");
       }
-      else rawMessage = options.parsedBody;
+      else rawMessage = options2.parsedBody;
       if (Array.isArray(rawMessage) && rawMessage.length > MAX_BATCH_SIZE) {
         this.onerror?.(/* @__PURE__ */ new Error(`Invalid Request: Batch must not exceed ${MAX_BATCH_SIZE} messages`));
         return this.createJsonErrorResponse(400, -32600, `Invalid Request: Batch must not exceed ${MAX_BATCH_SIZE} messages`);
@@ -24338,7 +25239,7 @@ data:
       if (this._closed) return this.createJsonErrorResponse(404, -32001, "Session not found");
       let scopeChallengeResponse;
       try {
-        scopeChallengeResponse = await this._checkScopeChallenge(messages, options?.authInfo);
+        scopeChallengeResponse = await this._checkScopeChallenge(messages, options2?.authInfo);
       } catch (error2) {
         this.onerror?.(error2);
         return this.createJsonErrorResponse(500, -32603, "Internal server error");
@@ -24346,8 +25247,8 @@ data:
       if (scopeChallengeResponse) return scopeChallengeResponse;
       if (!messages.some((element) => isJSONRPCRequest(element))) {
         for (const message of messages) this.onmessage?.(message, {
-          authInfo: options?.authInfo,
-          request
+          authInfo: options2?.authInfo,
+          request: request2
         });
         return new Response(null, { status: 202 });
       }
@@ -24363,8 +25264,8 @@ data:
         });
         for (const message of messages) if (isJSONRPCRequest(message)) this._requestToStreamMapping.set(message.id, streamId);
         for (const message of messages) this.onmessage?.(message, {
-          authInfo: options?.authInfo,
-          request
+          authInfo: options2?.authInfo,
+          request: request2
         });
       });
       const encoder = new TextEncoder();
@@ -24379,13 +25280,13 @@ data:
           if (this._streamMapping.get(streamId)?.controller === streamController) this._streamMapping.delete(streamId);
         }
       });
-      const headers = {
+      const headers2 = {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
         "X-Accel-Buffering": "no"
       };
-      if (this.sessionId !== void 0) headers["mcp-session-id"] = this.sessionId;
+      if (this.sessionId !== void 0) headers2["mcp-session-id"] = this.sessionId;
       for (const message of messages) if (isJSONRPCRequest(message)) {
         this._streamMapping.set(streamId, {
           controller: streamController,
@@ -24414,8 +25315,8 @@ data:
           };
         }
         this.onmessage?.(message, {
-          authInfo: options?.authInfo,
-          request,
+          authInfo: options2?.authInfo,
+          request: request2,
           closeSSEStream,
           closeStandaloneSSEStream
         });
@@ -24423,7 +25324,7 @@ data:
       if (this._streamMapping.get(streamId)?.controller === streamController) keepAliveTimer = this.startKeepAlive(streamController, encoder);
       return new Response(readable, {
         status: 200,
-        headers
+        headers: headers2
       });
     } catch (error2) {
       this.onerror?.(error2);
@@ -24513,8 +25414,8 @@ data:
     const stream = this._streamMapping.get(this._standaloneSseStreamId);
     if (stream) stream.cleanup();
   }
-  async send(message, options) {
-    let requestId = options?.relatedRequestId;
+  async send(message, options2) {
+    let requestId = options2?.relatedRequestId;
     if (isJSONRPCResultResponse(message) || isJSONRPCErrorResponse(message)) requestId = message.id;
     if (requestId === void 0) {
       if (isJSONRPCResultResponse(message) || isJSONRPCErrorResponse(message)) throw new Error("Cannot send a response on a standalone SSE stream unless resuming a previous client request");
@@ -24557,16 +25458,16 @@ data:
           return;
         }
         if (this._enableJsonResponse && stream.resolveJson) {
-          const headers = { "Content-Type": "application/json" };
-          if (this.sessionId !== void 0) headers["mcp-session-id"] = this.sessionId;
+          const headers2 = { "Content-Type": "application/json" };
+          if (this.sessionId !== void 0) headers2["mcp-session-id"] = this.sessionId;
           const responses = relatedIds.map((id) => this._requestResponseMap.get(id));
           if (responses.length === 1) stream.resolveJson(Response.json(responses[0], {
             status: 200,
-            headers
+            headers: headers2
           }));
           else stream.resolveJson(Response.json(responses, {
             status: 200,
-            headers
+            headers: headers2
           }));
           stream.cleanup();
         } else stream.cleanup();
@@ -24584,11 +25485,11 @@ function echoableRequestId(body) {
   if (typeof method !== "string") return null;
   return typeof id === "string" || typeof id === "number" ? id : null;
 }
-function jsonRpcErrorResponse(httpStatus, code, message, data, id = null) {
+function jsonRpcErrorResponse(httpStatus, code2, message, data, id = null) {
   return Response.json({
     jsonrpc: "2.0",
     error: {
-      code,
+      code: code2,
       message,
       ...data !== void 0 && { data }
     },
@@ -24608,13 +25509,13 @@ function assertNotServing(server) {
   if (server.transport !== void 0) throw new Error("The factory returned an instance that is still serving another request. Return a new instance for each request.");
 }
 function createLegacyStatelessFallback(factory, onerror, keepAliveMs, maxRequestBodySize) {
-  return async (request, options) => {
-    if (request.method.toUpperCase() !== "POST") return jsonRpcErrorResponse(405, -32e3, "Method not allowed.");
+  return async (request2, options2) => {
+    if (request2.method.toUpperCase() !== "POST") return jsonRpcErrorResponse(405, -32e3, "Method not allowed.");
     try {
       const product = await factory({
         era: "legacy",
-        ...options?.authInfo !== void 0 && { authInfo: options.authInfo },
-        requestInfo: request
+        ...options2?.authInfo !== void 0 && { authInfo: options2.authInfo },
+        requestInfo: request2
       });
       const transport = new WebStandardStreamableHTTPServerTransport({
         sessionIdGenerator: void 0,
@@ -24628,10 +25529,10 @@ function createLegacyStatelessFallback(factory, onerror, keepAliveMs, maxRequest
         product.close().catch(() => {
         });
       };
-      request.signal?.addEventListener("abort", teardown, { once: true });
-      const response = await transport.handleRequest(request, {
-        ...options?.authInfo !== void 0 && { authInfo: options.authInfo },
-        ...options?.parsedBody !== void 0 && { parsedBody: options.parsedBody }
+      request2.signal?.addEventListener("abort", teardown, { once: true });
+      const response = await transport.handleRequest(request2, {
+        ...options2?.authInfo !== void 0 && { authInfo: options2.authInfo },
+        ...options2?.parsedBody !== void 0 && { parsedBody: options2.parsedBody }
       });
       if (response.body === null || mediaTypeEssence(response.headers.get("content-type")) !== "text/event-stream") {
         teardown();
@@ -24676,29 +25577,29 @@ function createLegacyStatelessFallback(factory, onerror, keepAliveMs, maxRequest
         onerror?.(toError2(error2));
       } catch {
       }
-      return internalServerErrorResponse(echoableRequestId(options?.parsedBody));
+      return internalServerErrorResponse(echoableRequestId(options2?.parsedBody));
     }
   };
 }
-function standardHeadersOf(request) {
+function standardHeadersOf(request2) {
   return {
-    protocolVersionHeader: request.headers.get("mcp-protocol-version") ?? void 0,
-    mcpMethodHeader: request.headers.get("mcp-method") ?? void 0,
-    mcpNameHeader: request.headers.get("mcp-name") ?? void 0
+    protocolVersionHeader: request2.headers.get("mcp-protocol-version") ?? void 0,
+    mcpMethodHeader: request2.headers.get("mcp-method") ?? void 0,
+    mcpNameHeader: request2.headers.get("mcp-name") ?? void 0
   };
 }
-async function classifyEntryRequest(request, providedParsedBody, needsForward = true, maxRequestBodySize = DEFAULT_MAX_REQUEST_BODY_SIZE) {
-  const httpMethod = request.method.toUpperCase();
+async function classifyEntryRequest(request2, providedParsedBody, needsForward = true, maxRequestBodySize = DEFAULT_MAX_REQUEST_BODY_SIZE) {
+  const httpMethod = request2.method.toUpperCase();
   let body;
   let parsedBody = providedParsedBody;
-  let forwardRequest = request;
+  let forwardRequest = request2;
   let unparseable = false;
   if (httpMethod === "POST") {
     if (parsedBody === void 0) {
-      if (needsForward) forwardRequest = request.clone();
+      if (needsForward) forwardRequest = request2.clone();
       let bodyText;
       try {
-        const read = await readRequestBody(request, maxRequestBodySize);
+        const read = await readRequestBody(request2, maxRequestBodySize);
         if (read.tooLarge) return { step: "body-too-large" };
         bodyText = read.text;
       } catch {
@@ -24720,7 +25621,7 @@ async function classifyEntryRequest(request, providedParsedBody, needsForward = 
     step: "classified",
     outcome: classifyInboundRequest({
       httpMethod,
-      ...standardHeadersOf(request),
+      ...standardHeadersOf(request2),
       ...body !== void 0 && { body }
     }),
     body,
@@ -24728,9 +25629,9 @@ async function classifyEntryRequest(request, providedParsedBody, needsForward = 
     forwardRequest
   };
 }
-function createMcpHandler(factory, options = {}) {
-  const { legacy, onerror, responseMode } = options;
-  const maxRequestBodySize = resolveMaxRequestBodySize(options.maxRequestBodySize);
+function createMcpHandler(factory, options2 = {}) {
+  const { legacy, onerror, responseMode } = options2;
+  const maxRequestBodySize = resolveMaxRequestBodySize(options2.maxRequestBodySize);
   if (typeof legacy === "function") throw new TypeError("The 'legacy' option only accepts 'stateless' or 'reject', not a handler function. To serve 2025-era traffic with your own handler, route in user land with the exported isLegacyRequest(request) predicate in front of a strict (legacy: 'reject') handler.");
   const inflight = /* @__PURE__ */ new Set();
   let closed = false;
@@ -24740,17 +25641,17 @@ function createMcpHandler(factory, options = {}) {
     } catch {
     }
   };
-  const bus = options.bus ?? new InMemoryServerEventBus(reportError);
+  const bus = options2.bus ?? new InMemoryServerEventBus(reportError);
   const notify = createServerNotifier(bus);
   const listenRouter = createListenRouter({
     bus,
-    maxSubscriptions: options.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS,
-    keepAliveMs: options.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS,
+    maxSubscriptions: options2.maxSubscriptions ?? DEFAULT_MAX_SUBSCRIPTIONS,
+    keepAliveMs: options2.keepAliveMs ?? DEFAULT_SSE_KEEP_ALIVE_MS,
     onerror: reportError
   });
   if (responseMode === "json") console.warn("responseMode: 'json' drops mid-call notifications. subscriptions/listen streams are always served over SSE regardless; other notifications emitted before a result are dropped.");
-  const legacyHandler = legacy === "reject" ? void 0 : createLegacyStatelessFallback(factory, reportError, options.keepAliveMs, maxRequestBodySize);
-  async function serveModern(route, request, authInfo) {
+  const legacyHandler = legacy === "reject" ? void 0 : createLegacyStatelessFallback(factory, reportError, options2.keepAliveMs, maxRequestBodySize);
+  async function serveModern(route, request2, authInfo) {
     const claimedRevision = route.classification.revision;
     if (claimedRevision === void 0 || !SUPPORTED_MODERN_PROTOCOL_VERSIONS.includes(claimedRevision)) {
       const error2 = new UnsupportedProtocolVersionError({
@@ -24761,8 +25662,8 @@ function createMcpHandler(factory, options = {}) {
       return jsonRpcErrorResponse(400, error2.code, error2.message, error2.data, echoableRequestId(route.message));
     }
     const stdHeaderRejection = validateStandardRequestHeaders({
-      httpMethod: request.method,
-      ...standardHeadersOf(request)
+      httpMethod: request2.method,
+      ...standardHeadersOf(request2)
     }, route);
     if (stdHeaderRejection !== void 0) {
       reportError(/* @__PURE__ */ new Error(`Rejected inbound request (${stdHeaderRejection.cell}): ${stdHeaderRejection.message}`));
@@ -24784,7 +25685,7 @@ function createMcpHandler(factory, options = {}) {
     const product = await factory({
       era: "modern",
       ...authInfo !== void 0 && { authInfo },
-      requestInfo: request
+      requestInfo: request2
     });
     const server = product instanceof McpServer ? product.server : product;
     assertNotServing(server);
@@ -24792,7 +25693,7 @@ function createMcpHandler(factory, options = {}) {
       const capabilities = server.getCapabilities();
       const serverInfo = serverIdentityOf(server);
       product.close().catch(reportError);
-      return listenRouter.serve(route.message, request.signal, capabilities, serverInfo);
+      return listenRouter.serve(route.message, request2.signal, capabilities, serverInfo);
     }
     if (route.messageKind === "request" && route.message.method === "tools/call" && product instanceof McpServer) {
       const callParams = route.message.params;
@@ -24801,7 +25702,7 @@ function createMcpHandler(factory, options = {}) {
       if (inputSchema !== void 0) {
         const scan = scanXMcpHeaderDeclarations(inputSchema);
         if (scan.valid && scan.declarations.length > 0) {
-          const rejection2 = validateMcpParamHeaders(scan.declarations, callParams?.arguments, request.headers);
+          const rejection2 = validateMcpParamHeaders(scan.declarations, callParams?.arguments, request2.headers);
           if (rejection2 !== void 0) {
             product.close().catch(reportError);
             reportError(/* @__PURE__ */ new Error(`Rejected inbound request (${rejection2.cell}): ${rejection2.message}`));
@@ -24839,10 +25740,10 @@ function createMcpHandler(factory, options = {}) {
     try {
       const response = await invoke(product, route.message, {
         classification: route.classification,
-        request,
+        request: request2,
         ...authInfo !== void 0 && { authInfo },
         ...responseMode !== void 0 && { responseMode },
-        ...options.keepAliveMs !== void 0 && { keepAliveMs: options.keepAliveMs }
+        ...options2.keepAliveMs !== void 0 && { keepAliveMs: options2.keepAliveMs }
       });
       if (route.messageKind === "notification") queueMicrotask(() => void server.close().catch(() => {
       }));
@@ -24866,13 +25767,13 @@ function createMcpHandler(factory, options = {}) {
     reportError(/* @__PURE__ */ new Error(`Rejected 2025-era request on a modern-only endpoint (${strict.cell}): ${strict.message}`));
     return rejectionResponse(strict, echoableRequestId(parsedBody));
   }
-  async function handle2(request, requestOptions) {
+  async function handle2(request2, requestOptions) {
     const authInfo = requestOptions?.authInfo;
-    if (request.method.toUpperCase() === "POST" && !isJsonContentType(request.headers.get("content-type"))) {
+    if (request2.method.toUpperCase() === "POST" && !isJsonContentType(request2.headers.get("content-type"))) {
       reportError(/* @__PURE__ */ new Error("Unsupported Media Type: Content-Type must be application/json"));
       return jsonRpcErrorResponse(415, -32e3, "Unsupported Media Type: Content-Type must be application/json");
     }
-    const classified = await classifyEntryRequest(request, requestOptions?.parsedBody, true, maxRequestBodySize);
+    const classified = await classifyEntryRequest(request2, requestOptions?.parsedBody, true, maxRequestBodySize);
     if (classified.step === "unreadable-body") return jsonRpcErrorResponse(400, -32700, "Parse error: the request body could not be read");
     if (classified.step === "body-too-large") return jsonRpcErrorResponse(413, -32e3, requestBodyTooLargeMessage(maxRequestBodySize));
     if (classified.step === "no-json-body") {
@@ -24886,7 +25787,7 @@ function createMcpHandler(factory, options = {}) {
           reportError(/* @__PURE__ */ new Error(`Rejected inbound request (${outcome.cell}): ${outcome.message}`));
           return rejectionResponse(outcome, echoableRequestId(body));
         case "modern":
-          return await serveModern(outcome, request, authInfo);
+          return await serveModern(outcome, request2, authInfo);
         case "legacy":
           return await serveLegacyRoute(outcome, forwardRequest, authInfo, parsedBody);
       }
@@ -24895,10 +25796,10 @@ function createMcpHandler(factory, options = {}) {
       return internalServerErrorResponse(echoableRequestId(body));
     }
   }
-  const fetchFace = async (request, requestOptions) => {
+  const fetchFace = async (request2, requestOptions) => {
     if (closed) throw new Error("This MCP handler has been closed");
     try {
-      return await handle2(request, requestOptions);
+      return await handle2(request2, requestOptions);
     } catch (error2) {
       reportError(toError2(error2));
       return internalServerErrorResponse(echoableRequestId(requestOptions?.parsedBody));
@@ -24938,18 +25839,18 @@ var NbApiError = class extends Error {
   status;
   url;
   body;
-  constructor(options) {
-    const hint = options.status !== void 0 ? STATUS_HINTS[options.status] : void 0;
+  constructor(options2) {
+    const hint = options2.status !== void 0 ? STATUS_HINTS[options2.status] : void 0;
     const parts = [
-      options.status !== void 0 ? `NextBillion API error (HTTP ${options.status})` : "NextBillion API request failed",
-      options.message,
+      options2.status !== void 0 ? `NextBillion API error (HTTP ${options2.status})` : "NextBillion API request failed",
+      options2.message,
       hint
     ].filter(Boolean);
     super(redactKey(parts.join(": ")));
     this.name = "NbApiError";
-    this.status = options.status;
-    this.url = redactKey(options.url);
-    this.body = options.body;
+    this.status = options2.status;
+    this.url = redactKey(options2.url);
+    this.body = options2.body;
   }
 };
 
@@ -25009,6 +25910,9 @@ function toToolError(toolName, error2) {
   };
 }
 
+// src/index.ts
+init_store();
+
 // src/nbclient/client.ts
 var RETRIABLE_STATUSES = /* @__PURE__ */ new Set([429, 502, 503, 504]);
 function sleep2(ms) {
@@ -25021,13 +25925,13 @@ var NbClient = class {
   fetchFn;
   maxRetries;
   sleepFn;
-  constructor(options) {
-    this.apiKey = options.apiKey;
-    this.baseUrl = (options.baseUrl ?? "https://api.nextbillion.io").replace(/\/+$/, "");
-    this.timeoutMs = options.timeoutMs ?? 3e4;
-    this.fetchFn = options.fetchFn ?? fetch;
-    this.maxRetries = options.maxRetries ?? 2;
-    this.sleepFn = options.sleepFn ?? sleep2;
+  constructor(options2) {
+    this.apiKey = options2.apiKey;
+    this.baseUrl = (options2.baseUrl ?? "https://api.nextbillion.io").replace(/\/+$/, "");
+    this.timeoutMs = options2.timeoutMs ?? 3e4;
+    this.fetchFn = options2.fetchFn ?? fetch;
+    this.maxRetries = options2.maxRetries ?? 2;
+    this.sleepFn = options2.sleepFn ?? sleep2;
   }
   buildUrl(path, query = {}) {
     const url2 = new URL(this.baseUrl + path);
@@ -25055,7 +25959,7 @@ var NbClient = class {
     };
   }
   async request(method, url2, body) {
-    let lastError;
+    let lastError2;
     for (let attempt = 0; ; attempt++) {
       let response;
       try {
@@ -25067,7 +25971,7 @@ var NbClient = class {
         });
       } catch (error2) {
         const timedOut = error2 instanceof DOMException && error2.name === "TimeoutError";
-        lastError = new NbApiError({
+        lastError2 = new NbApiError({
           url: url2,
           message: timedOut ? `Request timed out after ${this.timeoutMs} ms` : `Network error: ${error2 instanceof Error ? error2.message : String(error2)}`
         });
@@ -25075,11 +25979,11 @@ var NbClient = class {
           await this.sleepFn(this.backoffMs(attempt));
           continue;
         }
-        throw lastError;
+        throw lastError2;
       }
       if (response.ok) return response;
       const errorBody = await response.text().catch(() => "");
-      lastError = new NbApiError({
+      lastError2 = new NbApiError({
         status: response.status,
         url: url2,
         body: errorBody,
@@ -25089,7 +25993,7 @@ var NbClient = class {
         await this.sleepFn(this.backoffMs(attempt));
         continue;
       }
-      throw lastError;
+      throw lastError2;
     }
   }
   backoffMs(attempt) {
@@ -25202,20 +26106,20 @@ function authenticationRequired(resourceMetadataUrl, description) {
 
 // src/http/oauth/clients.ts
 var ClientError = class extends Error {
-  constructor(code, message) {
+  constructor(code2, message) {
     super(message);
-    this.code = code;
+    this.code = code2;
   }
   code;
 };
 var DCR_PREFIX = "dcr.";
 var CIMD_TIMEOUT_MS = 5e3;
 var ClientResolver = class {
-  constructor(options) {
-    this.options = options;
-    this.fetchFn = options.fetchFn ?? fetch;
-    this.cacheTtlMs = options.cacheTtlMs ?? 3e5;
-    this.now = options.now ?? Date.now;
+  constructor(options2) {
+    this.options = options2;
+    this.fetchFn = options2.fetchFn ?? fetch;
+    this.cacheTtlMs = options2.cacheTtlMs ?? 3e5;
+    this.now = options2.now ?? Date.now;
   }
   options;
   cache = /* @__PURE__ */ new Map();
@@ -25516,13 +26420,13 @@ var OAUTH_PATHS = {
 };
 var NO_STORE = { "cache-control": "no-store", pragma: "no-cache" };
 var AuthorizationServer = class {
-  constructor(options) {
-    this.options = options;
-    this.issuer = options.issuerUrl.href.replace(/\/$/, "");
-    this.resource = options.resourceUrl.href.replace(/\/$/, "");
-    this.ttl = { ...DEFAULT_TTL, ...options.ttl };
-    this.now = options.now ?? nowSeconds;
-    this.clients = new ClientResolver({ keyRing: options.keyRing, fetchFn: options.fetchFn });
+  constructor(options2) {
+    this.options = options2;
+    this.issuer = options2.issuerUrl.href.replace(/\/$/, "");
+    this.resource = options2.resourceUrl.href.replace(/\/$/, "");
+    this.ttl = { ...DEFAULT_TTL, ...options2.ttl };
+    this.now = options2.now ?? nowSeconds;
+    this.clients = new ClientResolver({ keyRing: options2.keyRing, fetchFn: options2.fetchFn });
     this.verifier = { verifyAccessToken: (token) => this.verifyAccessToken(token) };
   }
   options;
@@ -25552,17 +26456,17 @@ var AuthorizationServer = class {
     };
   }
   /** Routes the request if it is one of ours; `undefined` means "not an OAuth route". */
-  async handle(request) {
-    const path = new URL(request.url).pathname.replace(/\/+$/, "");
+  async handle(request2) {
+    const path = new URL(request2.url).pathname.replace(/\/+$/, "");
     switch (path) {
       case OAUTH_PATHS.metadata:
-        return this.handleMetadata(request);
+        return this.handleMetadata(request2);
       case OAUTH_PATHS.register:
-        return this.handleRegister(request);
+        return this.handleRegister(request2);
       case OAUTH_PATHS.authorize:
-        return request.method === "POST" ? this.handleAuthorizeSubmit(request) : this.handleAuthorize(request);
+        return request2.method === "POST" ? this.handleAuthorizeSubmit(request2) : this.handleAuthorize(request2);
       case OAUTH_PATHS.token:
-        return this.handleToken(request);
+        return this.handleToken(request2);
       default:
         return void 0;
     }
@@ -25589,23 +26493,23 @@ var AuthorizationServer = class {
     return this.bareKeys.verifyAccessToken(token);
   }
   // ── discovery & registration ────────────────────────────────────────────────
-  handleMetadata(request) {
+  handleMetadata(request2) {
     const cors = corsHeaders();
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-    if (request.method !== "GET" && request.method !== "HEAD") {
+    if (request2.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (request2.method !== "GET" && request2.method !== "HEAD") {
       return new Response(null, { status: 405, headers: { ...cors, allow: "GET, OPTIONS" } });
     }
     return json(this.metadata(), 200, { ...cors, "cache-control": "public, max-age=300" });
   }
-  async handleRegister(request) {
+  async handleRegister(request2) {
     const cors = corsHeaders();
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-    if (request.method !== "POST") {
+    if (request2.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (request2.method !== "POST") {
       return new Response(null, { status: 405, headers: { ...cors, allow: "POST, OPTIONS" } });
     }
     let body;
     try {
-      body = await request.json();
+      body = await request2.json();
     } catch {
       return oauthError("invalid_client_metadata", "Request body must be JSON", 400, cors);
     }
@@ -25617,11 +26521,11 @@ var AuthorizationServer = class {
     }
   }
   // ── authorization endpoint ──────────────────────────────────────────────────
-  async handleAuthorize(request) {
-    if (request.method !== "GET" && request.method !== "HEAD") {
+  async handleAuthorize(request2) {
+    if (request2.method !== "GET" && request2.method !== "HEAD") {
       return new Response(null, { status: 405, headers: { allow: "GET, POST" } });
     }
-    const q = new URL(request.url).searchParams;
+    const q = new URL(request2.url).searchParams;
     const get = (name) => q.get(name) ?? void 0;
     const clientId = get("client_id");
     const redirectUri = get("redirect_uri");
@@ -25657,9 +26561,9 @@ var AuthorizationServer = class {
         400
       );
     }
-    const redirectError = (code, description) => redirect(
+    const redirectError = (code2, description) => redirect(
       withParams(redirectUri, {
-        error: code,
+        error: code2,
         error_description: description,
         state: get("state"),
         iss: this.issuer
@@ -25697,8 +26601,8 @@ var AuthorizationServer = class {
       { redirectUri }
     );
   }
-  async handleAuthorizeSubmit(request) {
-    const form = await readForm(request);
+  async handleAuthorizeSubmit(request2) {
+    const form = await readForm(request2);
     if (!form)
       return html(
         renderErrorPage("Sign-in could not continue", "The sign-in request is invalid."),
@@ -25752,22 +26656,22 @@ var AuthorizationServer = class {
         return again("The key could not be verified right now. Please try again in a moment.");
       }
     }
-    const code = this.options.keyRing.seal(
+    const code2 = this.options.keyRing.seal(
       "code",
       { st: "code", c: req.c, ru: redirectUri, ch: req.ch, k: apiKey },
       this.ttl.code,
       this.now()
     );
-    return redirect(withParams(redirectUri, { code, state, iss: this.issuer }));
+    return redirect(withParams(redirectUri, { code: code2, state, iss: this.issuer }));
   }
   // ── token endpoint ──────────────────────────────────────────────────────────
-  async handleToken(request) {
+  async handleToken(request2) {
     const cors = corsHeaders();
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-    if (request.method !== "POST") {
+    if (request2.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    if (request2.method !== "POST") {
       return new Response(null, { status: 405, headers: { ...cors, allow: "POST, OPTIONS" } });
     }
-    const form = await readForm(request);
+    const form = await readForm(request2);
     if (!form) {
       return oauthError(
         "invalid_request",
@@ -25779,8 +26683,8 @@ var AuthorizationServer = class {
     const grant = form.get("grant_type");
     const now = this.now();
     if (grant === "authorization_code") {
-      const code = this.options.keyRing.open("code", form.get("code") ?? "", now);
-      if (!code || code.st !== "code" || typeof code.k !== "string") {
+      const code2 = this.options.keyRing.open("code", form.get("code") ?? "", now);
+      if (!code2 || code2.st !== "code" || typeof code2.k !== "string") {
         return oauthError(
           "invalid_grant",
           "The authorization code is invalid or has expired",
@@ -25789,16 +26693,16 @@ var AuthorizationServer = class {
         );
       }
       const clientId = form.get("client_id");
-      if (clientId && clientId !== code.c)
+      if (clientId && clientId !== code2.c)
         return oauthError("invalid_grant", "client_id does not match the code", 400, cors);
       const redirectUri = form.get("redirect_uri");
-      if (redirectUri && redirectUri !== code.ru)
+      if (redirectUri && redirectUri !== code2.ru)
         return oauthError("invalid_grant", "redirect_uri does not match the code", 400, cors);
       const verifier = form.get("code_verifier");
-      if (!verifier || !verifyPkceS256(verifier, code.ch)) {
+      if (!verifier || !verifyPkceS256(verifier, code2.ch)) {
         return oauthError("invalid_grant", "PKCE code_verifier does not match", 400, cors);
       }
-      return json(this.issueTokens(code.k, code.c, now), 200, { ...cors, ...NO_STORE });
+      return json(this.issueTokens(code2.k, code2.c, now), 200, { ...cors, ...NO_STORE });
     }
     if (grant === "refresh_token") {
       const refresh = this.options.keyRing.open("refresh", form.get("refresh_token") ?? "", now);
@@ -25852,10 +26756,10 @@ function corsHeaders() {
     "access-control-allow-headers": "content-type, mcp-protocol-version"
   };
 }
-function json(body, status = 200, headers = {}) {
+function json(body, status = 200, headers2 = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json", ...headers }
+    headers: { "content-type": "application/json", ...headers2 }
   });
 }
 function html(body, status = 200, signIn) {
@@ -25876,8 +26780,8 @@ function html(body, status = 200, signIn) {
     }
   });
 }
-function oauthError(code, description, status, headers) {
-  return json({ error: code, error_description: description }, status, { ...headers, ...NO_STORE });
+function oauthError(code2, description, status, headers2) {
+  return json({ error: code2, error_description: description }, status, { ...headers2, ...NO_STORE });
 }
 function redirect(location) {
   return new Response(null, { status: 302, headers: { location, ...NO_STORE } });
@@ -25887,31 +26791,31 @@ function withParams(base, params) {
   for (const [k, v] of Object.entries(params)) if (v !== void 0) url2.searchParams.set(k, v);
   return url2.toString();
 }
-async function readForm(request) {
-  const type = request.headers.get("content-type") ?? "";
+async function readForm(request2) {
+  const type = request2.headers.get("content-type") ?? "";
   if (!type.startsWith("application/x-www-form-urlencoded")) return void 0;
-  return new URLSearchParams(await request.text());
+  return new URLSearchParams(await request2.text());
 }
 
 // src/http/app.ts
 var DOCS_URL = "https://github.com/nextbillion-ai/nextbillion-mcp#readme";
 var JSON_HEADERS = { "content-type": "application/json", "cache-control": "no-store" };
-function createHttpApp(options) {
-  const authServer = options.oauth ? new AuthorizationServer({
-    issuerUrl: options.issuerUrl,
-    resourceUrl: options.publicUrl,
-    keyRing: options.oauth.keyRing,
-    probeApiKey: options.oauth.probeApiKey,
-    fetchFn: options.oauth.fetchFn
+function createHttpApp(options2) {
+  const authServer = options2.oauth ? new AuthorizationServer({
+    issuerUrl: options2.issuerUrl,
+    resourceUrl: options2.publicUrl,
+    keyRing: options2.oauth.keyRing,
+    probeApiKey: options2.oauth.probeApiKey,
+    fetchFn: options2.oauth.fetchFn
   }) : void 0;
-  const verifier = options.verifier ?? authServer?.verifier ?? new ApiKeyVerifier();
-  const mcpPath = options.publicUrl.pathname || "/";
-  const resource = options.publicUrl.href.replace(/\/$/, "");
-  const resourceMetadataUrl = getOAuthProtectedResourceMetadataUrl(options.publicUrl);
+  const verifier = options2.verifier ?? authServer?.verifier ?? new ApiKeyVerifier();
+  const mcpPath = options2.publicUrl.pathname || "/";
+  const resource = options2.publicUrl.href.replace(/\/$/, "");
+  const resourceMetadataUrl = getOAuthProtectedResourceMetadataUrl(options2.publicUrl);
   const protectedTools = protectedToolNames(ALL_TOOLS);
   const protectedResourceMetadata = {
     resource,
-    authorization_servers: [options.issuerUrl.href.replace(/\/$/, "")],
+    authorization_servers: [options2.issuerUrl.href.replace(/\/$/, "")],
     bearer_methods_supported: ["header"],
     scopes_supported: [API_SCOPE],
     resource_name: "NextBillion.ai MCP",
@@ -25919,29 +26823,34 @@ function createHttpApp(options) {
   };
   const handler = createMcpHandler((ctx) => {
     const apiKey = apiKeyFromAuth(ctx.authInfo);
-    const nb = apiKey ? options.nbClientFactory(apiKey) : new UnauthenticatedNbClient();
-    return buildServer(nb, options.version);
+    const nb = apiKey ? options2.nbClientFactory(apiKey) : new UnauthenticatedNbClient();
+    return buildServer(nb, options2.version);
   });
   return {
-    async fetch(request) {
-      const url2 = new URL(request.url);
+    async fetch(request2) {
+      const url2 = new URL(request2.url);
       const path = url2.pathname.replace(/\/+$/, "") || "/";
       if (path === "/healthz") {
-        return json2({ status: "ok", name: "nextbillion-mcp", version: options.version });
+        return json2({
+          status: "ok",
+          name: "nextbillion-mcp",
+          version: options2.version,
+          ...options2.docsIndexInfo ? { docs: options2.docsIndexInfo() } : {}
+        });
       }
       if (path === "/.well-known/oauth-protected-resource") {
-        return wellKnown(request, protectedResourceMetadata);
+        return wellKnown(request2, protectedResourceMetadata);
       }
       if (authServer) {
-        const handled = await authServer.handle(request);
+        const handled = await authServer.handle(request2);
         if (handled) return handled;
       }
       if (path !== mcpPath) {
         return json2({ error: "not_found", mcp_endpoint: resource }, 404);
       }
-      if (request.method === "GET" && (request.headers.get("accept") ?? "").includes("text/html")) {
+      if (request2.method === "GET" && (request2.headers.get("accept") ?? "").includes("text/html")) {
         return new Response(
-          `nextbillion-mcp ${options.version}
+          `nextbillion-mcp ${options2.version}
 
 This is an MCP server endpoint, not a web page. Add ${resource} to your MCP host (Claude, Claude Code, Cursor, Codex).
 Docs: ${DOCS_URL}
@@ -25949,7 +26858,7 @@ Docs: ${DOCS_URL}
           { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } }
         );
       }
-      const authorization = request.headers.get("authorization");
+      const authorization = request2.headers.get("authorization");
       let authInfo;
       if (authorization) {
         try {
@@ -25959,9 +26868,9 @@ Docs: ${DOCS_URL}
         }
       }
       let parsedBody;
-      let forwarded = request;
-      if (request.method === "POST") {
-        const text = await request.text();
+      let forwarded = request2;
+      if (request2.method === "POST") {
+        const text = await request2.text();
         if (text.length > 0) {
           try {
             parsedBody = JSON.parse(text);
@@ -25969,15 +26878,15 @@ Docs: ${DOCS_URL}
             return json2({ error: "invalid_request", error_description: "Body is not JSON" }, 400);
           }
         }
-        forwarded = new Request(request.url, {
+        forwarded = new Request(request2.url, {
           method: "POST",
-          headers: request.headers,
+          headers: request2.headers,
           body: text
         });
         if (!authInfo) {
           const call = {
-            mcpMethod: request.headers.get("mcp-method"),
-            mcpName: request.headers.get("mcp-name"),
+            mcpMethod: request2.headers.get("mcp-method"),
+            mcpName: request2.headers.get("mcp-name"),
             body: parsedBody
           };
           if (callsProtectedTool(call, protectedTools)) {
@@ -25996,14 +26905,14 @@ Docs: ${DOCS_URL}
 function json2(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 }
-function wellKnown(request, document) {
+function wellKnown(request2, document) {
   const cors = {
     "access-control-allow-origin": "*",
     "access-control-allow-methods": "GET, OPTIONS",
     "access-control-allow-headers": "mcp-protocol-version, content-type"
   };
-  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-  if (request.method !== "GET" && request.method !== "HEAD") {
+  if (request2.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (request2.method !== "GET" && request2.method !== "HEAD") {
     return new Response(null, { status: 405, headers: { ...cors, allow: "GET, OPTIONS" } });
   }
   return new Response(JSON.stringify(document), {
@@ -26067,17 +26976,17 @@ function toWebRequest(req) {
   const host = req.headers.host ?? "localhost";
   const proto = firstValue(req.headers["x-forwarded-proto"]) ?? "http";
   const url2 = new URL(req.url ?? "/", `${proto}://${host}`);
-  const headers = new Headers();
+  const headers2 = new Headers();
   for (const [name, value] of Object.entries(req.headers)) {
     if (value === void 0) continue;
-    if (Array.isArray(value)) for (const v of value) headers.append(name, v);
-    else headers.set(name, value);
+    if (Array.isArray(value)) for (const v of value) headers2.append(name, v);
+    else headers2.set(name, value);
   }
   const method = req.method ?? "GET";
   const hasBody = method !== "GET" && method !== "HEAD";
   return new Request(url2, {
     method,
-    headers,
+    headers: headers2,
     body: hasBody ? Readable.toWeb(req) : void 0,
     // Required by undici when the body is a stream.
     ...hasBody ? { duplex: "half" } : {}
@@ -26143,6 +27052,11 @@ Environment variables (--http mode):
   NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL
   NBAI_KEY_CHECK_URL (optional) gateway URL used to check pasted keys at sign-in,
                     default <NBAI_BASE_URL>/h/geocode (an unbilled request)
+  NBAI_DOCS_GITHUB_TOKEN (required for live docs) read token for the docs repository;
+                    the index is rebuilt from it at start and whenever main moves
+  NBAI_DOCS_REPO    (optional) owner/name, default nextbillion-ai/nb-public-docs
+  NBAI_DOCS_REF     (optional) branch, default main
+  NBAI_DOCS_REFRESH_MINUTES (optional) how often to check, default 10; 0 = once at start
   NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;
                     comma-separated, current first, to rotate
   NBAI_BASE_URL, NBAI_TIMEOUT_MS as above
@@ -26213,10 +27127,39 @@ async function serveHttp() {
       "NBAI_TOKEN_KEY is not set: using a random key, so tokens will not survive a restart and other instances cannot read them. Set a 32-byte base64 key for any real deployment."
     );
   }
+  const docsRepo = process.env.NBAI_DOCS_REPO?.trim() || "nextbillion-ai/nb-public-docs";
+  const docsToken = process.env.NBAI_DOCS_GITHUB_TOKEN?.trim() || void 0;
+  const refreshMinutes = Number(process.env.NBAI_DOCS_REFRESH_MINUTES ?? 10);
+  if (!docsToken) {
+    logError(
+      "NBAI_DOCS_GITHUB_TOKEN is not set: the documentation index cannot follow the docs repository; serving the copy built into the image"
+    );
+  }
+  configureDocsIndex(
+    docsToken ? {
+      github: {
+        repo: docsRepo,
+        ref: process.env.NBAI_DOCS_REF?.trim() || "main",
+        token: docsToken
+      }
+    } : {}
+  );
+  if (docsToken) {
+    void startDocsIndex().catch(
+      (error2) => logError("documentation index: start-up build failed", error2)
+    );
+    if (refreshMinutes > 0) {
+      setInterval(() => void refreshDocsIndex(), refreshMinutes * 6e4).unref();
+    }
+    logInfo(
+      `documentation index: following ${docsRepo}` + (refreshMinutes > 0 ? `, checked every ${refreshMinutes} min` : ", checked once at start")
+    );
+  }
   const app = createHttpApp({
     version: pkg.version,
     publicUrl: config2.publicUrl,
     issuerUrl: config2.issuerUrl,
+    docsIndexInfo,
     nbClientFactory: (apiKey) => new NbClient({ apiKey, baseUrl: config2.baseUrl, timeoutMs: config2.timeoutMs }),
     oauth: {
       keyRing: keys.ring,

@@ -7,7 +7,7 @@ import {
   extractParameters,
   parseTable,
   unitsFrom,
-} from '../../scripts/docs/parameters.js';
+} from '../../src/docs/build/parameters.js';
 
 const page = (overrides: Partial<PageRecord>): PageRecord => ({
   doc_id: 'routing/directions-api/directions-api',
