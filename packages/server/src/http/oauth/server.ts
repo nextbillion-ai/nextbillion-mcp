@@ -280,7 +280,7 @@ export class AuthorizationServer {
       );
     };
 
-    if (!ApiKeyVerifier.PATTERN.test(apiKey))
+    if (!ApiKeyVerifier.looksLikeKey(apiKey))
       return again('That does not look like a NextBillion.ai API key.');
     if (this.options.probeApiKey) {
       const probe = await this.options.probeApiKey(apiKey);

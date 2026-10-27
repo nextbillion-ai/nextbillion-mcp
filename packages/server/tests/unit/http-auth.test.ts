@@ -17,9 +17,18 @@ describe('ApiKeyVerifier', () => {
     expect(info.expiresAt).toBeGreaterThan(Date.now() / 1000);
   });
 
+  it('accepts short internal keys (the gateway is the authority on validity)', async () => {
+    const info = await new ApiKeyVerifier().verifyAccessToken('int-k3y');
+    expect(apiKeyFromAuth(info)).toBe('int-k3y');
+  });
+
   it('rejects strings that cannot be keys', async () => {
     const verifier = new ApiKeyVerifier();
-    await expect(verifier.verifyAccessToken('short')).rejects.toMatchObject({
+    await expect(verifier.verifyAccessToken('')).rejects.toMatchObject({ code: 'invalid_token' });
+    await expect(verifier.verifyAccessToken('tab\there0123456789')).rejects.toMatchObject({
+      code: 'invalid_token',
+    });
+    await expect(verifier.verifyAccessToken('x'.repeat(513))).rejects.toMatchObject({
       code: 'invalid_token',
     });
     await expect(verifier.verifyAccessToken('has spaces in it 0123456789')).rejects.toMatchObject({

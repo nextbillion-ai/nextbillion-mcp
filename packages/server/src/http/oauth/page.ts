@@ -54,7 +54,7 @@ ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ''}
 <form method="post" action="" autocomplete="off">
 <input type="hidden" name="request" value="${escapeHtml(o.requestToken)}">
 <label for="api_key">API key</label>
-<input id="api_key" name="api_key" type="password" required minlength="16" maxlength="128" autocomplete="off" spellcheck="false" autofocus>
+<input id="api_key" name="api_key" type="password" required maxlength="512" autocomplete="off" spellcheck="false" autofocus>
 <button type="submit">Connect</button>
 </form>
 <p class="muted">Don't have a key? Get one at <a href="https://console.nextbillion.ai" rel="noopener">console.nextbillion.ai</a> or email support@nextbillion.ai.</p>

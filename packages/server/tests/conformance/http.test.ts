@@ -142,7 +142,10 @@ describe('hosted HTTP mode', () => {
     const response = await app.fetch(
       new Request('https://mcp.test/', {
         method: 'POST',
-        headers: { authorization: 'Bearer nope', 'content-type': 'application/json' },
+        headers: {
+          authorization: 'Bearer ${user_config.nbai_api_key}',
+          'content-type': 'application/json',
+        },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
       }),
     );

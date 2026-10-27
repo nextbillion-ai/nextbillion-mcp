@@ -12,8 +12,8 @@ export const API_SCOPE = 'nextbillion.api';
 
 /**
  * Accepts a bare NextBillion.ai API key as the bearer token. Keys are opaque strings that
- * the console issues (documented as 32 alphanumeric characters; the pattern is kept loose
- * so other key formats keep working). Nothing is validated against the API here: an
+ * the console issues (documented as 32 alphanumeric characters; the check is kept loose
+ * because internal keys have other lengths and the gateway is the authority). Nothing is validated against the API here: an
  * invalid key fails on the first API call with a readable 401 tool error, which keeps the
  * authentication step free of upstream latency (hosts give it 10 seconds).
  *
@@ -21,12 +21,21 @@ export const API_SCOPE = 'nextbillion.api';
  * bare-key path stays for developers and CI (`Authorization: Bearer <NBAI_API_KEY>`).
  */
 export class ApiKeyVerifier implements OAuthTokenVerifier {
-  static readonly PATTERN = /^[A-Za-z0-9._~+/=-]{16,128}$/;
+  /**
+   * Deliberately loose: keys issued by the console are 32 alphanumeric characters, but
+   * internal keys come in other lengths and the API gateway is the only authority on what is
+   * valid. This only rejects what cannot be sent as a bearer token or query value (empty,
+   * whitespace/control characters, absurd length) and unexpanded `${...}` templates.
+   */
+  static readonly PATTERN = /^[\x21-\x7e]{1,512}$/;
+  static looksLikeKey(value: string): boolean {
+    return ApiKeyVerifier.PATTERN.test(value) && !/[${}"'`<>\\]/.test(value);
+  }
   /** Tokens are re-presented on every call, so the expiry only has to satisfy the SDK. */
   static readonly TTL_SECONDS = 3600;
 
   verifyAccessToken(token: string): Promise<AuthInfo> {
-    if (!ApiKeyVerifier.PATTERN.test(token)) {
+    if (!ApiKeyVerifier.looksLikeKey(token)) {
       return Promise.reject(
         new OAuthError(
           OAuthErrorCode.InvalidToken,
