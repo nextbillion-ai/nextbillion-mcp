@@ -5,7 +5,7 @@
  * docs repository on GitHub — at start, and again whenever `main` moves (checked every few
  * minutes with a conditional request). A rebuild takes about a second and is swapped in
  * atomically; the copy baked into the image (`data/docs-index.json`) is only the fallback
- * when GitHub cannot be reached at start. Local (stdio) mode reads that bundled copy.
+ * when GitHub cannot be reached at start; tests read that bundled copy.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

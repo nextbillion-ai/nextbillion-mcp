@@ -1,5 +1,5 @@
 /**
- * stdout is the JSON-RPC channel on stdio transports, so all logging goes to stderr.
+ * All logging goes to stderr (stdout stays clean for process supervisors).
  * The MCP `logging` capability is deprecated in the 2026-07-28 revision; stderr is
  * the recommended channel for locally-spawned servers.
  */

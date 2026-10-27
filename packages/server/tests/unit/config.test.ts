@@ -1,19 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ConfigError, loadConfig, loadHttpConfig } from '../../src/config.js';
-
-describe('loadConfig (stdio mode)', () => {
-  it('reads the API key and defaults', () => {
-    const config = loadConfig({ NBAI_API_KEY: ' key-123 ' });
-    expect(config.apiKey).toBe('key-123');
-    expect(config.baseUrl).toBe('https://api.nextbillion.io');
-    expect(config.timeoutMs).toBe(30_000);
-  });
-
-  it('fails clearly when the key is missing', () => {
-    expect(() => loadConfig({})).toThrow(ConfigError);
-    expect(() => loadConfig({ NBAI_API_KEY: '  ' })).toThrow(/NBAI_API_KEY is not set/);
-  });
-});
+import { ConfigError, loadHttpConfig } from '../../src/config.js';
 
 describe('loadHttpConfig (hosted mode)', () => {
   it('defaults to the production URL and port 8080', () => {

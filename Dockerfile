@@ -19,4 +19,4 @@ COPY --from=build /app/packages/server/data ./data
 USER node
 EXPOSE 8080
 # NBAI_PUBLIC_URL (default https://mcp.nextbillion.io) must match the URL users enter.
-CMD ["node", "dist/index.js", "--http"]
+CMD ["node", "dist/index.js"]
