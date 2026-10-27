@@ -25142,11 +25142,20 @@ init_tools();
 // src/http/auth.ts
 var API_SCOPE = "nextbillion.api";
 var ApiKeyVerifier = class _ApiKeyVerifier {
-  static PATTERN = /^[A-Za-z0-9._~+/=-]{16,128}$/;
+  /**
+   * Deliberately loose: keys issued by the console are 32 alphanumeric characters, but
+   * internal keys come in other lengths and the API gateway is the only authority on what is
+   * valid. This only rejects what cannot be sent as a bearer token or query value (empty,
+   * whitespace/control characters, absurd length) and unexpanded `${...}` templates.
+   */
+  static PATTERN = /^[\x21-\x7e]{1,512}$/;
+  static looksLikeKey(value) {
+    return _ApiKeyVerifier.PATTERN.test(value) && !/[${}"'`<>\\]/.test(value);
+  }
   /** Tokens are re-presented on every call, so the expiry only has to satisfy the SDK. */
   static TTL_SECONDS = 3600;
   verifyAccessToken(token) {
-    if (!_ApiKeyVerifier.PATTERN.test(token)) {
+    if (!_ApiKeyVerifier.looksLikeKey(token)) {
       return Promise.reject(
         new OAuthError(
           OAuthErrorCode.InvalidToken,
@@ -25469,7 +25478,7 @@ ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ""}
 <form method="post" action="" autocomplete="off">
 <input type="hidden" name="request" value="${escapeHtml(o.requestToken)}">
 <label for="api_key">API key</label>
-<input id="api_key" name="api_key" type="password" required minlength="16" maxlength="128" autocomplete="off" spellcheck="false" autofocus>
+<input id="api_key" name="api_key" type="password" required maxlength="512" autocomplete="off" spellcheck="false" autofocus>
 <button type="submit">Connect</button>
 </form>
 <p class="muted">Don't have a key? Get one at <a href="https://console.nextbillion.ai" rel="noopener">console.nextbillion.ai</a> or email support@nextbillion.ai.</p>
@@ -25697,7 +25706,7 @@ var AuthorizationServer = class {
         400
       );
     };
-    if (!ApiKeyVerifier.PATTERN.test(apiKey))
+    if (!ApiKeyVerifier.looksLikeKey(apiKey))
       return again("That does not look like a NextBillion.ai API key.");
     if (this.options.probeApiKey) {
       const probe = await this.options.probeApiKey(apiKey);
