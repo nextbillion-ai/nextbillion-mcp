@@ -25622,7 +25622,10 @@ var AuthorizationServer = class {
     const redirectUri = get("redirect_uri");
     if (!clientId || !redirectUri) {
       return html(
-        renderErrorPage("Sign-in could not start", "The sign-in request from the application is incomplete."),
+        renderErrorPage(
+          "Sign-in could not start",
+          "The sign-in request from the application is incomplete."
+        ),
         400
       );
     }
@@ -25642,7 +25645,10 @@ var AuthorizationServer = class {
     }
     if (!redirectUriAllowed(redirectUri, client.redirectUris)) {
       return html(
-        renderErrorPage("Sign-in could not start", "The return address requested by the application is not registered."),
+        renderErrorPage(
+          "Sign-in could not start",
+          "The return address requested by the application is not registered."
+        ),
         400
       );
     }
@@ -25686,7 +25692,11 @@ var AuthorizationServer = class {
   }
   async handleAuthorizeSubmit(request) {
     const form = await readForm(request);
-    if (!form) return html(renderErrorPage("Sign-in could not continue", "The sign-in request is invalid."), 400);
+    if (!form)
+      return html(
+        renderErrorPage("Sign-in could not continue", "The sign-in request is invalid."),
+        400
+      );
     const req = this.options.keyRing.open("code", form.get("request") ?? "", this.now());
     if (!req || req.st !== "req" || typeof req.ru !== "string" || typeof req.c !== "string" || typeof req.ch !== "string") {
       return html(renderErrorPage("Sign-in expired", "This sign-in page has expired."), 400);
@@ -25700,7 +25710,10 @@ var AuthorizationServer = class {
         client = await this.clients.resolve(req.c);
       } catch {
         return html(
-          renderErrorPage("Unknown application", "The application that started this sign-in could not be verified."),
+          renderErrorPage(
+            "Unknown application",
+            "The application that started this sign-in could not be verified."
+          ),
           400
         );
       }
@@ -25716,14 +25729,11 @@ var AuthorizationServer = class {
         400
       );
     };
-    if (!ApiKeyVerifier.looksLikeKey(apiKey))
-      return again("Please enter a valid API key.");
+    if (!ApiKeyVerifier.looksLikeKey(apiKey)) return again("Please enter a valid API key.");
     if (this.options.probeApiKey) {
       const probe = await this.options.probeApiKey(apiKey);
       if (probe === "invalid") {
-        return again(
-          "This API key is not valid. Check it in the console and try again."
-        );
+        return again("This API key is not valid. Check it in the console and try again.");
       }
       if (probe === "restricted") {
         return again(
@@ -25731,9 +25741,7 @@ var AuthorizationServer = class {
         );
       }
       if (probe === "unavailable") {
-        return again(
-          "The key could not be verified right now. Please try again in a moment."
-        );
+        return again("The key could not be verified right now. Please try again in a moment.");
       }
     }
     const code = this.options.keyRing.seal(
