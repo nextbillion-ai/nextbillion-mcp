@@ -12,8 +12,13 @@ import {
   type Ring,
 } from './types.js';
 
-export const MAX_VERTICES = 10_000;
-export const MAX_POINTS = 5_000;
+/**
+ * Input budgets. They are safety caps, not targets: everything arrives through the
+ * model's context, where 1,000 points is already ~40 KB of JSON and an isochrone contour
+ * is a few hundred vertices. Worst cases at these caps stay well under 100 ms.
+ */
+export const MAX_VERTICES = 5_000;
+export const MAX_POINTS = 1_000;
 
 export function toPosition(p: LatLng): Position {
   return [p.longitude, p.latitude];

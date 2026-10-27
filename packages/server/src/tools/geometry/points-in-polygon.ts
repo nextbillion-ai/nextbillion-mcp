@@ -27,7 +27,7 @@ export const pointsInPolygon: NbTool<typeof Schema> = {
   name: 'points_in_polygon',
   title: 'Points in Polygon',
   description:
-    'Geofencing: tell which of up to 5,000 points lie inside a polygon, for example which ' +
+    'Geofencing: tell which of up to 1,000 points lie inside a polygon, for example which ' +
     'delivery addresses fall within an isochrone contour or a service area. Holes are respected; ' +
     'the test is done in map (flat degree) space, matching how polygons are drawn. Computed ' +
     'locally, no sign-in needed. Parameters: polygon (GeoJSON Polygon or MultiPolygon, or an ' +

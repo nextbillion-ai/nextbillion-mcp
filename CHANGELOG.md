@@ -14,7 +14,7 @@ Inputs use the server's `{latitude, longitude}` points and GeoJSON Polygon/Multi
 isochrone Feature) so results chain between tools. Measures use geographiclib (exact WGS84);
 polygon operations use polyclip-ts; the buffer is our own geodesic construction (no JSTS).
 Shapes are simplified to `max_vertices` (default 500) with the tolerance reported. Limits:
-10,000 vertices per shape, 5,000 points per call; shapes spanning the antimeridian are rejected
+5,000 vertices per shape, 1,000 points per call; shapes spanning the antimeridian are rejected
 in this version. Bundle +~200 KB.
 
 - Housekeeping after going hosted-only: README tool table lists `get_api_parameters`, a License
