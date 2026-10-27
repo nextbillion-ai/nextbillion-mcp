@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { createRequire } from 'node:module';
-import { serveStdio } from '@modelcontextprotocol/server/stdio';
-import { ConfigError, loadConfig, loadHttpConfig, resolveImageDir } from './config.js';
+import { ConfigError, loadHttpConfig } from './config.js';
 import { buildServer, SERVER_NAME } from './core/server.js';
 import {
   configureDocsIndex,
@@ -20,8 +19,7 @@ declare const __NBMCP_VERSION__: string | undefined;
 
 /**
  * The version is injected by esbuild at build time so the bundled file is fully
- * standalone (it is also shipped inside the Claude Code plugin, where no package.json
- * sits next to it). Under tsx/vitest the define is absent and package.json is read.
+ * standalone. Under tsx/vitest the define is absent and package.json is read.
  */
 const pkg: { version: string } =
   typeof __NBMCP_VERSION__ === 'string'
@@ -36,21 +34,15 @@ function main(): void {
   }
   if (args.includes('--help') || args.includes('-h')) {
     console.log(
-      `${SERVER_NAME} ${pkg.version} — MCP server for NextBillion.ai location APIs\n\n` +
-        'Runs as an MCP stdio server; configure it in your MCP client, not by hand.\n' +
-        'With --http it serves Streamable HTTP instead (hosted mode): callers authenticate per\n' +
-        'request with `Authorization: Bearer <API key>`; NBAI_API_KEY is ignored.\n\n' +
-        'Environment variables (stdio mode):\n' +
-        '  NBAI_API_KEY      (required) NextBillion.ai API key\n' +
-        '  NBAI_BASE_URL     (optional) API base URL, default https://api.nextbillion.io\n' +
-        '  NBAI_TIMEOUT_MS   (optional) per-request timeout, default 30000\n' +
-        '  NBAI_IMAGE_DIR    (optional) also save rendered maps to this absolute directory, or\n' +
-        '                    "tmp" for the OS temp dir; unset = nothing is written to disk\n' +
-        '  NBAI_DOCS_INDEX   (optional) path to an alternative documentation index file\n' +
-        'Environment variables (--http mode):\n' +
+      `${SERVER_NAME} ${pkg.version} — the NextBillion.ai MCP server (hosted at https://mcp.nextbillion.io)\n\n` +
+        'Serves MCP over Streamable HTTP. Callers sign in through the built-in OAuth server or send\n' +
+        '`Authorization: Bearer <API key>`; there is no server-wide API key.\n\n' +
+        'Environment variables:\n' +
         '  PORT              (optional) TCP port, default 8080\n' +
         '  NBAI_PUBLIC_URL   (optional) URL users enter, default https://mcp.nextbillion.io\n' +
         '  NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL\n' +
+        '  NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;\n' +
+        '                    comma-separated, current first, to rotate\n' +
         '  NBAI_KEY_CHECK_URL (optional) gateway URL used to check pasted keys at sign-in,\n' +
         '                    default <NBAI_BASE_URL>/h/geocode (an unbilled request)\n' +
         '  NBAI_DOCS_GITHUB_TOKEN (required for live docs) read token for the docs repository;\n' +
@@ -58,53 +50,18 @@ function main(): void {
         '  NBAI_DOCS_REPO    (optional) owner/name, default nextbillion-ai/nb-public-docs\n' +
         '  NBAI_DOCS_REF     (optional) branch, default main\n' +
         '  NBAI_DOCS_REFRESH_MINUTES (optional) how often to check, default 10; 0 = once at start\n' +
-        '  NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;\n' +
-        '                    comma-separated, current first, to rotate\n' +
-        '  NBAI_BASE_URL, NBAI_TIMEOUT_MS as above\n',
+        '  NBAI_DOCS_INDEX   (optional) path to a local documentation index (tests)\n' +
+        '  NBAI_BASE_URL     (optional) API base URL, default https://api.nextbillion.io\n' +
+        '  NBAI_TIMEOUT_MS   (optional) per-request timeout, default 30000\n',
     );
     return;
   }
-
-  if (args.includes('--http')) {
-    void serveHttp();
-    return;
-  }
-
-  let config;
-  try {
-    config = loadConfig();
-  } catch (error) {
-    if (error instanceof ConfigError) {
-      logError(error.message);
-      process.exitCode = 1;
-      return;
-    }
-    throw error;
-  }
-
-  const nb = new NbClient({
-    apiKey: config.apiKey,
-    baseUrl: config.baseUrl,
-    timeoutMs: config.timeoutMs,
-  });
-
-  const imageDir = resolveImageDir();
-  if (imageDir.warning) logError(imageDir.warning);
-  else if (imageDir.dir) logInfo(`rendered map images will also be saved to ${imageDir.dir}`);
-
-  const handle = serveStdio(() => buildServer(nb, pkg.version));
-  logInfo(`${SERVER_NAME} ${pkg.version} listening on stdio`);
-
-  const shutdown = () => {
-    void handle.close().finally(() => process.exit(0));
-  };
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
+  void serveHttp();
 }
 
 /**
- * Hosted mode: one process serves many callers over Streamable HTTP. Every request carries
- * its own credentials, so the server-wide key and the image-saving option do not apply.
+ * One process serves many callers over Streamable HTTP. Every request carries its own
+ * credentials; nothing about a caller is kept between requests.
  */
 async function serveHttp(): Promise<void> {
   let config;
@@ -119,11 +76,7 @@ async function serveHttp(): Promise<void> {
     throw error;
   }
   if (process.env.NBAI_API_KEY) {
-    logError('NBAI_API_KEY is ignored in --http mode: callers send their own key per request');
-  }
-  if (process.env.NBAI_IMAGE_DIR) {
-    logError('NBAI_IMAGE_DIR is ignored in --http mode: a hosted server writes nothing to disk');
-    delete process.env.NBAI_IMAGE_DIR;
+    logError('NBAI_API_KEY is ignored: callers send their own key per request');
   }
 
   let keys;

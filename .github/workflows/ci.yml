@@ -25,20 +25,14 @@ jobs:
       - run: npm run typecheck
       - run: npm run docs:validate --workspace packages/server
       - run: npm run build
-      - run: node scripts/sync-plugin-bundle.mjs --check
       - run: npm test
-      - run: npm run build:mcpb
-      - uses: actions/upload-artifact@v4
-        with:
-          name: claude-desktop-extension
-          path: dist-mcpb/*.mcpb
       # Hosted mode: the image must build and answer /health with the bundled docs index.
       - run: docker build -t nextbillion-mcp:ci .
       - run: |
           cid=$(docker run -d -p 18080:8080 -e NBAI_PUBLIC_URL=http://localhost:18080 nextbillion-mcp:ci)
           for i in $(seq 1 20); do curl -fsS http://localhost:18080/health && break || sleep 1; done
           curl -fsS http://localhost:18080/.well-known/oauth-protected-resource
-          # The server logs to stderr (stdout is reserved for stdio transports).
+          # The server logs to stderr.
           docker logs "$cid" 2>&1 | grep -q 'listening on http' || (docker logs "$cid" 2>&1; exit 1)
           docker rm -f "$cid"
 

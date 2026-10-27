@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.2 — 2026-10-27
+
+**Hosted only.** The local (stdio) mode and everything that existed for it are removed; the
+server is the hosted service at https://mcp.nextbillion.io and nothing else.
+
+- Removed: the stdio transport and the `--http` flag (the binary is the HTTP server),
+  `NBAI_API_KEY` as a server-wide key, `NBAI_IMAGE_DIR` and saving map images to disk, the
+  bundled-server Claude Code plugin, the npx-based Codex plugin configuration, the Claude
+  Desktop extension (`.mcpb`) and its build script, the plugin bundle sync, and the npm
+  package publication (the package is now `private`; 0.3.2 remains the last npm release and
+  is deprecated in favour of the hosted server).
+- The Claude Code and Codex plugins now contain only the hosted server URL: installing them
+  configures the connection and the browser sign-in; no code is downloaded.
+- README and client snippets rewritten for the hosted server (Claude, Claude Code, Cursor,
+  Codex, scripts with a bearer header).
+
 ## 0.4.1 — 2026-10-27
 
 - **Hosted mode: liveness URL is `GET /health`.** Google's front end intercepts the exact

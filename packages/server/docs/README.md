@@ -43,7 +43,7 @@ npm test
 
 # 4. Rebuild the packed index and copy it into the Claude Code plugin
 npm run docs:build-index -- --docs ../../../nb-public-docs
-cd ../.. && npm run build && node scripts/sync-plugin-bundle.mjs && cd packages/server
+cd ../.. && npm run build && cd packages/server
 
 # 5. Bump the patch version (scripts/check-dist-versions.mjs lists every manifest), then open a PR
 ```
@@ -54,4 +54,4 @@ Review the diff of the two reports in the PR: a new entry in `files-without-urls
 
 Also holds the request parameters extracted from the reference pages' tables (`scripts/docs/parameters.ts`): the `| Name | Required | Format and Usage | Description |` query-parameter layout, `| Field | Type | Description |` request bodies and the `| Parameter | Type / Location | Description |` guide layout. Response tables and SDK pages are skipped. The endpoint id is `<api-slug>[/<variant>]`, with the variant taken from the page slug and the non-generic headings above the table (`directions/flexible`, `distance-matrix/asynchronous-fast`, `geofence/create`). Units are taken only from the docs' wording ("in seconds", "unix timestamp"); `null` otherwise.
 
-Built by `npm run docs:build-index -- --docs <clone>` from the pinned commit; deterministic for a given commit. Plain chunks with page metadata, no prebuilt term index (ranking changes do not need a docs rebuild). The server resolves it at `../data/docs-index.json` relative to its bundle, which holds for the npm package, the Claude Code plugin (`distributions/claude-code/data/`, kept in sync by `scripts/sync-plugin-bundle.mjs`) and the Claude Desktop extension (staged by `scripts/build-mcpb.mjs`). `NBAI_DOCS_INDEX=<path>` overrides the location (tests and experiments only).
+Built by `npm run docs:build-index -- --docs <clone>` from the pinned commit; deterministic for a given commit. Plain chunks with page metadata, no prebuilt term index (ranking changes do not need a docs rebuild). The server resolves it at `../data/docs-index.json` relative to its bundle (the Docker image copies it next to `dist/`). `NBAI_DOCS_INDEX=<path>` overrides the location (tests and experiments only).
