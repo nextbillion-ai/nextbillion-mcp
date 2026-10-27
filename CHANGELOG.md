@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Housekeeping after going hosted-only: README tool table lists `get_api_parameters`, a License
+  section and the copyright line in LICENSE; comments, docs and ignore files no longer refer to
+  the removed local mode; `--help` documents `NBAI_ALLOW_HTTP`; test fixtures use example hosts.
+
 ## 0.4.2 — 2026-10-27
 
 **Hosted only.** The local (stdio) mode and everything that existed for it are removed; the

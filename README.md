@@ -29,34 +29,35 @@ Full snippets: [`distributions/manual/README.md`](distributions/manual/README.md
 
 ## Tools
 
-| Tool                        | NextBillion API                                             |
-| --------------------------- | ----------------------------------------------------------- |
-| `autocomplete`              | Autocomplete (prefix address completion)                    |
-| `autosuggest`               | Autosuggest (typo-tolerant suggestions)                     |
-| `directions`                | Directions (fast + flexible)                                |
-| `distance_matrix`           | Distance Matrix (fast + flexible, synchronous)              |
-| `geocode_batch`             | Batch Geocode (up to 100 queries per call)                  |
-| `geocode_forward`           | Forward Geocode                                             |
-| `geocode_reverse`           | Reverse Geocode                                             |
-| `geocode_structured`        | Structured Geocode                                          |
-| `isochrone`                 | Isochrone                                                   |
-| `place_browse`              | Browse (places by category near a location)                 |
-| `place_lookup`              | Place Lookup                                                |
-| `place_search`              | Discover (POI search)                                       |
-| `postcode_lookup`           | Geocode Postcode                                            |
-| `search_along_route`        | Search Along Route                                          |
-| `static_map_image`          | Static Images                                               |
-| `static_route_map`          | Static Images (route/path overlay)                          |
-| `search_documentation`      | Documentation search (bundled index of docs.nextbillion.ai) |
-| `get_documentation`         | Documentation page by `doc_id`                              |
-| `list_documentation_topics` | Documentation categories, APIs and pages                    |
+| Tool                        | NextBillion API                                     |
+| --------------------------- | --------------------------------------------------- |
+| `autocomplete`              | Autocomplete (prefix address completion)            |
+| `autosuggest`               | Autosuggest (typo-tolerant suggestions)             |
+| `directions`                | Directions (fast + flexible)                        |
+| `distance_matrix`           | Distance Matrix (fast + flexible, synchronous)      |
+| `geocode_batch`             | Batch Geocode (up to 100 queries per call)          |
+| `geocode_forward`           | Forward Geocode                                     |
+| `geocode_reverse`           | Reverse Geocode                                     |
+| `geocode_structured`        | Structured Geocode                                  |
+| `isochrone`                 | Isochrone                                           |
+| `place_browse`              | Browse (places by category near a location)         |
+| `place_lookup`              | Place Lookup                                        |
+| `place_search`              | Discover (POI search)                               |
+| `postcode_lookup`           | Geocode Postcode                                    |
+| `search_along_route`        | Search Along Route                                  |
+| `static_map_image`          | Static Images                                       |
+| `static_route_map`          | Static Images (route/path overlay)                  |
+| `search_documentation`      | Documentation search (index of docs.nextbillion.ai) |
+| `get_documentation`         | Documentation page by `doc_id`                      |
+| `get_api_parameters`        | Request parameters of a REST endpoint, as records   |
+| `list_documentation_topics` | Documentation categories, APIs and pages            |
 
 Tool inputs always use explicit `{latitude, longitude}` objects; the server handles the
 underlying API's coordinate-order conventions internally.
 
 ### Documentation tools
 
-Four tools answer questions about the APIs and SDKs from the official documentation: `search_documentation` returns ranked excerpts with a `source_url` to cite and the name of the tool that performs the operation, `get_documentation` returns one page or one section, `get_api_parameters` returns the request parameters of a REST endpoint as structured records (units only when the docs state them), and `list_documentation_topics` lists what is covered. The hosted server builds its index from the documentation repository at start and rebuilds it whenever the repository's `main` branch changes, so documentation updates reach it within minutes; the local package carries a snapshot built at release time (see `packages/server/docs/README.md`). Pages that exist on the site but not in the docs repository (solutions, apps, help, the Web Maps SDK v1) are not covered.
+Four tools answer questions about the APIs and SDKs from the official documentation: `search_documentation` returns ranked excerpts with a `source_url` to cite and the name of the tool that performs the operation, `get_documentation` returns one page or one section, `get_api_parameters` returns the request parameters of a REST endpoint as structured records (units only when the docs state them), and `list_documentation_topics` lists what is covered. The hosted server builds its index from the documentation repository at start and rebuilds it whenever the repository's `main` branch changes, so documentation updates reach it within minutes; the image carries a fallback snapshot built at release time (see `packages/server/docs/README.md`). Pages that exist on the site but not in the docs repository (solutions, apps, help, the Web Maps SDK v1) are not covered.
 
 ## How the hosted server works
 
@@ -149,3 +150,7 @@ npm run build && NBAI_TOKEN_KEY=$(node -e "console.log(require('crypto').randomB
 Test a local build interactively with the MCP Inspector: start the server as above, then
 `npx @modelcontextprotocol/inspector` and connect to `http://localhost:8080` (transport
 Streamable HTTP; use the browser sign-in, or set the header `Authorization: Bearer <key>`).
+
+## License
+
+Copyright 2026 NextBillion.ai. Licensed under the [Apache License, Version 2.0](LICENSE).

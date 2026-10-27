@@ -10,10 +10,11 @@ This directory holds the checked-in inputs for the documentation tools (`search_
 | `../src/docs/build/url-overrides.json` | Folder aliases and page overrides for the path-to-URL mapping (see below); bundled into the server | by hand                                            |
 | `reports/files-without-urls.md`        | Pages that are not indexed, and why                                                                | `npm run docs:validate -- --write`                 |
 | `reports/urls-without-files.md`        | Live pages with no source in the docs repo (known coverage gap)                                    | same                                               |
+| `reports/missing-units-report.md`      | Numeric request parameters whose docs state no unit                                                | `npm run docs:build-index`                         |
 
 ## How a page gets its URL
 
-The docs repo has no site configuration and no front matter, so `scripts/docs/mapping.ts` derives the published URL from the file path:
+The docs repo has no site configuration and no front matter, so `src/docs/build/mapping.ts` derives the published URL from the file path:
 
 1. A page override in `url-overrides.json` wins (`{ "url": … }`, optionally with a `#fragment` when several files are sections of one live page; or `{ "exclude": "reason" }`).
 2. Otherwise every path segment is slugified (lower case, non-alphanumerics become dashes).
@@ -26,7 +27,7 @@ A page's `doc_id` is its slugified repo path without `.md`, independent of the U
 
 ## Refreshing after a docs change (manual, by decision of 2026-10-07)
 
-The hosted server does not depend on this file for freshness: it rebuilds the index in-process from the docs repository at start and whenever `main` moves (`src/docs/store.ts`, using the same `src/docs/builder.ts`). The steps below refresh the committed snapshot (the image's fallback and the local package); run them when the URL mapping or the pinned commit should move.
+The hosted server does not depend on this file for freshness: it rebuilds the index in-process from the docs repository at start and whenever `main` moves (`src/docs/store.ts`, using the same `src/docs/builder.ts`). The steps below refresh the committed snapshot (the image's fallback); run them when the URL mapping or the pinned commit should move.
 
 ```bash
 # 1. Update the local clone of the docs repo
@@ -41,7 +42,7 @@ npm run docs:validate -- --docs ../../../nb-public-docs --fetch-sitemap --write
 npm run docs:validate
 npm test
 
-# 4. Rebuild the packed index and copy it into the Claude Code plugin
+# 4. Rebuild the packed index
 npm run docs:build-index -- --docs ../../../nb-public-docs
 cd ../.. && npm run build && cd packages/server
 
@@ -52,6 +53,6 @@ Review the diff of the two reports in the PR: a new entry in `files-without-urls
 
 ## Index file (`../data/docs-index.json`)
 
-Also holds the request parameters extracted from the reference pages' tables (`scripts/docs/parameters.ts`): the `| Name | Required | Format and Usage | Description |` query-parameter layout, `| Field | Type | Description |` request bodies and the `| Parameter | Type / Location | Description |` guide layout. Response tables and SDK pages are skipped. The endpoint id is `<api-slug>[/<variant>]`, with the variant taken from the page slug and the non-generic headings above the table (`directions/flexible`, `distance-matrix/asynchronous-fast`, `geofence/create`). Units are taken only from the docs' wording ("in seconds", "unix timestamp"); `null` otherwise.
+Also holds the request parameters extracted from the reference pages' tables (`src/docs/build/parameters.ts`): the `| Name | Required | Format and Usage | Description |` query-parameter layout, `| Field | Type | Description |` request bodies and the `| Parameter | Type / Location | Description |` guide layout. Response tables and SDK pages are skipped. The endpoint id is `<api-slug>[/<variant>]`, with the variant taken from the page slug and the non-generic headings above the table (`directions/flexible`, `distance-matrix/asynchronous-fast`, `geofence/create`). Units are taken only from the docs' wording ("in seconds", "unix timestamp"); `null` otherwise.
 
 Built by `npm run docs:build-index -- --docs <clone>` from the pinned commit; deterministic for a given commit. Plain chunks with page metadata, no prebuilt term index (ranking changes do not need a docs rebuild). The server resolves it at `../data/docs-index.json` relative to its bundle (the Docker image copies it next to `dist/`). `NBAI_DOCS_INDEX=<path>` overrides the location (tests and experiments only).

@@ -41,6 +41,7 @@ function main(): void {
         '  PORT              (optional) TCP port, default 8080\n' +
         '  NBAI_PUBLIC_URL   (optional) URL users enter, default https://mcp.nextbillion.io\n' +
         '  NBAI_ISSUER_URL   (optional) OAuth issuer, default = NBAI_PUBLIC_URL\n' +
+        '  NBAI_ALLOW_HTTP   (optional) 1 = accept an http:// public URL (private test networks)\n' +
         '  NBAI_TOKEN_KEY    (required in production) 32-byte base64 key(s) that seal tokens;\n' +
         '                    comma-separated, current first, to rotate\n' +
         '  NBAI_KEY_CHECK_URL (optional) gateway URL used to check pasted keys at sign-in,\n' +

@@ -38,7 +38,7 @@ export interface DocsIndex {
 
 /**
  * The index file next to this module: `../data/` next to the bundled `dist/index.js`
- * (npm package, plugin, Docker image) and `../../data/` when running from `src/` under
+ * (the Docker image) and `../../data/` when running from `src/` under
  * tsx or vitest. `NBAI_DOCS_INDEX` overrides it (tests and experiments).
  */
 export function bundledIndexPath(): string | undefined {
@@ -112,12 +112,6 @@ export function configureDocsIndex(next: DocsIndexOptions): void {
   firstBuild = undefined;
   checking = undefined;
   lastError = undefined;
-}
-
-/** Test hook: replace or clear the cached index. */
-export function setDocsIndexForTests(index: DocsIndex | undefined): void {
-  cached = index;
-  origin = index ? 'bundled' : 'none';
 }
 
 /** Version facts for /healthz and logs. */
@@ -209,7 +203,7 @@ function loadBundledFallback(reason?: string): void {
   }
 }
 
-/** The process-wide index. Local mode: the bundled file. Hosted mode: see startDocsIndex. */
+/** The process-wide index. Without a GitHub source: the bundled file. Otherwise see startDocsIndex. */
 export async function getDocsIndex(): Promise<DocsIndex> {
   if (cached) return cached;
   if (options.github) {
