@@ -40,16 +40,16 @@ export function renderSignInPage(o: SignInPageOptions): string {
     ? `${escapeHtml(o.appName)} (${escapeHtml(o.appHost)})`
     : escapeHtml(o.appHost);
   const loopbackNote = o.redirectIsLoopback
-    ? `<p class="muted">The redirect goes to an application on your own computer (<code>${escapeHtml(o.redirectHost)}</code>). Continue only if you started this sign-in yourself.</p>`
-    : `<p class="muted">After sign-in your browser returns to <code>${escapeHtml(o.redirectHost)}</code>.</p>`;
+    ? `<p class="muted">You will be returned to an application on this computer. Continue only if you started this sign-in yourself.</p>`
+    : `<p class="muted">You will be returned to <code>${escapeHtml(o.redirectHost)}</code> after signing in.</p>`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>Connect NextBillion.ai</title><style>${STYLE}</style></head>
 <body><main>
 <h1>Connect NextBillion.ai</h1>
-<div class="app">Application asking for access: <strong>${app}</strong></div>
+<div class="app"><strong>${app}</strong> would like to access NextBillion.ai on your behalf.</div>
 ${loopbackNote}
-<p>Paste your NextBillion.ai API key. It is checked once with the API (a request that returns no result and is not billed), sealed into the token handed back to the application, and <strong>never stored</strong> by this server. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
+<p>Enter your NextBillion.ai API key to continue. The key will be verified and used only for requests made by this application; it is not stored. You can revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
 ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ''}
 <form method="post" action="" autocomplete="off">
 <input type="hidden" name="request" value="${escapeHtml(o.requestToken)}">
@@ -66,5 +66,5 @@ export function renderErrorPage(title: string, detail: string): string {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>${escapeHtml(title)}</title><style>${STYLE}</style></head>
 <body><main><h1>${escapeHtml(title)}</h1><p>${escapeHtml(detail)}</p>
-<p class="muted">Close this window and start the connection again from your application.</p></main></body></html>`;
+<p class="muted">Close this window and start the connection again from your application. If the problem continues, contact support@nextbillion.ai.</p></main></body></html>`;
 }

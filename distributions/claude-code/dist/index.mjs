@@ -25446,6 +25446,9 @@ function verifyPkceS256(codeVerifier, codeChallenge) {
   return digest.length === expected.length && timingSafeEqual(digest, expected);
 }
 
+// src/http/oauth/server.ts
+init_log();
+
 // src/http/oauth/page.ts
 function escapeHtml(value) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
@@ -25465,15 +25468,15 @@ var STYLE = `
 `;
 function renderSignInPage(o) {
   const app = o.appName ? `${escapeHtml(o.appName)} (${escapeHtml(o.appHost)})` : escapeHtml(o.appHost);
-  const loopbackNote = o.redirectIsLoopback ? `<p class="muted">The redirect goes to an application on your own computer (<code>${escapeHtml(o.redirectHost)}</code>). Continue only if you started this sign-in yourself.</p>` : `<p class="muted">After sign-in your browser returns to <code>${escapeHtml(o.redirectHost)}</code>.</p>`;
+  const loopbackNote = o.redirectIsLoopback ? `<p class="muted">You will be returned to an application on this computer. Continue only if you started this sign-in yourself.</p>` : `<p class="muted">You will be returned to <code>${escapeHtml(o.redirectHost)}</code> after signing in.</p>`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>Connect NextBillion.ai</title><style>${STYLE}</style></head>
 <body><main>
 <h1>Connect NextBillion.ai</h1>
-<div class="app">Application asking for access: <strong>${app}</strong></div>
+<div class="app"><strong>${app}</strong> would like to access NextBillion.ai on your behalf.</div>
 ${loopbackNote}
-<p>Paste your NextBillion.ai API key. It is checked once with the API (a request that returns no result and is not billed), sealed into the token handed back to the application, and <strong>never stored</strong> by this server. Revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
+<p>Enter your NextBillion.ai API key to continue. The key will be verified and used only for requests made by this application; it is not stored. You can revoke access at any time by resetting the key in the <a href="https://console.nextbillion.ai" rel="noopener">console</a>.</p>
 ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ""}
 <form method="post" action="" autocomplete="off">
 <input type="hidden" name="request" value="${escapeHtml(o.requestToken)}">
@@ -25489,7 +25492,7 @@ function renderErrorPage(title, detail) {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex"><title>${escapeHtml(title)}</title><style>${STYLE}</style></head>
 <body><main><h1>${escapeHtml(title)}</h1><p>${escapeHtml(detail)}</p>
-<p class="muted">Close this window and start the connection again from your application.</p></main></body></html>`;
+<p class="muted">Close this window and start the connection again from your application. If the problem continues, contact support@nextbillion.ai.</p></main></body></html>`;
 }
 
 // src/http/oauth/server.ts
@@ -25619,7 +25622,7 @@ var AuthorizationServer = class {
     const redirectUri = get("redirect_uri");
     if (!clientId || !redirectUri) {
       return html(
-        renderErrorPage("Invalid request", "client_id and redirect_uri are required."),
+        renderErrorPage("Sign-in could not start", "The sign-in request from the application is incomplete."),
         400
       );
     }
@@ -25627,12 +25630,19 @@ var AuthorizationServer = class {
     try {
       client = await this.clients.resolve(clientId);
     } catch (error2) {
-      const message = error2 instanceof ClientError ? error2.message : "unknown client";
-      return html(renderErrorPage("Unknown application", message), 400);
+      const detail = error2 instanceof ClientError ? error2.message : "unknown client";
+      logError(`sign-in: client ${clientId} rejected`, detail);
+      return html(
+        renderErrorPage(
+          "Unknown application",
+          "The application that started this sign-in could not be verified."
+        ),
+        400
+      );
     }
     if (!redirectUriAllowed(redirectUri, client.redirectUris)) {
       return html(
-        renderErrorPage("Invalid request", "redirect_uri is not registered for this application."),
+        renderErrorPage("Sign-in could not start", "The return address requested by the application is not registered."),
         400
       );
     }
@@ -25676,10 +25686,10 @@ var AuthorizationServer = class {
   }
   async handleAuthorizeSubmit(request) {
     const form = await readForm(request);
-    if (!form) return html(renderErrorPage("Invalid request", "Expected a form submission."), 400);
+    if (!form) return html(renderErrorPage("Sign-in could not continue", "The sign-in request is invalid."), 400);
     const req = this.options.keyRing.open("code", form.get("request") ?? "", this.now());
     if (!req || req.st !== "req" || typeof req.ru !== "string" || typeof req.c !== "string" || typeof req.ch !== "string") {
-      return html(renderErrorPage("Sign-in expired", "This sign-in page is no longer valid."), 400);
+      return html(renderErrorPage("Sign-in expired", "This sign-in page has expired."), 400);
     }
     const redirectUri = req.ru;
     const state = typeof req.s === "string" ? req.s : void 0;
@@ -25690,7 +25700,7 @@ var AuthorizationServer = class {
         client = await this.clients.resolve(req.c);
       } catch {
         return html(
-          renderErrorPage("Unknown application", "The application could not be verified."),
+          renderErrorPage("Unknown application", "The application that started this sign-in could not be verified."),
           400
         );
       }
@@ -25707,22 +25717,22 @@ var AuthorizationServer = class {
       );
     };
     if (!ApiKeyVerifier.looksLikeKey(apiKey))
-      return again("That does not look like a NextBillion.ai API key.");
+      return again("Please enter a valid API key.");
     if (this.options.probeApiKey) {
       const probe = await this.options.probeApiKey(apiKey);
       if (probe === "invalid") {
         return again(
-          "NextBillion.ai does not recognise this key. Check it in the console and try again."
+          "This API key is not valid. Check it in the console and try again."
         );
       }
       if (probe === "restricted") {
         return again(
-          "This key has IP or origin restrictions that reject requests from the hosted server. Add the server address shown in the documentation to the key's allowlist, or use the local version."
+          "This API key has IP or origin restrictions. Allow the NextBillion.ai MCP service in the key's settings (see the documentation for the address), or use a key without restrictions."
         );
       }
       if (probe === "unavailable") {
         return again(
-          "Could not reach NextBillion.ai to check the key. Please try again in a moment."
+          "The key could not be verified right now. Please try again in a moment."
         );
       }
     }

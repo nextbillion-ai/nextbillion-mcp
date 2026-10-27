@@ -7,6 +7,7 @@ import {
 import { API_SCOPE, ApiKeyVerifier } from '../auth.js';
 import { ClientError, ClientResolver, isLoopbackHost, redirectUriAllowed } from './clients.js';
 import { KeyRing, nowSeconds, verifyPkceS256 } from './crypto.js';
+import { logError } from '../../log.js';
 import { renderErrorPage, renderSignInPage } from './page.js';
 import type { ApiKeyProbeResult } from './probe.js';
 
@@ -178,7 +179,7 @@ export class AuthorizationServer {
     const redirectUri = get('redirect_uri');
     if (!clientId || !redirectUri) {
       return html(
-        renderErrorPage('Invalid request', 'client_id and redirect_uri are required.'),
+        renderErrorPage('Sign-in could not start', 'The sign-in request from the application is incomplete.'),
         400,
       );
     }
@@ -187,13 +188,20 @@ export class AuthorizationServer {
     try {
       client = await this.clients.resolve(clientId);
     } catch (error) {
-      const message = error instanceof ClientError ? error.message : 'unknown client';
-      return html(renderErrorPage('Unknown application', message), 400);
+      const detail = error instanceof ClientError ? error.message : 'unknown client';
+      logError(`sign-in: client ${clientId} rejected`, detail);
+      return html(
+        renderErrorPage(
+          'Unknown application',
+          'The application that started this sign-in could not be verified.',
+        ),
+        400,
+      );
     }
     // Never redirect to an unregistered URI: that is how authorization codes get stolen.
     if (!redirectUriAllowed(redirectUri, client.redirectUris)) {
       return html(
-        renderErrorPage('Invalid request', 'redirect_uri is not registered for this application.'),
+        renderErrorPage('Sign-in could not start', 'The return address requested by the application is not registered.'),
         400,
       );
     }
@@ -242,7 +250,7 @@ export class AuthorizationServer {
 
   private async handleAuthorizeSubmit(request: Request): Promise<Response> {
     const form = await readForm(request);
-    if (!form) return html(renderErrorPage('Invalid request', 'Expected a form submission.'), 400);
+    if (!form) return html(renderErrorPage('Sign-in could not continue', 'The sign-in request is invalid.'), 400);
     const req = this.options.keyRing.open('code', form.get('request') ?? '', this.now());
     if (
       !req ||
@@ -251,7 +259,7 @@ export class AuthorizationServer {
       typeof req.c !== 'string' ||
       typeof req.ch !== 'string'
     ) {
-      return html(renderErrorPage('Sign-in expired', 'This sign-in page is no longer valid.'), 400);
+      return html(renderErrorPage('Sign-in expired', 'This sign-in page has expired.'), 400);
     }
     const redirectUri = req.ru;
     const state = typeof req.s === 'string' ? req.s : undefined;
@@ -263,7 +271,7 @@ export class AuthorizationServer {
         client = await this.clients.resolve(req.c as string);
       } catch {
         return html(
-          renderErrorPage('Unknown application', 'The application could not be verified.'),
+          renderErrorPage('Unknown application', 'The application that started this sign-in could not be verified.'),
           400,
         );
       }
@@ -281,23 +289,23 @@ export class AuthorizationServer {
     };
 
     if (!ApiKeyVerifier.looksLikeKey(apiKey))
-      return again('That does not look like a NextBillion.ai API key.');
+      return again('Please enter a valid API key.');
     if (this.options.probeApiKey) {
       const probe = await this.options.probeApiKey(apiKey);
       if (probe === 'invalid') {
         return again(
-          'NextBillion.ai does not recognise this key. Check it in the console and try again.',
+          'This API key is not valid. Check it in the console and try again.',
         );
       }
       if (probe === 'restricted') {
         return again(
-          'This key has IP or origin restrictions that reject requests from the hosted server. ' +
-            "Add the server address shown in the documentation to the key's allowlist, or use the local version.",
+          'This API key has IP or origin restrictions. Allow the NextBillion.ai MCP service in the ' +
+            "key's settings (see the documentation for the address), or use a key without restrictions.",
         );
       }
       if (probe === 'unavailable') {
         return again(
-          'Could not reach NextBillion.ai to check the key. Please try again in a moment.',
+          'The key could not be verified right now. Please try again in a moment.',
         );
       }
     }

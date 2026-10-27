@@ -143,7 +143,7 @@ describe('OAuth sign-in flow', () => {
       }),
     );
     expect(bad.status).toBe(400);
-    expect(await bad.text()).toContain('does not recognise this key');
+    expect(await bad.text()).toContain('This API key is not valid');
 
     const callback = await signInInBrowser(h, authorizationUrl, GOOD_KEY);
     expect(callback.origin + callback.pathname).toBe(redirectUrl);
