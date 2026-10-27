@@ -32,11 +32,11 @@ jobs:
         with:
           name: claude-desktop-extension
           path: dist-mcpb/*.mcpb
-      # Hosted mode: the image must build and answer /healthz with the bundled docs index.
+      # Hosted mode: the image must build and answer /health with the bundled docs index.
       - run: docker build -t nextbillion-mcp:ci .
       - run: |
           cid=$(docker run -d -p 18080:8080 -e NBAI_PUBLIC_URL=http://localhost:18080 nextbillion-mcp:ci)
-          for i in $(seq 1 20); do curl -fsS http://localhost:18080/healthz && break || sleep 1; done
+          for i in $(seq 1 20); do curl -fsS http://localhost:18080/health && break || sleep 1; done
           curl -fsS http://localhost:18080/.well-known/oauth-protected-resource
           # The server logs to stderr (stdout is reserved for stdio transports).
           docker logs "$cid" 2>&1 | grep -q 'listening on http' || (docker logs "$cid" 2>&1; exit 1)
@@ -80,8 +80,12 @@ jobs:
             --project nextbillion-controlled --region asia-southeast1 \
             --image "${{ steps.push.outputs.image }}" --quiet
           url=$(gcloud run services describe nextbillion-mcp --project nextbillion-controlled --region asia-southeast1 --format 'value(status.url)')
-          for i in $(seq 1 30); do curl -fsS "$url/healthz" && break || sleep 2; done
-          curl -fsS https://mcp.nextbillion.io/healthz
+          # /health, not /healthz: Google's front end answers a branded 404 for the exact path
+          # /healthz before the request reaches the container.
+          for i in $(seq 1 30); do curl -fsS "$url/health" && break || sleep 2; done
+          curl -fsS "$url/health"
+          # The custom domain depends on DNS and certificate state outside this repo: report, don't fail.
+          curl -fsS https://mcp.nextbillion.io/health || echo "::warning::https://mcp.nextbillion.io/health not reachable yet (DNS/certificate)"
 
   e2e:
     # Live-API smoke tests; needs the NBAI_API_KEY secret (sandbox key).

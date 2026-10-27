@@ -77,7 +77,7 @@ PORT=8080 NBAI_PUBLIC_URL=https://mcp.nextbillion.io nextbillion-mcp --http
 ```
 
 - The MCP endpoint is the root of `NBAI_PUBLIC_URL` (the URL users enter in their host; it is
-  also the OAuth `resource`). `GET /healthz` answers liveness and
+  also the OAuth `resource`). `GET /health` answers liveness and
   `/.well-known/oauth-protected-resource` is served for OAuth discovery.
 - **Credentials travel with each request.** There is no server-wide key: `NBAI_API_KEY` is
   ignored, and every API call uses the key of the caller. Developers and CI send it directly:

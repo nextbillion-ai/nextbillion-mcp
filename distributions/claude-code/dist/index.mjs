@@ -26830,7 +26830,7 @@ function createHttpApp(options2) {
     async fetch(request2) {
       const url2 = new URL(request2.url);
       const path = url2.pathname.replace(/\/+$/, "") || "/";
-      if (path === "/healthz") {
+      if (path === "/health" || path === "/healthz") {
         return json2({
           status: "ok",
           name: "nextbillion-mcp",
@@ -27024,7 +27024,7 @@ function defaultKeyCheckUrl(baseUrl) {
 
 // src/index.ts
 init_log();
-var pkg = true ? { version: "0.4.0" } : createRequire(import.meta.url)("../package.json");
+var pkg = true ? { version: "0.4.1" } : createRequire(import.meta.url)("../package.json");
 function main() {
   const args = process.argv.slice(2);
   if (args.includes("--version") || args.includes("-v")) {
