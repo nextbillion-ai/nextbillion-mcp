@@ -67,6 +67,43 @@ underlying API's coordinate-order conventions internally.
 
 Four tools answer questions about the APIs and SDKs from the official documentation without a network call: `search_documentation` returns ranked excerpts with a `source_url` to cite and the name of the tool that performs the operation, `get_documentation` returns one page or one section, `get_api_parameters` returns the request parameters of a REST endpoint as structured records (units only when the docs state them), and `list_documentation_topics` lists what is covered. The index (342 pages of docs.nextbillion.ai) ships inside the package and is rebuilt when the docs change; see `packages/server/docs/README.md`. Pages that exist on the site but not in the docs repository (solutions, apps, help, the Web Maps SDK v1) are not covered.
 
+## Hosted mode
+
+The same server can run as a remote MCP server over Streamable HTTP, so hosts connect to a
+URL instead of launching a local process:
+
+```bash
+PORT=8080 NBAI_PUBLIC_URL=https://mcp.nextbillion.io nextbillion-mcp --http
+```
+
+- The MCP endpoint is the root of `NBAI_PUBLIC_URL` (the URL users enter in their host; it is
+  also the OAuth `resource`). `GET /healthz` answers liveness and
+  `/.well-known/oauth-protected-resource` is served for OAuth discovery.
+- **Credentials travel with each request.** There is no server-wide key: `NBAI_API_KEY` is
+  ignored, and every API call uses the key of the caller. Developers and CI send it directly:
+
+  ```bash
+  claude mcp add --transport http nextbillion https://mcp.nextbillion.io \
+    --header "Authorization: Bearer $NBAI_API_KEY"
+  ```
+
+- **Lazy authentication.** Without credentials a host can still connect, list tools and use
+  the four documentation tools. The first call to an API tool is answered with HTTP 401 and a
+  `WWW-Authenticate: Bearer resource_metadata=…` challenge, which makes Claude open its
+  sign-in flow.
+- **Sign-in.** The server is its own OAuth 2.1 authorization server (`/oauth/*`). The sign-in
+  page asks for the user's NextBillion.ai API key once, checks it with the API, and seals it
+  into the tokens it issues (AES-256-GCM, key in `NBAI_TOKEN_KEY`; generate one with
+  `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`). Nothing is
+  stored server-side; revoke by resetting the key in the console. Claude identifies itself with
+  its Client ID Metadata Document; other hosts can use dynamic registration.
+- `NBAI_IMAGE_DIR` is ignored: a hosted server writes nothing to disk. Map images are returned
+  inline only.
+- Stateless: the SDK builds one server instance per request and the API client for it is
+  created from that request's key. Nothing about a caller is retained between requests.
+- Container: `docker build -t nextbillion-mcp .` then
+  `docker run -p 8080:8080 -e NBAI_PUBLIC_URL=https://mcp.nextbillion.io -e NBAI_TOKEN_KEY=… nextbillion-mcp`.
+
 ## Privacy Policy
 
 `nextbillion-mcp` is a local MCP server: it runs on your own machine, is started by your
@@ -80,6 +117,16 @@ returns the API's response to your client unchanged. The server does not collect
 transmit anything else: no conversation content beyond the tool arguments, no files, no
 device or usage information. The server does not query your client's memory, chat history
 or files.
+
+**Hosted mode (mcp.nextbillion.io).** When you use the hosted server instead of a local one,
+your API key is sent to it once at sign-in, checked against the NextBillion.ai API, and
+returned to your MCP host sealed inside encrypted tokens. On every tool call the server
+decrypts the token in memory, calls `api.nextbillion.io` with your key, and returns the
+response; it keeps no database, writes nothing to disk, and logs only method, path, status
+and duration (never headers, bodies, keys or tokens). Calls to the API come from the
+server's fixed address (published in the release notes) rather than from your machine, which
+matters only if your key has an IP allowlist. Revoke the hosted server's access at any time
+by resetting the key in the console.
 
 **Documentation tools.** The four documentation tools (`search_documentation`,
 `get_documentation`, `get_api_parameters` and `list_documentation_topics`) run fully
