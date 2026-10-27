@@ -1,6 +1,6 @@
 {
   "name": "nextbillion-mcp",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "private": true,
   "description": "The NextBillion.ai MCP server (hosted at https://mcp.nextbillion.io): location APIs as tools for AI agents",
   "license": "Apache-2.0",
@@ -30,5 +30,10 @@
     "typescript": "^7.0.0",
     "vitest": "^4.1.0",
     "zod": "^4.2.0"
+  },
+  "dependencies": {
+    "geographiclib-geodesic": "^2.2.0",
+    "polyclip-ts": "^0.16.8",
+    "polylabel": "^2.1.0"
   }
 }

@@ -1,6 +1,21 @@
 # Changelog
 
-## Unreleased
+## 0.5.0 — 2026-10-27
+
+### Geometry tools (local, no sign-in)
+
+Seven new tools compute straight-line geometry inside the server, with no NextBillion.ai API
+call and no sign-in: `measure` (geodesic distance, line length, polygon area and perimeter,
+bearing), `points_in_polygon` (geofencing, holes respected), `polygon_ops` (union, intersect,
+difference), `buffer` (geodesic circle / corridor / grown or shrunk polygon; a shrunk shape may
+become a MultiPolygon), `nearest` (nearest candidates, or nearest position on a line), `bbox`
+(antimeridian-aware) and `centroid` (area-weighted centroid plus a guaranteed-inside label point).
+Inputs use the server's `{latitude, longitude}` points and GeoJSON Polygon/MultiPolygon (or an
+isochrone Feature) so results chain between tools. Measures use geographiclib (exact WGS84);
+polygon operations use polyclip-ts; the buffer is our own geodesic construction (no JSTS).
+Shapes are simplified to `max_vertices` (default 500) with the tolerance reported. Limits:
+10,000 vertices per shape, 5,000 points per call; shapes spanning the antimeridian are rejected
+in this version. Bundle +~200 KB.
 
 - Housekeeping after going hosted-only: README tool table lists `get_api_parameters`, a License
   section and the copyright line in LICENSE; comments, docs and ignore files no longer refer to

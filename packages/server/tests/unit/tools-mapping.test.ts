@@ -19,12 +19,15 @@ import { fakeNbClient } from '../helpers/fake-fetch.js';
 const PNG = { body: new Uint8Array([137, 80, 78, 71]), contentType: 'image/png' };
 
 describe('tool registry', () => {
-  it('exposes exactly the 20 tools, sorted by name', () => {
+  it('exposes exactly the 27 tools, sorted by name', () => {
     const names = ALL_TOOLS.map((t) => t.name);
     expect(names).toEqual([...names].sort());
     expect(names).toEqual([
       'autocomplete',
       'autosuggest',
+      'bbox',
+      'buffer',
+      'centroid',
       'directions',
       'distance_matrix',
       'geocode_batch',
@@ -35,9 +38,13 @@ describe('tool registry', () => {
       'get_documentation',
       'isochrone',
       'list_documentation_topics',
+      'measure',
+      'nearest',
       'place_browse',
       'place_lookup',
       'place_search',
+      'points_in_polygon',
+      'polygon_ops',
       'postcode_lookup',
       'search_along_route',
       'search_documentation',
@@ -62,7 +69,10 @@ describe('tool registry', () => {
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
-        openWorldHint: !/documentation|api_parameters/.test(tool.name),
+        openWorldHint:
+          !/documentation|api_parameters|^(measure|points_in_polygon|polygon_ops|buffer|nearest|bbox|centroid)$/.test(
+            tool.name,
+          ),
       });
     }
   });
@@ -100,7 +110,7 @@ describe('tool registry', () => {
   });
 
   it('gives every tool a short name and a human-readable Title Case title', () => {
-    const minor = new Set(['by', 'of', 'for', 'and', 'along', 'to']);
+    const minor = new Set(['a', 'by', 'of', 'for', 'and', 'along', 'to', 'in', 'on', 'or']);
     for (const tool of ALL_TOOLS) {
       expect(tool.name.length, tool.name).toBeLessThanOrEqual(64);
       expect(tool.title.trim(), tool.name).toBe(tool.title);
