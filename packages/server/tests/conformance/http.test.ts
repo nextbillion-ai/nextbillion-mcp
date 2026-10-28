@@ -78,7 +78,7 @@ describe('hosted HTTP mode', () => {
     const client = await connect(app);
     open.push(client);
     const tools = await client.listTools();
-    expect(tools.tools).toHaveLength(20);
+    expect(tools.tools).toHaveLength(27);
     const result = await client.callTool({
       name: 'search_documentation',
       arguments: { query: 'truck_weight', api: 'Directions' },

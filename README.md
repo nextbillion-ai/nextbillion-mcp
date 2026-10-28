@@ -29,31 +29,50 @@ Full snippets: [`distributions/manual/README.md`](distributions/manual/README.md
 
 ## Tools
 
-| Tool                        | NextBillion API                                     |
-| --------------------------- | --------------------------------------------------- |
-| `autocomplete`              | Autocomplete (prefix address completion)            |
-| `autosuggest`               | Autosuggest (typo-tolerant suggestions)             |
-| `directions`                | Directions (fast + flexible)                        |
-| `distance_matrix`           | Distance Matrix (fast + flexible, synchronous)      |
-| `geocode_batch`             | Batch Geocode (up to 100 queries per call)          |
-| `geocode_forward`           | Forward Geocode                                     |
-| `geocode_reverse`           | Reverse Geocode                                     |
-| `geocode_structured`        | Structured Geocode                                  |
-| `isochrone`                 | Isochrone                                           |
-| `place_browse`              | Browse (places by category near a location)         |
-| `place_lookup`              | Place Lookup                                        |
-| `place_search`              | Discover (POI search)                               |
-| `postcode_lookup`           | Geocode Postcode                                    |
-| `search_along_route`        | Search Along Route                                  |
-| `static_map_image`          | Static Images                                       |
-| `static_route_map`          | Static Images (route/path overlay)                  |
-| `search_documentation`      | Documentation search (index of docs.nextbillion.ai) |
-| `get_documentation`         | Documentation page by `doc_id`                      |
-| `get_api_parameters`        | Request parameters of a REST endpoint, as records   |
-| `list_documentation_topics` | Documentation categories, APIs and pages            |
+| Tool                        | NextBillion API                                            |
+| --------------------------- | ---------------------------------------------------------- |
+| `autocomplete`              | Autocomplete (prefix address completion)                   |
+| `autosuggest`               | Autosuggest (typo-tolerant suggestions)                    |
+| `directions`                | Directions (fast + flexible)                               |
+| `distance_matrix`           | Distance Matrix (fast + flexible, synchronous)             |
+| `geocode_batch`             | Batch Geocode (up to 100 queries per call)                 |
+| `geocode_forward`           | Forward Geocode                                            |
+| `geocode_reverse`           | Reverse Geocode                                            |
+| `geocode_structured`        | Structured Geocode                                         |
+| `isochrone`                 | Isochrone                                                  |
+| `place_browse`              | Browse (places by category near a location)                |
+| `place_lookup`              | Place Lookup                                               |
+| `place_search`              | Discover (POI search)                                      |
+| `postcode_lookup`           | Geocode Postcode                                           |
+| `search_along_route`        | Search Along Route                                         |
+| `static_map_image`          | Static Images                                              |
+| `static_route_map`          | Static Images (route/path overlay)                         |
+| `search_documentation`      | Documentation search (index of docs.nextbillion.ai)        |
+| `get_documentation`         | Documentation page by `doc_id`                             |
+| `get_api_parameters`        | Request parameters of a REST endpoint, as records          |
+| `list_documentation_topics` | Documentation categories, APIs and pages                   |
+| `measure`                   | Straight-line distance, line length, area, bearing (local) |
+| `points_in_polygon`         | Geofencing: which points fall inside a polygon (local)     |
+| `polygon_ops`               | Union, intersection, difference of polygons (local)        |
+| `buffer`                    | Zone within a distance of a point, line or polygon (local) |
+| `nearest`                   | Nearest candidates, or nearest position on a line (local)  |
+| `bbox`                      | Bounding box of points, a line or a polygon (local)        |
+| `centroid`                  | Centroid and guaranteed-inside label point (local)         |
 
 Tool inputs always use explicit `{latitude, longitude}` objects; the server handles the
 underlying API's coordinate-order conventions internally.
+
+### Geometry tools (local, no sign-in)
+
+Seven tools compute straight-line geometry on the WGS84 ellipsoid inside the server, without
+calling the NextBillion.ai API: `measure` (distance, length, area, bearing), `points_in_polygon`
+(geofencing), `polygon_ops` (union / intersect / difference), `buffer`, `nearest`, `bbox` and
+`centroid`. They take the same `{latitude, longitude}` points as the other tools and GeoJSON
+Polygon/MultiPolygon geometry, so an `isochrone` contour can be passed straight into
+`points_in_polygon` or `polygon_ops`. Results that return a shape are simplified to a vertex
+budget (`max_vertices`, default 500) to keep them small in the model's context. Their descriptions
+say so explicitly: straight-line, not road distance — `directions` and `distance_matrix` remain the
+tools for travel questions.
 
 ### Documentation tools
 

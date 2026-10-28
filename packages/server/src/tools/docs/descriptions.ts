@@ -8,12 +8,14 @@
  */
 
 export const SERVER_INSTRUCTIONS =
-  'This server provides two kinds of tools. The four documentation tools ' +
+  'This server provides three kinds of tools. The four documentation tools ' +
   '(search_documentation, get_documentation, get_api_parameters, list_documentation_topics) ' +
-  'answer questions about how NextBillion.ai APIs and SDKs work from a bundled copy of the ' +
-  'official documentation and make no network requests; their results include a source_url ' +
-  'for citation. The other tools call the NextBillion.ai API and return live results such ' +
-  'as geocodes, places, routes, travel-time matrices, isochrones and map images.';
+  'answer questions about how NextBillion.ai APIs and SDKs work from the official documentation ' +
+  'and need no sign-in; their results include a source_url for citation. The seven geometry tools ' +
+  '(measure, points_in_polygon, polygon_ops, buffer, nearest, bbox, centroid) compute straight-line ' +
+  'geodesic geometry locally, also without sign-in; they are not road distances or travel times. ' +
+  'The other tools call the NextBillion.ai API with your key and return live results such as ' +
+  'geocodes, places, routes, travel-time matrices, isochrones and map images.';
 
 export const SEARCH_DOCUMENTATION_DESCRIPTION =
   "Search NextBillion's official API and SDK documentation. Use for any question about how " +

@@ -70,7 +70,9 @@ describe('committed documentation index', () => {
       'get_api_parameters',
     ]);
     for (const tool of ALL_TOOLS) {
-      if (docsTools.has(tool.name)) continue;
+      // Documentation tools and the local geometry tools call no NextBillion API, so they
+      // have no reference page to link.
+      if (docsTools.has(tool.name) || tool.annotations?.openWorldHint === false) continue;
       expect(tool.docs?.length ?? 0, `${tool.name} declares docs`).toBeGreaterThan(0);
       for (const id of tool.docs ?? []) expect(pageIds.has(id), `${tool.name} -> ${id}`).toBe(true);
     }
