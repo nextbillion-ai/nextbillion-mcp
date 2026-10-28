@@ -4,7 +4,14 @@
  * measure straight lines on the WGS84 ellipsoid, never roads.
  */
 import * as z from 'zod/v4';
-import { MAX_POINTS, MAX_VERTICES, round, toGeometry, toLatLng } from '../../geo/convert.js';
+import {
+  MAX_POINTS,
+  MAX_TOTAL_VERTICES,
+  MAX_VERTICES,
+  round,
+  toGeometry,
+  toLatLng,
+} from '../../geo/convert.js';
 import {
   areaAndPerimeter,
   toAreaUnit,
@@ -66,7 +73,11 @@ export const MaxVerticesSchema = z
   );
 
 export const DEFAULT_MAX_VERTICES = 500;
-export { MAX_POINTS, MAX_VERTICES };
+export { MAX_POINTS, MAX_TOTAL_VERTICES, MAX_VERTICES };
+
+export function vertexCount(polygons: MultiPolygonCoords): number {
+  return polygons.reduce((n, poly) => n + poly.reduce((m, r) => m + r.length, 0), 0);
+}
 
 /** Re-throws geometry validation problems as tool input errors (readable, isError results). */
 export function geometryInput<T>(fn: () => T): T {

@@ -19,6 +19,8 @@ import {
  */
 export const MAX_VERTICES = 5_000;
 export const MAX_POINTS = 1_000;
+/** Combined vertex budget when several shapes enter one operation (polygon_ops). */
+export const MAX_TOTAL_VERTICES = 20_000;
 
 export function toPosition(p: LatLng): Position {
   return [p.longitude, p.latitude];
