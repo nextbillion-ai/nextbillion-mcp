@@ -38,13 +38,18 @@ jobs:
 
   image:
     # Publishes the hosted image on release tags and rolls it out to Cloud Run. Runs on a
-    # public runner; authenticates to GCP with the deployer service account's key
-    # (secret GCP_SA_KEY; the account and its roles are Terraform-managed in
-    # nextbillion-ai/nextbillion-infra, see nextbillion-mcp.tf "Manual steps").
+    # public runner and holds no credentials: GitHub's OIDC token for this run is exchanged
+    # for a one-hour credential of the deployer service account through Workload Identity
+    # Federation (pool, provider, account and roles are Terraform-managed in
+    # nextbillion-ai/nextbillion-infra, nextbillion-mcp.tf "Keyless CI"). The provider
+    # accepts only release tags and main of this repository.
     # Pushes to asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp:<tag>.
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # lets the job request GitHub's OIDC token
     env:
       REGISTRY: asia-southeast1-docker.pkg.dev
       IMAGE: asia-southeast1-docker.pkg.dev/nextbillion/internal/nextbillion-mcp
@@ -52,7 +57,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: projects/111225689449/locations/global/workloadIdentityPools/github-actions/providers/nextbillion-mcp
+          service_account: nextbillion-mcp-deployer@nextbillion-controlled.iam.gserviceaccount.com
       - uses: google-github-actions/setup-gcloud@v2
       - name: Build and push image
         id: push
