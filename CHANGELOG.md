@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1 — 2026-10-29
+
+- `directions` and `distance_matrix` can route for a specific truck class on the designated
+  freight network: new `prefer: "truck_route"` and `truck_type` (rigid_truck, semi_trailer,
+  b_double, road_train, generic_truck) parameters, plus `require: "truck_route"` on `directions`
+  to stay on freight network roads only (the API answers 422 when none is within 2 km of a stop).
+  The API ignores `truck_type` and `require` without `prefer`, and all three outside flexible truck
+  routing; the tools reject those combinations instead of silently routing a generic truck.
+
 ## 0.5.0 — 2026-10-27
 
 ### Geometry tools (local, no sign-in)
