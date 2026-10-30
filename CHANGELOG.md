@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.2 — 2026-10-30
+
+- Release pipeline only: CI now authenticates to Google Cloud through Workload Identity
+  Federation (a short-lived token GitHub issues per run) instead of a stored service-account
+  key, and a manual "GCP auth check" workflow verifies that path without deploying. The
+  hosted server's secrets are now generated and managed by Terraform; existing sign-ins were
+  invalidated once by the key rollover. No tool or behaviour changes.
+
 ## 0.5.1 — 2026-10-29
 
 - `directions` and `distance_matrix` can route for a specific truck class on the designated

@@ -1,6 +1,6 @@
 {
   "name": "nextbillion-mcp",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "private": true,
   "description": "The NextBillion.ai MCP server (hosted at https://mcp.nextbillion.io): location APIs as tools for AI agents",
   "license": "Apache-2.0",
