@@ -83,7 +83,7 @@ describe('builder', () => {
     const { index, skipped, problems } = buildDocsIndexFile({
       files,
       commitSha: 'abc',
-      builtAt: '2026-10-27T00:00:00Z',
+      docsUpdatedAt: '2026-10-27T00:00:00Z',
       overrides: { folderAliases: {}, pages: { 'Secret/draft.md': { exclude: 'unpublished' } } },
     });
     expect(problems).toEqual([]);

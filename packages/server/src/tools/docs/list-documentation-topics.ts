@@ -55,7 +55,7 @@ export const listDocumentationTopics: NbTool<typeof Schema> = {
     const lines = [
       `${count} documentation page(s) in ${tree.length} categor${tree.length === 1 ? 'y' : 'ies'} ` +
         `(index of ${index.meta.pages} pages, ${index.meta.chunks} chunks, docs commit ${commit}, ` +
-        `built ${index.meta.built_at.slice(0, 10)}).`,
+        `docs last updated ${index.meta.docs_updated_at.slice(0, 10)}).`,
     ];
     if (count === 0) {
       lines.push(
@@ -75,7 +75,7 @@ export const listDocumentationTopics: NbTool<typeof Schema> = {
       content: [{ type: 'text', text: lines.join('\n') }],
       structuredContent: {
         commit_sha: index.meta.commit_sha,
-        built_at: index.meta.built_at,
+        docs_updated_at: index.meta.docs_updated_at,
         total_pages: index.meta.pages,
         total_chunks: index.meta.chunks,
         matched_pages: count,

@@ -32,8 +32,8 @@ export interface BuildInput {
   /** Repo-relative Markdown paths (e.g. `Routing/Directions API/directions-api.md`) → content. */
   files: ReadonlyMap<string, string>;
   commitSha: string;
-  /** ISO timestamp recorded as `built_at` (the docs commit date at build time). */
-  builtAt: string;
+  /** ISO timestamp recorded as `docs_updated_at` (the docs commit date). */
+  docsUpdatedAt: string;
   overrides?: UrlOverrides;
 }
 
@@ -138,7 +138,7 @@ export function buildDocsIndexFile(input: BuildInput): BuildResult {
     meta: {
       format: 2,
       commit_sha: input.commitSha,
-      built_at: input.builtAt,
+      docs_updated_at: input.docsUpdatedAt,
       pages: pages.length,
       chunks: chunks.length,
       parameters: parameters.length,

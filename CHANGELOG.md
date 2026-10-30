@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.3 — 2026-10-30
+
+- `list_documentation_topics` now says "docs last updated YYYY-MM-DD" and returns the field
+  `docs_updated_at` instead of `built_at`. The value is unchanged (the commit date of the
+  documentation the index was built from); the old name led clients to describe it as an
+  index build time and to doubt whether the docs were current. `/health` reports the same
+  renamed field.
+
 ## 0.5.2 — 2026-10-30
 
 - Release pipeline only: CI now authenticates to Google Cloud through Workload Identity

@@ -10,8 +10,12 @@ export interface DocsIndexMeta {
   format: 2;
   /** Commit of nextbillion-ai/nb-public-docs the index was built from. */
   commit_sha: string;
-  /** Commit date of that docs commit (deterministic, so rebuilds without changes are no-ops). */
-  built_at: string;
+  /**
+   * When the documentation was last updated: the commit date of `commit_sha` (deterministic,
+   * so rebuilds without changes are no-ops). Named for what it means to a reader, not for
+   * when the index was built.
+   */
+  docs_updated_at: string;
   pages: number;
   chunks: number;
   parameters: number;

@@ -58,7 +58,7 @@ for (const file of git(['ls-files', '--', '*.md']).split('\n')) {
 const { index, problems, skipped } = buildDocsIndexFile({
   files,
   commitSha: pin.commit,
-  builtAt: pin.commit_date,
+  docsUpdatedAt: pin.commit_date,
 });
 if (problems.length > 0) {
   console.error(`${problems.length} integrity problem(s):`);

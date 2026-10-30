@@ -118,12 +118,14 @@ export function configureDocsIndex(next: DocsIndexOptions): void {
 export function docsIndexInfo(): {
   origin: DocsOrigin;
   commit_sha?: string;
-  built_at?: string;
+  docs_updated_at?: string;
   last_error?: string;
 } {
   return {
     origin,
-    ...(cached ? { commit_sha: cached.meta.commit_sha, built_at: cached.meta.built_at } : {}),
+    ...(cached
+      ? { commit_sha: cached.meta.commit_sha, docs_updated_at: cached.meta.docs_updated_at }
+      : {}),
     ...(lastError ? { last_error: lastError } : {}),
   };
 }
@@ -134,7 +136,7 @@ async function rebuildFromGitHub(github: GitHubDocsSource): Promise<void> {
   const { index, problems, skipped } = buildDocsIndexFile({
     files: snapshot.files,
     commitSha: snapshot.commitSha,
-    builtAt: snapshot.commitDate ?? new Date().toISOString(),
+    docsUpdatedAt: snapshot.commitDate ?? new Date().toISOString(),
   });
   if (problems.length > 0) {
     throw new Error(`index integrity: ${problems.length} problem(s), first: ${problems[0]}`);
