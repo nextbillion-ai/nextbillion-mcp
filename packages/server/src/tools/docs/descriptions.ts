@@ -20,7 +20,8 @@ export const SERVER_INSTRUCTIONS =
 export const SEARCH_DOCUMENTATION_DESCRIPTION =
   "Search NextBillion's official API and SDK documentation. Use for any question about how " +
   'NextBillion works: calling an API, what a parameter means, which API to use, or SDK setup. ' +
-  'Answers come from the bundled documentation index, not from live API calls.\n' +
+  'Answers come from an index of the official documentation, not from live API calls; when ' +
+  'the index is temporarily unavailable the result says so and names the public docs site.\n' +
   "Queries match best with the docs' own terms and exact parameter names (truck_weight, " +
   'option=flexible) rather than everyday phrasing; when results are thin, other API terms ' +
   'may match. Results are excerpts: get_documentation returns a full page. Each result ' +
@@ -41,7 +42,8 @@ export const GET_DOCUMENTATION_DESCRIPTION =
   'the size limit return truncated: true and a section list; a single section can be ' +
   'requested with section. Sample request and response bodies are omitted unless ' +
   'include_examples is true. An unknown doc_id or section returns found: false with ' +
-  'similar ids or the section list.\n' +
+  'similar ids or the section list. When the index is temporarily unavailable the result ' +
+  'says so and names the public docs site.\n' +
   'Parameters:\n' +
   '- doc_id (string, required): page id from search results.\n' +
   '- section (string, optional): heading of one section to return.\n' +
@@ -53,7 +55,8 @@ export const GET_API_PARAMETERS_DESCRIPTION =
   'default, allowed values, units and description. More precise than a prose search for ' +
   'questions about one specific parameter. Returns every matching API variant (e.g. ' +
   'directions/flexible and directions/fast), identified by heading_path. Empty units means ' +
-  'the documentation does not state a unit. SDK methods are not covered.\n' +
+  'the documentation does not state a unit. SDK methods are not covered. When the index is ' +
+  'temporarily unavailable the result says so and names the public docs site.\n' +
   'Parameters:\n' +
   '- endpoint (string, required unless doc_id given): API slug, optionally with variant, ' +
   'e.g. directions or directions/flexible; a tool name such as geocode_batch or a doc_id ' +
@@ -65,13 +68,14 @@ export const GET_API_PARAMETERS_DESCRIPTION =
 export const LIST_DOCUMENTATION_TOPICS_DESCRIPTION =
   'List the available documentation categories, APIs and pages, with index metadata. Useful ' +
   'before searching, when the right terms are not yet known, e.g. to see which APIs exist ' +
-  'for a problem area.\n' +
+  'for a problem area. When the index is temporarily unavailable the result says so and ' +
+  'names the public docs site.\n' +
   'Parameters:\n' +
   '- category (string, optional): limit to one category.\n' +
   '- sdk (string, optional): Android, iOS or Flutter.\n' +
   'Example: {"category": "Optimization"}';
 
-/** Documentation tools read a bundled index: read-only and closed-world. */
+/** Documentation tools read the in-process index: read-only and closed-world. */
 export const DOCS_TOOL_ANNOTATIONS = {
   readOnlyHint: true,
   destructiveHint: false,

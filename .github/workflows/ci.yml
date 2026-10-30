@@ -26,7 +26,8 @@ jobs:
       - run: npm run docs:validate --workspace packages/server
       - run: npm run build
       - run: npm test
-      # Hosted mode: the image must build and answer /health with the bundled docs index.
+      # Hosted mode: the image must build and answer /health without a docs token (the
+      # documentation tools then point at the public docs site).
       - run: docker build -t nextbillion-mcp:ci .
       - run: |
           cid=$(docker run -d -p 18080:8080 -e NBAI_PUBLIC_URL=http://localhost:18080 nextbillion-mcp:ci)

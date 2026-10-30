@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.3 — 2026-10-30
+
+- `list_documentation_topics` now says "docs last updated YYYY-MM-DD" and returns the field
+  `docs_updated_at` instead of `built_at`. The value is unchanged (the commit date of the
+  documentation the index was built from); the old name led clients to describe it as an
+  index build time and to doubt whether the docs were current. `/health` reports the same
+  renamed field.
+- The 7.5 MB documentation index snapshot is no longer committed or shipped in the image.
+  The hosted server builds its index from the docs repository at start-up as before; if that
+  is not possible, the four documentation tools now answer that the index is temporarily
+  unavailable and give the public docs site (https://docs.nextbillion.ai, with an example
+  page URL) to read instead, plus `docs_site_url` in the structured result, rather than
+  serving a stale copy. Their descriptions mention this. Tests use a small committed fixture
+  (`tests/fixtures/docs-index.json`, 26 pages) built by `npm run docs:build-index`.
+
 ## 0.5.2 — 2026-10-30
 
 - Release pipeline only: CI now authenticates to Google Cloud through Workload Identity

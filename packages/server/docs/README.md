@@ -51,8 +51,14 @@ cd ../.. && npm run build && cd packages/server
 
 Review the diff of the two reports in the PR: a new entry in `files-without-urls.md` means a page was excluded, and growth in `urls-without-files.md` means the site gained pages the repo does not have.
 
-## Index file (`../data/docs-index.json`)
+## The index
 
 Also holds the request parameters extracted from the reference pages' tables (`src/docs/build/parameters.ts`): the `| Name | Required | Format and Usage | Description |` query-parameter layout, `| Field | Type | Description |` request bodies and the `| Parameter | Type / Location | Description |` guide layout. Response tables and SDK pages are skipped. The endpoint id is `<api-slug>[/<variant>]`, with the variant taken from the page slug and the non-generic headings above the table (`directions/flexible`, `distance-matrix/asynchronous-fast`, `geofence/create`). Units are taken only from the docs' wording ("in seconds", "unix timestamp"); `null` otherwise.
 
-Built by `npm run docs:build-index -- --docs <clone>` from the pinned commit; deterministic for a given commit. Plain chunks with page metadata, no prebuilt term index (ranking changes do not need a docs rebuild). The server resolves it at `../data/docs-index.json` relative to its bundle (the Docker image copies it next to `dist/`). `NBAI_DOCS_INDEX=<path>` overrides the location (tests and experiments only).
+The index is not stored anywhere: the running server builds it in memory from the docs
+repository when it starts and rebuilds it whenever the repository changes. The only copy in
+this repository is a small sample for the tests, `../tests/fixtures/docs-index.json` (26 pages
+listed in `../tests/fixtures/docs-fixture-pages.txt`). `npm run docs:build-index -- --docs <clone>`
+regenerates that sample from the pinned commit; it builds the full index first, for the integrity
+checks and the missing-units report, then writes only the listed pages. Deterministic for a given
+commit. Plain chunks with page metadata, no prebuilt term index (ranking changes do not need a docs rebuild). The server resolves it at `../data/docs-index.json` relative to its bundle (the Docker image copies it next to `dist/`). `NBAI_DOCS_INDEX=<path>` overrides the location (tests and experiments only).

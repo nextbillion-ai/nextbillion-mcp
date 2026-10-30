@@ -4,11 +4,11 @@
  * Hosted mode (`configureDocsIndex({ github })`): the index is rebuilt in-process from the
  * docs repository on GitHub — at start, and again whenever `main` moves (checked every few
  * minutes with a conditional request). A rebuild takes about a second and is swapped in
- * atomically; the copy baked into the image (`data/docs-index.json`) is only the fallback
- * when GitHub cannot be reached at start; tests read that bundled copy.
+ * atomically. Nothing is bundled: until the first build succeeds the documentation tools
+ * answer that the index is unavailable and point at the public docs site, and the periodic
+ * refresh keeps trying. Tests load a small fixture with `configureDocsIndex({ file })`.
  */
-import { existsSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { logError, logInfo } from '../log.js';
 import { Bm25Field } from './bm25.js';
 import { buildDocsIndexFile } from './builder.js';
@@ -36,20 +36,8 @@ export interface DocsIndex {
   endpoints: ReadonlyArray<string>;
 }
 
-/**
- * The index file next to this module: `../data/` next to the bundled `dist/index.js`
- * (the Docker image) and `../../data/` when running from `src/` under
- * tsx or vitest. `NBAI_DOCS_INDEX` overrides it (tests and experiments).
- */
-export function bundledIndexPath(): string | undefined {
-  const override = process.env.NBAI_DOCS_INDEX?.trim();
-  if (override) return override;
-  for (const relative of ['../data/docs-index.json', '../../data/docs-index.json']) {
-    const candidate = fileURLToPath(new URL(relative, import.meta.url));
-    if (existsSync(candidate)) return candidate;
-  }
-  return undefined;
-}
+/** The public documentation site, offered as the alternative when no index is available. */
+export const DOCS_SITE_URL = 'https://docs.nextbillion.ai';
 
 export function buildDocsIndex(file: DocsIndexFile): DocsIndex {
   const pages = new Map(file.pages.map((p) => [p.doc_id, p] as const));
@@ -84,13 +72,13 @@ export function loadDocsIndex(path: string): DocsIndex {
 }
 
 export interface DocsIndexOptions {
-  /** Rebuild from this repository (hosted mode). Absent = the bundled file only. */
+  /** Rebuild from this repository (hosted mode). */
   github?: GitHubDocsSource;
-  /** Fall back to the bundled file when GitHub is unreachable (default true). */
-  allowBundled?: boolean;
+  /** Load a prebuilt index file instead (tests). Ignored when `github` is set. */
+  file?: string;
 }
 
-export type DocsOrigin = 'github' | 'bundled' | 'none';
+export type DocsOrigin = 'github' | 'file' | 'none';
 
 let options: DocsIndexOptions = {};
 let cached: DocsIndex | undefined;
@@ -118,12 +106,14 @@ export function configureDocsIndex(next: DocsIndexOptions): void {
 export function docsIndexInfo(): {
   origin: DocsOrigin;
   commit_sha?: string;
-  built_at?: string;
+  docs_updated_at?: string;
   last_error?: string;
 } {
   return {
     origin,
-    ...(cached ? { commit_sha: cached.meta.commit_sha, built_at: cached.meta.built_at } : {}),
+    ...(cached
+      ? { commit_sha: cached.meta.commit_sha, docs_updated_at: cached.meta.docs_updated_at }
+      : {}),
     ...(lastError ? { last_error: lastError } : {}),
   };
 }
@@ -134,7 +124,7 @@ async function rebuildFromGitHub(github: GitHubDocsSource): Promise<void> {
   const { index, problems, skipped } = buildDocsIndexFile({
     files: snapshot.files,
     commitSha: snapshot.commitSha,
-    builtAt: snapshot.commitDate ?? new Date().toISOString(),
+    docsUpdatedAt: snapshot.commitDate ?? new Date().toISOString(),
   });
   if (problems.length > 0) {
     throw new Error(`index integrity: ${problems.length} problem(s), first: ${problems[0]}`);
@@ -177,33 +167,25 @@ export function refreshDocsIndex(): Promise<RefreshOutcome> {
 }
 
 /**
- * Hosted start-up: build from GitHub once; fall back to the bundled copy if that fails so
- * the service still starts. Returns when an index (of either origin) is in place.
+ * Hosted start-up: build from GitHub once. The service starts either way; when the build
+ * fails the documentation tools report the index as unavailable until a refresh succeeds.
  */
 export function startDocsIndex(): Promise<void> {
   firstBuild ??= (async () => {
     const outcome = await refreshDocsIndex();
     if (outcome.status === 'rebuilt' || cached) return;
-    loadBundledFallback(outcome.error);
+    logError(
+      'documentation index: not available at start; the documentation tools will point at ' +
+        `${DOCS_SITE_URL} until a refresh succeeds`,
+    );
   })();
   return firstBuild;
 }
 
-function loadBundledFallback(reason?: string): void {
-  const bundled = options.allowBundled === false ? undefined : bundledIndexPath();
-  if (!bundled) {
-    throw new DocsUnavailableError(reason);
-  }
-  cached = loadDocsIndex(bundled);
-  origin = 'bundled';
-  if (reason) {
-    logError(
-      `documentation index: using the bundled copy (${cached.meta.commit_sha.slice(0, 7)}) until GitHub is reachable`,
-    );
-  }
-}
-
-/** The process-wide index. Without a GitHub source: the bundled file. Otherwise see startDocsIndex. */
+/**
+ * The process-wide index: from GitHub (hosted), from a file (tests), or a
+ * DocsUnavailableError that names the public docs site as the alternative.
+ */
 export async function getDocsIndex(): Promise<DocsIndex> {
   if (cached) return cached;
   if (options.github) {
@@ -211,18 +193,29 @@ export async function getDocsIndex(): Promise<DocsIndex> {
     if (cached) return cached;
     throw new DocsUnavailableError(lastError);
   }
-  loadBundledFallback();
-  return cached!;
+  if (options.file) {
+    cached = loadDocsIndex(options.file);
+    origin = 'file';
+    return cached;
+  }
+  throw new DocsUnavailableError('no documentation source is configured');
 }
 
-/** Thrown by the documentation tools when no index could be obtained at all. */
+/**
+ * Thrown by the documentation tools when no index could be obtained. The message is what
+ * the model reads, so it says where the documentation can be read instead.
+ */
 export class DocsUnavailableError extends Error {
+  readonly reason: string | undefined;
   constructor(reason?: string) {
     super(
-      'The documentation is not available right now' +
+      'The documentation index is temporarily unavailable' +
         (reason ? ` (${reason})` : '') +
-        '. The API tools are unaffected; please try again in a few minutes.',
+        `. Read the documentation directly at ${DOCS_SITE_URL} instead, for example ` +
+        `${DOCS_SITE_URL}/routing/directions-api for the Directions API; the index usually ` +
+        'returns within a few minutes. The API tools are unaffected.',
     );
     this.name = 'DocsUnavailableError';
+    this.reason = reason;
   }
 }

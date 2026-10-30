@@ -7,7 +7,7 @@ const file: DocsIndexFile = {
   meta: {
     format: 2,
     commit_sha: 'abc1234',
-    built_at: '2026-10-07',
+    docs_updated_at: '2026-10-07',
     pages: 3,
     chunks: 6,
     parameters: 0,

@@ -61,7 +61,7 @@ export function apiKeyFromAuth(auth: AuthInfo | undefined): string | undefined {
 
 /**
  * Tools that call the NextBillion.ai API need the caller's key; the documentation tools
- * (closed world, bundled index) do not. The split follows the annotations the tools already
+ * (closed world, in-process index) do not. The split follows the annotations the tools already
  * declare, so a new API tool is protected without a second list to maintain.
  */
 export function protectedToolNames(tools: ReadonlyArray<NbTool>): ReadonlySet<string> {

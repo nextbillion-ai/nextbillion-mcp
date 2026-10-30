@@ -51,7 +51,6 @@ function main(): void {
         '  NBAI_DOCS_REPO    (optional) owner/name, default nextbillion-ai/nb-public-docs\n' +
         '  NBAI_DOCS_REF     (optional) branch, default main\n' +
         '  NBAI_DOCS_REFRESH_MINUTES (optional) how often to check, default 10; 0 = once at start\n' +
-        '  NBAI_DOCS_INDEX   (optional) path to a local documentation index (tests)\n' +
         '  NBAI_BASE_URL     (optional) API base URL, default https://api.nextbillion.io\n' +
         '  NBAI_TIMEOUT_MS   (optional) per-request timeout, default 30000\n',
     );
@@ -96,15 +95,15 @@ async function serveHttp(): Promise<void> {
   }
 
   // Documentation: rebuilt in-process from the docs repository at start and whenever its
-  // main branch moves (checked every NBAI_DOCS_REFRESH_MINUTES); the image copy is the
-  // fallback. See docs/store.ts.
+  // main branch moves (checked every NBAI_DOCS_REFRESH_MINUTES). Nothing is bundled: until
+  // a build succeeds the documentation tools point at the public docs site. See docs/store.ts.
   const docsRepo = process.env.NBAI_DOCS_REPO?.trim() || 'nextbillion-ai/nb-public-docs';
   const docsToken = process.env.NBAI_DOCS_GITHUB_TOKEN?.trim() || undefined;
   const refreshMinutes = Number(process.env.NBAI_DOCS_REFRESH_MINUTES ?? 10);
   if (!docsToken) {
     logError(
-      'NBAI_DOCS_GITHUB_TOKEN is not set: the documentation index cannot follow the docs repository; ' +
-        'serving the copy built into the image',
+      'NBAI_DOCS_GITHUB_TOKEN is not set: no documentation index; the documentation tools ' +
+        'will point at the public docs site',
     );
   }
   configureDocsIndex(

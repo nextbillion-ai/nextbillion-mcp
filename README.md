@@ -147,8 +147,8 @@ privacy policy at https://nextbillion.ai/privacy.
   - `src/nbclient/` — shared NextBillion HTTP client (auth, timeout, retry, key redaction)
   - `src/http/` — Streamable HTTP app, bearer verification, the OAuth authorization server
   - `src/docs/` — documentation index: builder (from the docs repository), BM25 search, GitHub reader
-  - `data/docs-index.json` — snapshot of the index built into the image, the fallback when
-    the docs repository is unreachable at start
+  - `tests/fixtures/docs-index.json` — small committed sample of the index (the pages the
+    tests depend on); the hosted server builds the full index in-process at start-up.
 - `distributions/` — client setup: the Claude Code and Codex plugins (URL only, no code) and
   snippets for Cursor and manual configuration.
 - `Dockerfile`, `.github/workflows/ci.yml` — image build; release tags push the image and
