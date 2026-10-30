@@ -2,6 +2,7 @@ import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildDocsIndexFile, isDocsPage } from '../../src/docs/builder.js';
 import { fetchSnapshot, latestCommit, readTar } from '../../src/docs/github.js';
+import { DOCS_FIXTURE } from '../setup.js';
 import {
   configureDocsIndex,
   docsIndexInfo,
@@ -124,7 +125,6 @@ describe('hosted index lifecycle', () => {
     const gh = github(['c1']);
     configureDocsIndex({
       github: { repo: 'owner/repo', ref: 'main', fetchFn: gh.fetchFn },
-      allowBundled: false,
     });
     await startDocsIndex();
     expect(docsIndexInfo()).toMatchObject({ origin: 'github', commit_sha: 'c1' });
@@ -142,7 +142,6 @@ describe('hosted index lifecycle', () => {
     const gh = github(['c1']);
     configureDocsIndex({
       github: { repo: 'owner/repo', ref: 'main', fetchFn: gh.fetchFn },
-      allowBundled: false,
     });
     await startDocsIndex();
     gh.breakNetwork();
@@ -151,20 +150,10 @@ describe('hosted index lifecycle', () => {
     expect(docsIndexInfo().last_error).toMatch(/boom/);
   });
 
-  it('falls back to the bundled copy when GitHub is unreachable at start', async () => {
-    configureDocsIndex({
-      github: {
-        repo: 'owner/repo',
-        ref: 'main',
-        fetchFn: async () => {
-          throw new Error('ENOTFOUND api.github.com');
-        },
-      },
-    });
-    await startDocsIndex();
-    expect(docsIndexInfo()).toMatchObject({ origin: 'bundled' });
-    expect(docsIndexInfo().last_error).toMatch(/ENOTFOUND/);
-    expect((await getDocsIndex()).pageList.length).toBeGreaterThan(100);
+  it('serves a configured index file and reports its origin', async () => {
+    configureDocsIndex({ file: DOCS_FIXTURE });
+    expect((await getDocsIndex()).pageList.length).toBeGreaterThan(20);
+    expect(docsIndexInfo()).toMatchObject({ origin: 'file' });
   });
 
   it('explains itself when nothing is available', async () => {
@@ -176,10 +165,11 @@ describe('hosted index lifecycle', () => {
           throw new Error('ENOTFOUND api.github.com');
         },
       },
-      allowBundled: false,
     });
+    await startDocsIndex();
+    expect(docsIndexInfo()).toMatchObject({ origin: 'none' });
     await expect(getDocsIndex()).rejects.toThrow(
-      /documentation is not available right now \(ENOTFOUND/,
+      /index is temporarily unavailable \(ENOTFOUND.*https:\/\/docs\.nextbillion\.ai/,
     );
   });
 });

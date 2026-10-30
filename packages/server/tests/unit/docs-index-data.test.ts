@@ -6,20 +6,22 @@ import type { DocsIndexFile } from '../../src/docs/types.js';
 import { ALL_TOOLS } from '../../src/tools/index.js';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const index = JSON.parse(readFileSync(`${root}data/docs-index.json`, 'utf8')) as DocsIndexFile;
+const index = JSON.parse(
+  readFileSync(`${root}tests/fixtures/docs-index.json`, 'utf8'),
+) as DocsIndexFile;
 const pin = JSON.parse(readFileSync(`${root}docs/docs-pin.json`, 'utf8')) as { commit: string };
 const pageIds = new Set(index.pages.map((p) => p.doc_id));
 
-describe('committed documentation index', () => {
+describe('committed documentation fixture', () => {
   it('was built from the pinned docs commit and is internally consistent', () => {
     expect(index.meta.format).toBe(2);
     expect(index.meta.parameters).toBe(index.parameters.length);
-    expect(index.parameters.length).toBeGreaterThan(500);
+    expect(index.parameters.length).toBeGreaterThan(200);
     for (const p of index.parameters) expect(pageIds.has(p.doc_id), p.endpoint).toBe(true);
     expect(index.meta.commit_sha).toBe(pin.commit);
     expect(index.meta.pages).toBe(index.pages.length);
     expect(index.meta.chunks).toBe(index.chunks.length);
-    expect(index.pages.length).toBeGreaterThan(300);
+    expect(index.pages.length).toBeGreaterThan(20);
     expect(new Set(index.chunks.map((c) => c.chunk_id)).size).toBe(index.chunks.length);
     expect(pageIds.size).toBe(index.pages.length);
   });

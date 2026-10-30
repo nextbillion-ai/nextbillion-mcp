@@ -51,8 +51,8 @@ cd ../.. && npm run build && cd packages/server
 
 Review the diff of the two reports in the PR: a new entry in `files-without-urls.md` means a page was excluded, and growth in `urls-without-files.md` means the site gained pages the repo does not have.
 
-## Index file (`../data/docs-index.json`)
+## Index (built in-process; `../tests/fixtures/docs-index.json` is the committed sample)
 
 Also holds the request parameters extracted from the reference pages' tables (`src/docs/build/parameters.ts`): the `| Name | Required | Format and Usage | Description |` query-parameter layout, `| Field | Type | Description |` request bodies and the `| Parameter | Type / Location | Description |` guide layout. Response tables and SDK pages are skipped. The endpoint id is `<api-slug>[/<variant>]`, with the variant taken from the page slug and the non-generic headings above the table (`directions/flexible`, `distance-matrix/asynchronous-fast`, `geofence/create`). Units are taken only from the docs' wording ("in seconds", "unix timestamp"); `null` otherwise.
 
-Built by `npm run docs:build-index -- --docs <clone>` from the pinned commit; deterministic for a given commit. Plain chunks with page metadata, no prebuilt term index (ranking changes do not need a docs rebuild). The server resolves it at `../data/docs-index.json` relative to its bundle (the Docker image copies it next to `dist/`). `NBAI_DOCS_INDEX=<path>` overrides the location (tests and experiments only).
+The hosted server builds the full index from the docs repository at start-up. `npm run docs:build-index -- --docs <clone>` builds it from the pinned commit for the integrity checks and the missing-units report, then writes only the pages listed in `../tests/fixtures/docs-fixture-pages.txt` to the test fixture; deterministic for a given commit. Plain chunks with page metadata, no prebuilt term index (ranking changes do not need a docs rebuild). The server resolves it at `../data/docs-index.json` relative to its bundle (the Docker image copies it next to `dist/`). `NBAI_DOCS_INDEX=<path>` overrides the location (tests and experiments only).

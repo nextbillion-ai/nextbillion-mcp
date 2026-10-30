@@ -1,5 +1,6 @@
 /**
- * Shape of the packed documentation index (`data/docs-index.json`), the only thing that
+ * Shape of the packed documentation index (built in-process; tests/fixtures/docs-index.json
+ * is a small committed sample), the only thing that
  * crosses from build time (scripts/docs/build-index.ts) to runtime (src/docs/*).
  * Plain chunks, no prebuilt term index: ranking can change without a docs rebuild.
  */

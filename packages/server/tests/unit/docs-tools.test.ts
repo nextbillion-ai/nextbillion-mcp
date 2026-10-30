@@ -8,7 +8,9 @@ import {
 import { listDocumentationTopics } from '../../src/tools/docs/list-documentation-topics.js';
 import { searchDocumentation } from '../../src/tools/docs/search-documentation.js';
 import { ToolInputError } from '../../src/tools/types.js';
+import { configureDocsIndex } from '../../src/docs/store.js';
 import { fakeNbClient } from '../helpers/fake-fetch.js';
+import { DOCS_FIXTURE } from '../setup.js';
 
 const nb = fakeNbClient({ responses: [] }).nb;
 type Structured = Record<string, any>;
@@ -109,7 +111,7 @@ describe('get_documentation', () => {
   });
 
   it('truncates oversized pages with the section list first and serves one section', async () => {
-    const id = 'optimization/route-optimization-api/route-optimization-api';
+    const id = 'tracking/geofence-api/geofence-api';
     const big = await run(getDocumentation, { doc_id: id });
     expect(big.data.total_chars).toBeGreaterThan(MAX_PAGE_CHARS * PAGE_OVERSHOOT);
     expect(big.data.truncated).toBe(true);
@@ -222,5 +224,39 @@ describe('get_api_parameters', () => {
     const docId = await run(getApiParameters, { doc_id: 'nope/missing' });
     expect(docId.data.found).toBe(false);
     await expect(getApiParameters.run({}, nb)).rejects.toBeInstanceOf(ToolInputError);
+  });
+});
+
+describe('documentation tools without an index', () => {
+  it('answer with the public docs site instead of an error', async () => {
+    configureDocsIndex({});
+    try {
+      for (const tool of [
+        searchDocumentation,
+        getDocumentation,
+        getApiParameters,
+        listDocumentationTopics,
+      ]) {
+        const result = await tool.run(
+          {
+            query: 'directions',
+            doc_id: 'routing/directions-api/directions-api',
+            endpoint: 'directions',
+          },
+          nb,
+        );
+        expect(result.isError, tool.name).toBeUndefined();
+        expect(result.content[0]!.text, tool.name).toContain('temporarily unavailable');
+        expect(result.content[0]!.text, tool.name).toContain(
+          'https://docs.nextbillion.ai/routing/directions-api',
+        );
+        expect(result.structuredContent, tool.name).toMatchObject({
+          available: false,
+          docs_site_url: 'https://docs.nextbillion.ai',
+        });
+      }
+    } finally {
+      configureDocsIndex({ file: DOCS_FIXTURE });
+    }
   });
 });
