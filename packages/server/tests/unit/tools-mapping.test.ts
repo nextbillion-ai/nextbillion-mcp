@@ -685,3 +685,82 @@ describe('static map parameter mapping', () => {
     ).rejects.toBeInstanceOf(ToolInputError);
   });
 });
+
+describe('0.5.1 freight network (truck_route) options', () => {
+  const od = {
+    origin: { latitude: -37.8136, longitude: 144.9631 },
+    destination: { latitude: -33.8688, longitude: 151.2093 },
+  };
+
+  it('directions passes prefer, require and pipe-joined truck_type through', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { routes: [] } }] });
+    await directions.run(
+      {
+        ...od,
+        mode: 'truck',
+        prefer: 'truck_route',
+        require: 'truck_route',
+        truck_type: ['b_double', 'road_train'],
+      },
+      nb,
+    );
+    expect(requests[0]!.body).toMatchObject({
+      mode: 'truck',
+      prefer: 'truck_route',
+      require: 'truck_route',
+      truck_type: 'b_double|road_train',
+    });
+  });
+
+  it('directions omits the freight network fields when unused', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { routes: [] } }] });
+    await directions.run({ ...od, mode: 'truck' }, nb);
+    expect(requests[0]!.body).not.toHaveProperty('prefer');
+    expect(requests[0]!.body).not.toHaveProperty('require');
+    expect(requests[0]!.body).not.toHaveProperty('truck_type');
+  });
+
+  it('directions rejects combinations the API would silently ignore', async () => {
+    const { nb, requests } = fakeNbClient();
+    // truck_type without prefer: the API routes a generic truck without saying so.
+    await expect(
+      directions.run({ ...od, mode: 'truck', truck_type: ['b_double'] }, nb),
+    ).rejects.toThrow(/prefer/);
+    // require without prefer.
+    await expect(
+      directions.run({ ...od, mode: 'truck', require: 'truck_route' }, nb),
+    ).rejects.toThrow(/prefer/);
+    // prefer outside truck mode / outside the flexible service.
+    await expect(directions.run({ ...od, prefer: 'truck_route' }, nb)).rejects.toThrow(/truck/);
+    await expect(
+      directions.run({ ...od, mode: 'truck', service: 'fast', prefer: 'truck_route' }, nb),
+    ).rejects.toBeInstanceOf(ToolInputError);
+    expect(requests).toHaveLength(0);
+  });
+
+  it('distance_matrix passes prefer and truck_type through and applies the same checks', async () => {
+    const { nb, requests } = fakeNbClient({ responses: [{ body: { rows: [] } }] });
+    const base = { origins: [od.origin], destinations: [od.destination] };
+    await distanceMatrix.run(
+      {
+        ...base,
+        service: 'flexible',
+        mode: 'truck',
+        prefer: 'truck_route',
+        truck_type: ['semi_trailer'],
+      },
+      nb,
+    );
+    expect(requests[0]!.body).toMatchObject({ prefer: 'truck_route', truck_type: 'semi_trailer' });
+    await expect(
+      distanceMatrix.run(
+        { ...base, service: 'flexible', mode: 'truck', truck_type: ['semi_trailer'] },
+        nb,
+      ),
+    ).rejects.toThrow(/prefer/);
+    // The matrix defaults to the fast service, where the freight network is not available.
+    await expect(
+      distanceMatrix.run({ ...base, mode: 'truck', prefer: 'truck_route' }, nb),
+    ).rejects.toThrow(/flexible/);
+  });
+});
