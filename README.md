@@ -141,7 +141,9 @@ privacy policy at https://nextbillion.ai/privacy.
 
 ## Repository layout
 
-- `packages/server/` — the server (not published to npm since 0.4; it ships as a container).
+- `packages/server/` — the server (ships as a container; not published to npm since 0.4. The old
+  npm package `nextbillion-mcp`, last version 0.3.2, is marked deprecated on npm since 2026-11-12
+  and points at the hosted server).
   - `src/core/` — server assembly (spec compliance, error mapping)
   - `src/tools/` — one file per tool, grouped by product (places / routing / maps / docs)
   - `src/nbclient/` — shared NextBillion HTTP client (auth, timeout, retry, key redaction)
