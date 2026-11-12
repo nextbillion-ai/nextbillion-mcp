@@ -49,6 +49,7 @@ describe('MCP conformance', () => {
       expect(tool.inputSchema, tool.name).toBeTruthy();
       // Documentation tools read the in-process index (closed world); API tools call the live API.
       expect(tool.annotations, tool.name).toMatchObject({
+        title: tool.title,
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,

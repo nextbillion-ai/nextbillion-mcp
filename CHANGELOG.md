@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.4 — 2026-11-12
+
+- Every tool now also advertises its human-readable name as `annotations.title` (the same
+  value as the tool's top-level `title`). The Anthropic connector directory checker reads
+  `annotations.title` and flagged all 27 tools as missing it. No other change.
+
 ## 0.5.3 — 2026-10-30
 
 - `list_documentation_topics` now says "docs last updated YYYY-MM-DD" and returns the field

@@ -12,6 +12,8 @@ export interface ToolResult {
 }
 
 export interface ToolAnnotations {
+  /** Set at registration from `NbTool.title`; directory checkers read `annotations.title`. */
+  title?: string;
   readOnlyHint?: boolean;
   destructiveHint?: boolean;
   idempotentHint?: boolean;
