@@ -36,7 +36,9 @@ export function buildServer(nb: NbClient, version: string): McpServer {
         title: tool.title,
         description: tool.description,
         inputSchema: tool.inputSchema,
-        annotations: tool.annotations,
+        // The human-readable name is advertised both as the tool's top-level `title` and as
+        // `annotations.title`: the Anthropic connector directory checker reads the latter.
+        annotations: { title: tool.title, ...tool.annotations },
       },
       async (args: unknown): Promise<ToolResult> => {
         try {
