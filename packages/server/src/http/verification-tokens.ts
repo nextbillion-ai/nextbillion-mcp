@@ -8,5 +8,5 @@
  */
 export const VERIFICATION_TOKENS: Readonly<Record<string, string>> = {
   // OpenAI plugin directory (ChatGPT / Codex): "Verify Domain" in the submission portal.
-  'openai-apps-challenge': '',
+  'openai-apps-challenge': 'rOvSJtXzU1yZ04aiR9W0JZZAnWi_k3VfdAQTI23TyVQ',
 };
