@@ -9,6 +9,7 @@ import {
   startDocsIndex,
 } from './docs/store.js';
 import { createHttpApp } from './http/app.js';
+import { VERIFICATION_TOKENS } from './http/verification-tokens.js';
 import { startHttpServer } from './http/node-server.js';
 import { KeyRing } from './http/oauth/crypto.js';
 import { defaultKeyCheckUrl, probeApiKey } from './http/oauth/probe.js';
@@ -135,6 +136,7 @@ async function serveHttp(): Promise<void> {
     publicUrl: config.publicUrl,
     issuerUrl: config.issuerUrl,
     docsIndexInfo,
+    verificationTokens: VERIFICATION_TOKENS,
     nbClientFactory: (apiKey) =>
       new NbClient({ apiKey, baseUrl: config.baseUrl, timeoutMs: config.timeoutMs }),
     oauth: {

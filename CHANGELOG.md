@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.5 — 2026-11-13
+
+- Domain-verification tokens: `GET /.well-known/<name>` answers a token as plain text when one
+  is configured in `src/http/verification-tokens.ts` (first use: `openai-apps-challenge`, the
+  OpenAI plugin directory's "Verify Domain" step). Unknown or empty names stay 404. No tool
+  changes.
+
 ## 0.5.4 — 2026-11-12
 
 - Every tool now also advertises its human-readable name as `annotations.title` (the same

@@ -43,6 +43,11 @@ export interface HttpAppOptions {
   };
   /** Extra facts for /health (documentation index version and origin). */
   docsIndexInfo?: () => Record<string, unknown>;
+  /**
+   * Domain-verification tokens: `GET /.well-known/<name>` answers the value as text/plain.
+   * Entries with an empty value are not served. See verification-tokens.ts.
+   */
+  verificationTokens?: Readonly<Record<string, string>>;
 }
 
 const DOCS_URL = 'https://github.com/nextbillion-ai/nextbillion-mcp#readme';
@@ -57,6 +62,7 @@ const JSON_HEADERS = { 'content-type': 'application/json', 'cache-control': 'no-
  * Routes:
  *   GET  /health, /healthz                         liveness (see note on /healthz below)
  *   GET  /.well-known/oauth-protected-resource     RFC 9728 document pointing at the issuer
+ *   GET  /.well-known/<name>                       domain-verification token (verificationTokens)
  *   *    /.well-known/oauth-authorization-server, /oauth/{authorize,token,register}
  *                                                  the built-in authorization server (optional)
  *   *    <publicUrl.pathname>                      the MCP endpoint (both protocol eras)
@@ -113,6 +119,17 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
       if (authServer) {
         const handled = await authServer.handle(request);
         if (handled) return handled;
+      }
+      // After the OAuth routes on purpose: a token named like an OAuth document cannot shadow it.
+      const token = verificationToken(path, options.verificationTokens);
+      if (token !== undefined) {
+        if (request.method !== 'GET' && request.method !== 'HEAD') {
+          return new Response(null, { status: 405, headers: { allow: 'GET' } });
+        }
+        return new Response(token, {
+          status: 200,
+          headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+        });
       }
       if (path !== mcpPath) {
         return json({ error: 'not_found', mcp_endpoint: resource }, 404);
@@ -180,6 +197,17 @@ function json(body: unknown, status = 200): Response {
 }
 
 /** Discovery documents are fetched cross-origin by hosts; answer CORS preflight and GET only. */
+/** The token to serve for `/.well-known/<name>`, or undefined when the path is not one. */
+function verificationToken(
+  path: string,
+  tokens: Readonly<Record<string, string>> | undefined,
+): string | undefined {
+  const name = path.startsWith('/.well-known/') ? path.slice('/.well-known/'.length) : '';
+  if (!name || name.includes('/') || !tokens) return undefined;
+  const token = Object.prototype.hasOwnProperty.call(tokens, name) ? tokens[name] : '';
+  return token ? token : undefined;
+}
+
 function wellKnown(request: Request, document: unknown): Response {
   const cors = {
     'access-control-allow-origin': '*',

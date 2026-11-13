@@ -1,7 +1,9 @@
+import { randomBytes } from 'node:crypto';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createHttpApp } from '../../src/http/app.js';
 import type { FetchApp } from '../../src/http/node-server.js';
+import { KeyRing } from '../../src/http/oauth/crypto.js';
 import { fakeNbClient, type RecordedRequest } from '../helpers/fake-fetch.js';
 
 /**
@@ -70,6 +72,63 @@ describe('hosted HTTP mode', () => {
 
     const missing = await app.fetch(new Request('https://mcp.test/nope'));
     expect(missing.status).toBe(404);
+  });
+
+  it('serves domain-verification tokens as plain text under /.well-known', async () => {
+    const app = createHttpApp({
+      version: '0.0.0-test',
+      publicUrl: PUBLIC_URL,
+      issuerUrl: PUBLIC_URL,
+      nbClientFactory: () => fakeNbClient({ responses: [], apiKey: KEY }).nb,
+      verificationTokens: { 'openai-apps-challenge': 'tok-123', 'empty-one': '' },
+    });
+    open.push(app);
+    const ok = await app.fetch(new Request('https://mcp.test/.well-known/openai-apps-challenge'));
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    expect(await ok.text()).toBe('tok-123');
+    // Exactly the token: no JSON wrapping, no trailing newline.
+    const post = await app.fetch(
+      new Request('https://mcp.test/.well-known/openai-apps-challenge', { method: 'POST' }),
+    );
+    expect(post.status).toBe(405);
+    for (const path of ['/.well-known/empty-one', '/.well-known/unknown', '/.well-known/']) {
+      const res = await app.fetch(new Request(`https://mcp.test${path}`));
+      expect(res.status, path).toBe(404);
+    }
+  });
+
+  it('never lets a verification token shadow the OAuth well-known documents', async () => {
+    const app = createHttpApp({
+      version: '0.0.0-test',
+      publicUrl: PUBLIC_URL,
+      issuerUrl: PUBLIC_URL,
+      nbClientFactory: () => fakeNbClient({ responses: [], apiKey: KEY }).nb,
+      oauth: { keyRing: new KeyRing([randomBytes(32)]) },
+      verificationTokens: {
+        'oauth-authorization-server': 'shadow',
+        'oauth-protected-resource': 'shadow',
+        'openai-apps-challenge': 'tok-123',
+      },
+    });
+    open.push(app);
+    for (const name of ['oauth-authorization-server', 'oauth-protected-resource']) {
+      const url = `https://mcp.test/.well-known/${name}`;
+      const get = await app.fetch(new Request(url));
+      expect(get.status, name).toBe(200);
+      expect(get.headers.get('content-type'), name).toContain('application/json');
+      expect(await get.json(), name).toMatchObject(
+        name === 'oauth-authorization-server'
+          ? { issuer: 'https://mcp.test' }
+          : { resource: 'https://mcp.test' },
+      );
+      const options = await app.fetch(new Request(url, { method: 'OPTIONS' }));
+      expect(options.status, name).toBe(204);
+    }
+    const challenge = await app.fetch(
+      new Request('https://mcp.test/.well-known/openai-apps-challenge'),
+    );
+    expect(await challenge.text()).toBe('tok-123');
   });
 
   it('lets an anonymous host list tools and use the documentation tools', async () => {
