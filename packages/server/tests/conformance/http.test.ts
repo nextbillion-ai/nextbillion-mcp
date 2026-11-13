@@ -72,6 +72,30 @@ describe('hosted HTTP mode', () => {
     expect(missing.status).toBe(404);
   });
 
+  it('serves domain-verification tokens as plain text under /.well-known', async () => {
+    const app = createHttpApp({
+      version: '0.0.0-test',
+      publicUrl: PUBLIC_URL,
+      issuerUrl: PUBLIC_URL,
+      nbClientFactory: () => fakeNbClient({ responses: [], apiKey: KEY }).nb,
+      verificationTokens: { 'openai-apps-challenge': 'tok-123', 'empty-one': '' },
+    });
+    open.push(app);
+    const ok = await app.fetch(new Request('https://mcp.test/.well-known/openai-apps-challenge'));
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    expect(await ok.text()).toBe('tok-123');
+    // Exactly the token: no JSON wrapping, no trailing newline.
+    const post = await app.fetch(
+      new Request('https://mcp.test/.well-known/openai-apps-challenge', { method: 'POST' }),
+    );
+    expect(post.status).toBe(405);
+    for (const path of ['/.well-known/empty-one', '/.well-known/unknown', '/.well-known/']) {
+      const res = await app.fetch(new Request(`https://mcp.test${path}`));
+      expect(res.status, path).toBe(404);
+    }
+  });
+
   it('lets an anonymous host list tools and use the documentation tools', async () => {
     const { app, keysUsed } = makeApp();
     open.push(app);
