@@ -116,6 +116,11 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
       if (path === '/.well-known/oauth-protected-resource') {
         return wellKnown(request, protectedResourceMetadata);
       }
+      if (authServer) {
+        const handled = await authServer.handle(request);
+        if (handled) return handled;
+      }
+      // After the OAuth routes on purpose: a token named like an OAuth document cannot shadow it.
       const token = verificationToken(path, options.verificationTokens);
       if (token !== undefined) {
         if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -125,10 +130,6 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
           status: 200,
           headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
         });
-      }
-      if (authServer) {
-        const handled = await authServer.handle(request);
-        if (handled) return handled;
       }
       if (path !== mcpPath) {
         return json({ error: 'not_found', mcp_endpoint: resource }, 404);
