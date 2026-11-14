@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.6 — 2026-11-14
+
+- Fix: OAuth sign-in stuck on "Connecting…" in Chromium-based browsers when the application
+  redirects again after our hand-back (ChatGPT: chatgpt.com → platform.openai.com). The sign-in
+  page's Content-Security-Policy no longer carries a `form-action` directive: Chromium applies
+  it to every redirect that follows the form submission, so allowing only the registered
+  redirect origin let the first hop through and silently blocked the second. No tool changes.
+
 ## 0.5.5 — 2026-11-13
 
 - Domain-verification tokens: `GET /.well-known/<name>` answers a token as plain text when one
