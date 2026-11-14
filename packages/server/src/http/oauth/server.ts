@@ -252,7 +252,7 @@ export class AuthorizationServer {
         requestToken,
       }),
       200,
-      { redirectUri },
+      true,
     );
   }
 
@@ -300,7 +300,7 @@ export class AuthorizationServer {
           error,
         }),
         400,
-        { redirectUri },
+        true,
       );
     };
 
@@ -440,19 +440,20 @@ function json(body: unknown, status = 200, headers: Record<string, string> = {})
 }
 
 /**
- * Error pages get a locked-down policy. The sign-in page additionally allows its submit
- * script (by hash) and, in `form-action`, the application's redirect URI: Chromium applies
- * `form-action` to the redirect that follows a form submission, so without the registered
- * redirect origin the browser blocks the hand-back to the application after a successful
- * sign-in.
+ * Error pages get a locked-down policy; the sign-in page additionally allows its submit
+ * script (by hash).
+ *
+ * No `form-action` directive, on purpose. Chromium applies `form-action` to every redirect
+ * that follows a form submission, not only to the form's own URL. After a successful sign-in
+ * the browser is sent to the application's redirect URI, and the application may redirect
+ * again to an origin we cannot know (ChatGPT hands off from chatgpt.com to
+ * platform.openai.com). Allowing only the registered redirect origin let the first hop
+ * through and silently blocked the second, leaving the page stuck on "Connecting…".
+ * The page's content is server-rendered and escaped and its script is hash-pinned, so the
+ * directive protected nothing here.
  */
-function html(body: string, status = 200, signIn?: { redirectUri: string }): Response {
-  let formAction = "'self'";
-  let scriptSrc = '';
-  if (signIn) {
-    formAction += ` ${new URL(signIn.redirectUri).origin}`;
-    scriptSrc = `; script-src ${SUBMIT_SCRIPT_CSP_SOURCE}`;
-  }
+function html(body: string, status = 200, signIn = false): Response {
+  const scriptSrc = signIn ? `; script-src ${SUBMIT_SCRIPT_CSP_SOURCE}` : '';
   return new Response(body, {
     status,
     headers: {
@@ -460,7 +461,7 @@ function html(body: string, status = 200, signIn?: { redirectUri: string }): Res
       ...NO_STORE,
       'referrer-policy': 'no-referrer',
       'x-frame-options': 'DENY',
-      'content-security-policy': `default-src 'none'; style-src 'unsafe-inline'${scriptSrc}; form-action ${formAction}; base-uri 'none'`,
+      'content-security-policy': `default-src 'none'; style-src 'unsafe-inline'${scriptSrc}; base-uri 'none'`,
     },
   });
 }

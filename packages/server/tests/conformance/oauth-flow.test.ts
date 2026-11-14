@@ -92,10 +92,12 @@ async function signInInBrowser(h: Harness, authorizationUrl: URL, apiKey: string
   );
   expect(submit.status).toBe(302);
   const location = new URL(submit.headers.get('location')!);
-  // Chromium applies form-action to the post-submit redirect: the app's origin must be allowed,
-  // and the submit-button script is allowed by hash rather than 'unsafe-inline'.
+  // Chromium applies form-action to the whole redirect chain after the submit, and the app
+  // may redirect on to an origin we cannot know (chatgpt.com -> platform.openai.com), so the
+  // page must not carry a form-action directive at all (0.5.6). The submit-button script is
+  // allowed by hash rather than 'unsafe-inline'.
   const csp = page.headers.get('content-security-policy') ?? '';
-  expect(csp).toContain(`form-action 'self' ${location.origin}`);
+  expect(csp).not.toContain('form-action');
   expect(csp).toMatch(/script-src 'sha256-[A-Za-z0-9+/=]+'/);
   expect(body).toContain('<script>');
   return location;
