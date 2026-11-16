@@ -81,7 +81,8 @@ Four tools answer questions about the APIs and SDKs from the official documentat
 ## How the hosted server works
 
 - **The MCP endpoint is the root** of `https://mcp.nextbillion.io` (also the OAuth `resource`).
-  `GET /health` answers liveness and reports the documentation index in use;
+  `GET /health` answers liveness and reports the documentation index in use,
+  `/favicon.ico` and `/icon.png` serve the icon shown next to the server in hosts and directories;
   `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server` serve
   OAuth discovery.
 - **Credentials travel with each request.** There is no server-wide key: every API call uses

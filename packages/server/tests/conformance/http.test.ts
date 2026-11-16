@@ -131,6 +131,68 @@ describe('hosted HTTP mode', () => {
     expect(await challenge.text()).toBe('tok-123');
   });
 
+  it('serves its icon and advertises it in serverInfo', async () => {
+    const { app } = makeApp();
+    open.push(app);
+    const ico = await app.fetch(new Request('https://mcp.test/favicon.ico'));
+    expect(ico.status).toBe(200);
+    expect(ico.headers.get('content-type')).toBe('image/x-icon');
+    expect(ico.headers.get('cache-control')).toBe('public, max-age=86400');
+    expect(ico.headers.get('access-control-allow-origin')).toBe('*');
+    const icoBytes = new Uint8Array(await ico.arrayBuffer());
+    expect(ico.headers.get('content-length')).toBe(String(icoBytes.byteLength));
+    // ICO header: reserved 0, type 1, three images (16, 32 and 48 px).
+    expect(Array.from(icoBytes.subarray(0, 6))).toEqual([0, 0, 1, 0, 3, 0]);
+
+    const png = await app.fetch(new Request('https://mcp.test/icon.png'));
+    expect(png.status).toBe(200);
+    expect(png.headers.get('content-type')).toBe('image/png');
+    const pngBytes = Buffer.from(await png.arrayBuffer());
+    expect(pngBytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    expect([pngBytes.readUInt32BE(16), pngBytes.readUInt32BE(20)]).toEqual([192, 192]);
+
+    const head = await app.fetch(new Request('https://mcp.test/favicon.ico', { method: 'HEAD' }));
+    expect(head.status).toBe(200);
+    const post = await app.fetch(new Request('https://mcp.test/icon.png', { method: 'POST' }));
+    expect(post.status).toBe(405);
+
+    const client = await connect(app);
+    open.push(client);
+    expect(client.getServerVersion()).toMatchObject({
+      name: 'nextbillion-mcp',
+      title: 'NextBillion.ai',
+      version: '0.0.0-test',
+      websiteUrl: 'https://nextbillion.ai',
+      icons: [
+        { src: 'https://mcp.test/icon.png', mimeType: 'image/png', sizes: ['192x192'] },
+        { src: 'https://mcp.test/favicon.ico', mimeType: 'image/x-icon' },
+      ],
+    });
+  });
+
+  it('keeps the icons at the origin root when the MCP endpoint has a path', async () => {
+    const publicUrl = new URL('https://mcp.test/mcp');
+    const app = createHttpApp({
+      version: '0.0.0-test',
+      publicUrl,
+      issuerUrl: publicUrl,
+      nbClientFactory: () => fakeNbClient({ responses: [], apiKey: KEY }).nb,
+    });
+    open.push(app);
+    expect((await app.fetch(new Request('https://mcp.test/favicon.ico'))).status).toBe(200);
+    expect((await app.fetch(new Request('https://mcp.test/mcp/favicon.ico'))).status).toBe(404);
+    const transport = new StreamableHTTPClientTransport(publicUrl, {
+      fetch: (input, init) => app.fetch(new Request(input, init)),
+    });
+    const client = new Client({ name: 'http-conformance', version: '0.0.0' });
+    await client.connect(transport);
+    open.push(client);
+    expect(client.getServerVersion()?.icons?.map((i) => i.src)).toEqual([
+      'https://mcp.test/icon.png',
+      'https://mcp.test/favicon.ico',
+    ]);
+  });
+
   it('lets an anonymous host list tools and use the documentation tools', async () => {
     const { app, keysUsed } = makeApp();
     open.push(app);

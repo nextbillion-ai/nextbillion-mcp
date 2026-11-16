@@ -461,7 +461,7 @@ function html(body: string, status = 200, signIn = false): Response {
       ...NO_STORE,
       'referrer-policy': 'no-referrer',
       'x-frame-options': 'DENY',
-      'content-security-policy': `default-src 'none'; style-src 'unsafe-inline'${scriptSrc}; base-uri 'none'`,
+      'content-security-policy': `default-src 'none'; style-src 'unsafe-inline'; img-src 'self'${scriptSrc}; base-uri 'none'`,
     },
   });
 }

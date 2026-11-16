@@ -100,6 +100,9 @@ async function signInInBrowser(h: Harness, authorizationUrl: URL, apiKey: string
   expect(csp).not.toContain('form-action');
   expect(csp).toMatch(/script-src 'sha256-[A-Za-z0-9+/=]+'/);
   expect(body).toContain('<script>');
+  // The favicon link in the page head is only honoured when img-src allows it (0.5.7).
+  expect(csp).toContain("img-src 'self'");
+  expect(body).toContain('<link rel="icon" href="/favicon.ico">');
   return location;
 }
 
