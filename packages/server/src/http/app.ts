@@ -96,7 +96,8 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
   const handler = createMcpHandler((ctx) => {
     const apiKey = apiKeyFromAuth(ctx.authInfo);
     const nb = apiKey ? options.nbClientFactory(apiKey) : new UnauthenticatedNbClient();
-    return buildServer(nb, options.version, resource);
+    // The icons are served at the origin root, whatever path the MCP endpoint has.
+    return buildServer(nb, options.version, options.publicUrl.origin);
   });
 
   return {

@@ -170,6 +170,29 @@ describe('hosted HTTP mode', () => {
     });
   });
 
+  it('keeps the icons at the origin root when the MCP endpoint has a path', async () => {
+    const publicUrl = new URL('https://mcp.test/mcp');
+    const app = createHttpApp({
+      version: '0.0.0-test',
+      publicUrl,
+      issuerUrl: publicUrl,
+      nbClientFactory: () => fakeNbClient({ responses: [], apiKey: KEY }).nb,
+    });
+    open.push(app);
+    expect((await app.fetch(new Request('https://mcp.test/favicon.ico'))).status).toBe(200);
+    expect((await app.fetch(new Request('https://mcp.test/mcp/favicon.ico'))).status).toBe(404);
+    const transport = new StreamableHTTPClientTransport(publicUrl, {
+      fetch: (input, init) => app.fetch(new Request(input, init)),
+    });
+    const client = new Client({ name: 'http-conformance', version: '0.0.0' });
+    await client.connect(transport);
+    open.push(client);
+    expect(client.getServerVersion()?.icons?.map((i) => i.src)).toEqual([
+      'https://mcp.test/icon.png',
+      'https://mcp.test/favicon.ico',
+    ]);
+  });
+
   it('lets an anonymous host list tools and use the documentation tools', async () => {
     const { app, keysUsed } = makeApp();
     open.push(app);
