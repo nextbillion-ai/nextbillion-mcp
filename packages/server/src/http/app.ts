@@ -6,6 +6,7 @@ import {
   type OAuthTokenVerifier,
 } from '@modelcontextprotocol/server';
 import { buildServer } from '../core/server.js';
+import { FAVICON_ICO, ICON_PNG } from './icons.js';
 import type { NbClient } from '../nbclient/client.js';
 import { UnauthenticatedNbClient } from '../nbclient/unauthenticated.js';
 import { ALL_TOOLS } from '../tools/index.js';
@@ -61,6 +62,7 @@ const JSON_HEADERS = { 'content-type': 'application/json', 'cache-control': 'no-
  *
  * Routes:
  *   GET  /health, /healthz                         liveness (see note on /healthz below)
+ *   GET  /favicon.ico, /icon.png                   the server's icon (icons.ts)
  *   GET  /.well-known/oauth-protected-resource     RFC 9728 document pointing at the issuer
  *   GET  /.well-known/<name>                       domain-verification token (verificationTokens)
  *   *    /.well-known/oauth-authorization-server, /oauth/{authorize,token,register}
@@ -94,7 +96,7 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
   const handler = createMcpHandler((ctx) => {
     const apiKey = apiKeyFromAuth(ctx.authInfo);
     const nb = apiKey ? options.nbClientFactory(apiKey) : new UnauthenticatedNbClient();
-    return buildServer(nb, options.version);
+    return buildServer(nb, options.version, resource);
   });
 
   return {
@@ -116,6 +118,9 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
       if (path === '/.well-known/oauth-protected-resource') {
         return wellKnown(request, protectedResourceMetadata);
       }
+      // Directories and hosts show the favicon of the server URL next to the server name.
+      if (path === '/favicon.ico') return icon(request, FAVICON_ICO, 'image/x-icon');
+      if (path === '/icon.png') return icon(request, ICON_PNG, 'image/png');
       if (authServer) {
         const handled = await authServer.handle(request);
         if (handled) return handled;
@@ -194,6 +199,22 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
+}
+
+/** A static image. Cacheable for a day and fetchable cross-origin (hosts render it in a web UI). */
+function icon(request: Request, bytes: Uint8Array<ArrayBuffer>, contentType: string): Response {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response(null, { status: 405, headers: { allow: 'GET, HEAD' } });
+  }
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      'content-type': contentType,
+      'content-length': String(bytes.byteLength),
+      'cache-control': 'public, max-age=86400',
+      'access-control-allow-origin': '*',
+    },
+  });
 }
 
 /** Discovery documents are fetched cross-origin by hosts; answer CORS preflight and GET only. */

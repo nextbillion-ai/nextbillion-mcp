@@ -56,7 +56,7 @@ export function renderSignInPage(o: SignInPageOptions): string {
     : `<p class="muted">You will be returned to <code>${escapeHtml(o.redirectHost)}</code> after signing in.</p>`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex"><title>Connect NextBillion.ai</title><style>${STYLE}</style></head>
+<meta name="robots" content="noindex"><link rel="icon" href="/favicon.ico"><title>Connect NextBillion.ai</title><style>${STYLE}</style></head>
 <body><main>
 <h1>Connect NextBillion.ai</h1>
 <div class="app"><strong>${app}</strong> would like to access NextBillion.ai on your behalf.</div>
@@ -77,7 +77,7 @@ ${o.error ? `<div class="error">${escapeHtml(o.error)}</div>` : ''}
 export function renderErrorPage(title: string, detail: string): string {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex"><title>${escapeHtml(title)}</title><style>${STYLE}</style></head>
+<meta name="robots" content="noindex"><link rel="icon" href="/favicon.ico"><title>${escapeHtml(title)}</title><style>${STYLE}</style></head>
 <body><main><h1>${escapeHtml(title)}</h1><p>${escapeHtml(detail)}</p>
 <p class="muted">Close this window and start the connection again from your application. If the problem continues, contact support@nextbillion.ai.</p></main></body></html>`;
 }

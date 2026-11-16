@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.7 — 2026-11-16
+
+- The server now has an icon: `GET /favicon.ico` (16/32/48 px) and `GET /icon.png` (192 px)
+  serve the NextBillion.ai logo, `serverInfo` advertises them as `icons` together with `title`
+  and `websiteUrl`, and the sign-in page links the favicon. Connector directories and hosts
+  (Claude, ChatGPT) show the favicon of the server URL next to the server name; until now they
+  showed a generic letter. No tool changes.
+
 ## 0.5.6 — 2026-11-14
 
 - Fix: OAuth sign-in stuck on "Connecting…" in Chromium-based browsers when the application

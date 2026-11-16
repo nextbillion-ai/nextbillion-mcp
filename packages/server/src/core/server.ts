@@ -7,19 +7,33 @@ import { logError } from '../log.js';
 import { SERVER_INSTRUCTIONS } from '../tools/docs/descriptions.js';
 
 export const SERVER_NAME = 'nextbillion-mcp';
+export const SERVER_TITLE = 'NextBillion.ai';
+export const WEBSITE_URL = 'https://nextbillion.ai';
 
 /**
  * Build one McpServer instance wired to the given NextBillion API client.
  * Used as the per-request factory by the HTTP handler (one instance per request).
+ * With `publicUrl` (origin, no trailing slash) the server also advertises its icons, which
+ * the HTTP app serves at `/favicon.ico` and `/icon.png` (see http/icons.ts).
  *
  * 2026-07-28 spec notes: the SDK provides server/discover, per-request _meta
  * validation, and resultType stamping. The deprecated Roots/Sampling/Logging
  * features are intentionally not implemented. The tool list is static, so
  * tools/list advertises a 24h public cache hint.
  */
-export function buildServer(nb: NbClient, version: string): McpServer {
+export function buildServer(nb: NbClient, version: string, publicUrl?: string): McpServer {
+  const icons = publicUrl
+    ? [
+        { src: `${publicUrl}/icon.png`, mimeType: 'image/png', sizes: ['192x192'] },
+        {
+          src: `${publicUrl}/favicon.ico`,
+          mimeType: 'image/x-icon',
+          sizes: ['16x16', '32x32', '48x48'],
+        },
+      ]
+    : undefined;
   const server = new McpServer(
-    { name: SERVER_NAME, version },
+    { name: SERVER_NAME, title: SERVER_TITLE, version, websiteUrl: WEBSITE_URL, icons },
     {
       capabilities: { tools: {} },
       instructions: SERVER_INSTRUCTIONS,
