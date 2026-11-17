@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.8 — 2026-11-17
+
+- The server root (`GET /`, and the MCP endpoint when a browser opens it) now serves a small
+  HTML landing page that links `/favicon.ico` and `/icon.png`. Favicon services and connector
+  directories open the root URL and look for `<link rel="icon">`; until now they got plain
+  text or a 405 unless they asked for HTML explicitly. Hosts are unaffected: a GET for the
+  event stream still gets 405. No tool changes.
+
 ## 0.5.7 — 2026-11-16
 
 - The server now has an icon: `GET /favicon.ico` (16/32/48 px) and `GET /icon.png` (192 px)

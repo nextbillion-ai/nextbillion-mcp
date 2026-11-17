@@ -7,6 +7,7 @@ import {
 } from '@modelcontextprotocol/server';
 import { buildServer } from '../core/server.js';
 import { FAVICON_ICO, ICON_PNG } from './icons.js';
+import { DOCS_URL, landingPage } from './landing.js';
 import type { NbClient } from '../nbclient/client.js';
 import { UnauthenticatedNbClient } from '../nbclient/unauthenticated.js';
 import { ALL_TOOLS } from '../tools/index.js';
@@ -51,7 +52,6 @@ export interface HttpAppOptions {
   verificationTokens?: Readonly<Record<string, string>>;
 }
 
-const DOCS_URL = 'https://github.com/nextbillion-ai/nextbillion-mcp#readme';
 const JSON_HEADERS = { 'content-type': 'application/json', 'cache-control': 'no-store' };
 
 /**
@@ -63,6 +63,7 @@ const JSON_HEADERS = { 'content-type': 'application/json', 'cache-control': 'no-
  * Routes:
  *   GET  /health, /healthz                         liveness (see note on /healthz below)
  *   GET  /favicon.ico, /icon.png                   the server's icon (icons.ts)
+ *   GET  /                                         HTML landing page linking the icon (landing.ts)
  *   GET  /.well-known/oauth-protected-resource     RFC 9728 document pointing at the issuer
  *   GET  /.well-known/<name>                       domain-verification token (verificationTokens)
  *   *    /.well-known/oauth-authorization-server, /oauth/{authorize,token,register}
@@ -137,15 +138,22 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
           headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
         });
       }
+      // A browser or crawler opening the root (or the endpoint) gets an HTML page that links
+      // the icon. A host opening the endpoint's event stream asks for text/event-stream and
+      // goes to the transport instead, which answers 405 (no server-initiated stream).
+      if (
+        (path === '/' || path === mcpPath) &&
+        (request.method === 'GET' || request.method === 'HEAD') &&
+        !(request.headers.get('accept') ?? '').includes('text/event-stream')
+      ) {
+        return landingPage(request, {
+          version: options.version,
+          resource,
+          origin: options.publicUrl.origin,
+        });
+      }
       if (path !== mcpPath) {
         return json({ error: 'not_found', mcp_endpoint: resource }, 404);
-      }
-      if (request.method === 'GET' && (request.headers.get('accept') ?? '').includes('text/html')) {
-        return new Response(
-          `nextbillion-mcp ${options.version}\n\nThis is an MCP server endpoint, not a web page. ` +
-            `Add ${resource} to your MCP host (Claude, Claude Code, Cursor, Codex).\nDocs: ${DOCS_URL}\n`,
-          { status: 200, headers: { 'content-type': 'text/plain; charset=utf-8' } },
-        );
       }
 
       // 1. Verify a bearer token when one is sent. A bad token is refused outright.
@@ -192,7 +200,20 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
         }
       }
 
-      return handler.fetch(forwarded, { authInfo, parsedBody });
+      const response = await handler.fetch(forwarded, { authInfo, parsedBody });
+      if (request.method === 'GET' || request.method === 'HEAD') {
+        // Same URL as the landing page, chosen by Accept: this answer (the 405 for the event
+        // stream, which is heuristically cacheable) must not be reused for a browser's GET.
+        const headers = new Headers(response.headers);
+        headers.set('cache-control', 'no-store');
+        headers.set('vary', 'accept');
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
+      }
+      return response;
     },
     close: () => handler.close(),
   };
