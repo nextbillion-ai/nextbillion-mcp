@@ -170,6 +170,32 @@ describe('hosted HTTP mode', () => {
     });
   });
 
+  it('serves an HTML landing page linking the icon to browsers and crawlers', async () => {
+    const { app } = makeApp();
+    open.push(app);
+    // Browsers send text/html; favicon crawlers often send */* or nothing at all.
+    for (const accept of ['text/html,application/xhtml+xml,*/*;q=0.8', '*/*', undefined]) {
+      const res = await app.fetch(
+        new Request('https://mcp.test/', { headers: accept ? { accept } : {} }),
+      );
+      expect(res.status, String(accept)).toBe(200);
+      expect(res.headers.get('content-type')).toBe('text/html; charset=utf-8');
+      const html = await res.text();
+      expect(html).toContain('<link rel="icon" href="https://mcp.test/favicon.ico"');
+      expect(html).toContain('href="https://mcp.test/icon.png"');
+      expect(html).toContain('0.0.0-test');
+      expect(html).toContain('<code>https://mcp.test</code>');
+    }
+    const head = await app.fetch(new Request('https://mcp.test/', { method: 'HEAD' }));
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe('');
+    // A host opening the event stream still gets the transport's answer.
+    const stream = await app.fetch(
+      new Request('https://mcp.test/', { headers: { accept: 'text/event-stream' } }),
+    );
+    expect(stream.status).toBe(405);
+  });
+
   it('keeps the icons at the origin root when the MCP endpoint has a path', async () => {
     const publicUrl = new URL('https://mcp.test/mcp');
     const app = createHttpApp({
@@ -181,6 +207,15 @@ describe('hosted HTTP mode', () => {
     open.push(app);
     expect((await app.fetch(new Request('https://mcp.test/favicon.ico'))).status).toBe(200);
     expect((await app.fetch(new Request('https://mcp.test/mcp/favicon.ico'))).status).toBe(404);
+    // The landing page is at the host root as well as at the endpoint, with root icon links.
+    for (const url of ['https://mcp.test/', 'https://mcp.test/mcp']) {
+      const res = await app.fetch(new Request(url, { headers: { accept: '*/*' } }));
+      expect(res.status, url).toBe(200);
+      const html = await res.text();
+      expect(html).toContain('href="https://mcp.test/favicon.ico"');
+      expect(html).toContain('<code>https://mcp.test/mcp</code>');
+    }
+    expect((await app.fetch(new Request('https://mcp.test/other'))).status).toBe(404);
     const transport = new StreamableHTTPClientTransport(publicUrl, {
       fetch: (input, init) => app.fetch(new Request(input, init)),
     });
