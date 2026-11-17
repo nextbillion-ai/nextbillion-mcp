@@ -180,6 +180,7 @@ describe('hosted HTTP mode', () => {
       );
       expect(res.status, String(accept)).toBe(200);
       expect(res.headers.get('content-type')).toBe('text/html; charset=utf-8');
+      expect(res.headers.get('vary')).toBe('accept');
       const html = await res.text();
       expect(html).toContain('<link rel="icon" href="https://mcp.test/favicon.ico"');
       expect(html).toContain('href="https://mcp.test/icon.png"');
@@ -194,6 +195,8 @@ describe('hosted HTTP mode', () => {
       new Request('https://mcp.test/', { headers: { accept: 'text/event-stream' } }),
     );
     expect(stream.status).toBe(405);
+    // The 405 must never be served from a cache in place of the HTML, or vice versa.
+    expect(stream.headers.get('cache-control') ?? '').not.toContain('public');
   });
 
   it('keeps the icons at the origin root when the MCP endpoint has a path', async () => {

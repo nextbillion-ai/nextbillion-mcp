@@ -50,7 +50,10 @@ export function landingPage(request: Request, o: LandingPageOptions): Response {
     headers: {
       'content-type': 'text/html; charset=utf-8',
       'content-length': String(Buffer.byteLength(html)),
+      // The same URL answers the MCP transport when Accept asks for the event stream, so a
+      // shared cache must key the HTML by Accept rather than serve it to a host.
       'cache-control': 'public, max-age=3600',
+      vary: 'accept',
       'content-security-policy':
         "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; base-uri 'none'",
       'x-content-type-options': 'nosniff',
