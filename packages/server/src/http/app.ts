@@ -200,7 +200,20 @@ export function createHttpApp(options: HttpAppOptions): FetchApp {
         }
       }
 
-      return handler.fetch(forwarded, { authInfo, parsedBody });
+      const response = await handler.fetch(forwarded, { authInfo, parsedBody });
+      if (request.method === 'GET' || request.method === 'HEAD') {
+        // Same URL as the landing page, chosen by Accept: this answer (the 405 for the event
+        // stream, which is heuristically cacheable) must not be reused for a browser's GET.
+        const headers = new Headers(response.headers);
+        headers.set('cache-control', 'no-store');
+        headers.set('vary', 'accept');
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
+      }
+      return response;
     },
     close: () => handler.close(),
   };

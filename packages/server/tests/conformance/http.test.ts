@@ -195,8 +195,10 @@ describe('hosted HTTP mode', () => {
       new Request('https://mcp.test/', { headers: { accept: 'text/event-stream' } }),
     );
     expect(stream.status).toBe(405);
-    // The 405 must never be served from a cache in place of the HTML, or vice versa.
-    expect(stream.headers.get('cache-control') ?? '').not.toContain('public');
+    // A 405 is heuristically cacheable: keep it out of caches and keyed by Accept, so it is
+    // never reused for a browser's GET (nor the HTML for a host's).
+    expect(stream.headers.get('cache-control')).toBe('no-store');
+    expect(stream.headers.get('vary')).toBe('accept');
   });
 
   it('keeps the icons at the origin root when the MCP endpoint has a path', async () => {
